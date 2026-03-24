@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "morphsat"
+version = "0.1.0"
+description = "Finite-state constraint enforcement for sequential decision systems"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "echo313unfolding" },
+]
+keywords = ["finite-state-automaton", "constraint-enforcement", "decision-systems", "token-adjacency"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.0"]
+dev = ["pytest>=7.0", "pytest-cov"]
+
+[project.urls]
+Homepage = "https://github.com/echo313unfolding/morphsat"
+Repository = "https://github.com/echo313unfolding/morphsat"
+
+[tool.setuptools.packages.find]
+include = ["morphsat*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
