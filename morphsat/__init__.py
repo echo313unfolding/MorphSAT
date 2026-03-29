@@ -3,6 +3,7 @@ MorphSAT -- Finite-state constraint enforcement for sequential decision systems.
 
 Public API:
     MorphSATGate       Hard FSA enforcement gate with optional guardian vows.
+    CandidateTransition  Ranked alternative when a transition is blocked.
     TaskState          Enum of lifecycle states (IDLE, PLANNING, WRITING, TESTING, DONE).
     TaskEvent          Enum of lifecycle events (NEW_TASK, PLAN_COMPLETE, ...).
     classify_event     Grounding layer: map text output + role to TaskEvent.
@@ -13,10 +14,11 @@ Public API:
     wrap_receipt       Wrap a payload dict into a timestamped receipt.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from morphsat.core import (
     MorphSATGate,
+    CandidateTransition,
     TaskState,
     TaskEvent,
     classify_event,
@@ -40,6 +42,7 @@ from morphsat.receipt import wrap_receipt
 __all__ = [
     # core
     "MorphSATGate",
+    "CandidateTransition",
     "TaskState",
     "TaskEvent",
     "classify_event",

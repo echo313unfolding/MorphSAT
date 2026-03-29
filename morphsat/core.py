@@ -19,12 +19,38 @@ Usage::
     gate.step(TaskEvent.NEW_TASK)         # IDLE -> PLANNING
     event = classify_event(output, "generate")
     state, legal, action = gate.step(event)
+
+Custom domains via JSON spec::
+
+    spec = {
+        "id": "review_pipeline",
+        "states": ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED"],
+        "events": ["SUBMIT", "APPROVE", "REJECT", "PUBLISH"],
+        "transitions": {
+            "DRAFT.SUBMIT": "REVIEW",
+            "REVIEW.APPROVE": "APPROVED",
+            "REVIEW.REJECT": "DRAFT",
+            "APPROVED.PUBLISH": "PUBLISHED",
+        },
+        "guardian_blocked": ["DRAFT.PUBLISH", "REVIEW.PUBLISH"],
+    }
+    gate = MorphSATGate.from_spec(spec)
+    state, legal, action = gate.step(0)  # SUBMIT event
+
+Ranked alternative proposals when blocked::
+
+    state, legal, action = gate.step(event)
+    if not legal:
+        alternatives = gate.propose()  # top-3 legal transitions
 """
 
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass
 from enum import IntEnum
-from typing import List, Optional, Set, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -153,6 +179,88 @@ def classify_event(step_output: str, step_role: str) -> TaskEvent:
 
 
 # ---------------------------------------------------------------------------
+# Candidate Transition (WO-08: ranked alternative proposals)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class CandidateTransition:
+    """A legal transition proposed as an alternative when a step is blocked.
+
+    Returned by :meth:`MorphSATGate.propose` -- ranked by cost (lower is
+    better).  Ported from KRISPERcell.CandidateAction (echo-box/pssh).
+    """
+    event: int
+    event_name: str
+    next_state: int
+    next_state_name: str
+    cost: float
+
+
+# ---------------------------------------------------------------------------
+# Presets (WO-07: JSON-loadable constraint definitions)
+# ---------------------------------------------------------------------------
+
+_PRESETS: Dict[str, Dict[str, Any]] = {
+    "task_lifecycle": {
+        "id": "task_lifecycle_v1",
+        "states": ["IDLE", "PLANNING", "WRITING", "TESTING", "DONE"],
+        "events": [
+            "NEW_TASK", "PLAN_COMPLETE", "CODE_COMPLETE",
+            "TEST_PASS", "TEST_FAIL", "RESET", "DEPLOY",
+        ],
+        "transitions": {
+            "IDLE.NEW_TASK": "PLANNING",
+            "PLANNING.PLAN_COMPLETE": "WRITING",
+            "WRITING.CODE_COMPLETE": "TESTING",
+            "TESTING.TEST_PASS": "DONE",
+            "TESTING.TEST_FAIL": "WRITING",
+            "DONE.NEW_TASK": "PLANNING",
+            "DONE.DEPLOY": "DONE",
+        },
+        "reset_event": "RESET",
+        "reset_target": "IDLE",
+        "guardian_blocked": [
+            "IDLE.DEPLOY", "PLANNING.DEPLOY",
+            "WRITING.DEPLOY", "TESTING.DEPLOY",
+            "WRITING.NEW_TASK", "TESTING.NEW_TASK",
+            "PLANNING.NEW_TASK",
+        ],
+    },
+}
+
+
+def _build_from_spec(spec: Dict[str, Any]) -> Tuple[
+    np.ndarray, Set[Tuple[int, int]], List[str], List[str]
+]:
+    """Parse a JSON spec into (transition_table, guardian_set, state_names, event_names)."""
+    states = spec["states"]
+    events = spec["events"]
+    n_s, n_e = len(states), len(events)
+    state_idx = {name: i for i, name in enumerate(states)}
+    event_idx = {name: i for i, name in enumerate(events)}
+
+    T = np.full((n_s, n_e), -1, dtype=np.int32)
+
+    for key, target in spec.get("transitions", {}).items():
+        s_name, e_name = key.split(".", 1)
+        T[state_idx[s_name], event_idx[e_name]] = state_idx[target]
+
+    # Reset event: legal from all states
+    if "reset_event" in spec and "reset_target" in spec:
+        re = event_idx[spec["reset_event"]]
+        rt = state_idx[spec["reset_target"]]
+        for si in range(n_s):
+            T[si, re] = rt
+
+    guardian: Set[Tuple[int, int]] = set()
+    for entry in spec.get("guardian_blocked", []):
+        s_name, e_name = entry.split(".", 1)
+        guardian.add((state_idx[s_name], event_idx[e_name]))
+
+    return T, guardian, list(states), list(events)
+
+
+# ---------------------------------------------------------------------------
 # MorphSAT Gate
 # ---------------------------------------------------------------------------
 
@@ -189,14 +297,97 @@ class MorphSATGate:
             if enable_guardian
             else set()
         )
-        self.state: TaskState = TaskState.IDLE
+        self._state_names: List[str] = list(STATE_NAMES)
+        self._event_names: List[str] = list(EVENT_NAMES)
+        self._spec_id: Optional[str] = None
+        self.state: int = 0  # IDLE
         self.history: List[dict] = []
         self.illegal_caught: int = 0
         self.guardian_caught: int = 0
         self.total_transitions: int = 0
 
-    def step(self, event: TaskEvent) -> Tuple[TaskState, bool, str]:
+    # ---------- constructors (WO-07) ----------
+
+    @classmethod
+    def from_spec(cls, spec: Dict[str, Any]) -> "MorphSATGate":
+        """Build a gate from a JSON-compatible spec dict.
+
+        Ported from GuardianCell.from_spec (echo-box/pssh).  Makes MorphSAT
+        configurable for arbitrary domains without code changes.
+
+        Args:
+            spec: Dict with ``states``, ``events``, ``transitions``,
+                and optionally ``guardian_blocked``, ``reset_event``,
+                ``reset_target``.  See module docstring for format.
+
+        Returns:
+            A :class:`MorphSATGate` configured for the spec's domain.
+        """
+        T, guardian, s_names, e_names = _build_from_spec(spec)
+        gate = cls(transition_table=T, guardian_blocked=guardian)
+        gate._state_names = s_names
+        gate._event_names = e_names
+        gate._spec_id = spec.get("id")
+        return gate
+
+    @classmethod
+    def from_preset(cls, name: str) -> "MorphSATGate":
+        """Load a gate from a built-in preset.
+
+        Ported from GuardianCell.from_preset (echo-box/pssh).
+
+        Available presets:
+            - ``"task_lifecycle"``: The default 5-state task lifecycle FSA.
+
+        Args:
+            name: Preset name.
+
+        Returns:
+            A :class:`MorphSATGate` configured for the preset's domain.
+
+        Raises:
+            ValueError: If the preset name is unknown.
+        """
+        if name not in _PRESETS:
+            available = ", ".join(sorted(_PRESETS.keys()))
+            raise ValueError(
+                f"Unknown preset: {name!r}. Available: {available}"
+            )
+        return cls.from_spec(_PRESETS[name])
+
+    @classmethod
+    def from_json(cls, path: Union[str, Path]) -> "MorphSATGate":
+        """Load a gate from a JSON file on disk.
+
+        Args:
+            path: Path to a JSON file containing a spec dict.
+
+        Returns:
+            A :class:`MorphSATGate` configured from the file.
+        """
+        p = Path(path)
+        spec = json.loads(p.read_text())
+        return cls.from_spec(spec)
+
+    # ---------- core API ----------
+
+    def _state_name(self, idx: int) -> str:
+        """Human-readable name for a state index."""
+        if 0 <= idx < len(self._state_names):
+            return self._state_names[idx]
+        return str(idx)
+
+    def _event_name(self, idx: int) -> str:
+        """Human-readable name for an event index."""
+        if 0 <= idx < len(self._event_names):
+            return self._event_names[idx]
+        return str(idx)
+
+    def step(self, event: int) -> Tuple[int, bool, str]:
         """Attempt a state transition.
+
+        Args:
+            event: Event index (or :class:`TaskEvent` enum value).
 
         Returns:
             A 3-tuple ``(new_state, was_legal, action_taken)`` where
@@ -204,51 +395,114 @@ class MorphSATGate:
             or ``"GUARDIAN_BLOCKED"``.
         """
         self.total_transitions += 1
-        old_state = self.state
+        old_state = int(self.state)
+        ev = int(event)
 
         # Guardian check first (policy layer above FSA)
-        if (int(old_state), int(event)) in self.guardian_blocked:
+        if (old_state, ev) in self.guardian_blocked:
             self.guardian_caught += 1
             self.history.append({
-                "from": STATE_NAMES[old_state],
-                "event": EVENT_NAMES[event],
+                "from": self._state_name(old_state),
+                "event": self._event_name(ev),
                 "action": "GUARDIAN_BLOCKED",
-                "to": STATE_NAMES[old_state],
+                "to": self._state_name(old_state),
             })
             return self.state, False, "GUARDIAN_BLOCKED"
 
         # FSA check
-        next_state = self.T[old_state, event]
+        next_state = int(self.T[old_state, ev])
         if next_state == -1:
             self.illegal_caught += 1
             self.history.append({
-                "from": STATE_NAMES[old_state],
-                "event": EVENT_NAMES[event],
+                "from": self._state_name(old_state),
+                "event": self._event_name(ev),
                 "action": "FSA_BLOCKED",
-                "to": STATE_NAMES[old_state],
+                "to": self._state_name(old_state),
             })
             return self.state, False, "FSA_BLOCKED"
 
         # Legal transition
-        self.state = TaskState(next_state)
+        self.state = next_state
         self.history.append({
-            "from": STATE_NAMES[old_state],
-            "event": EVENT_NAMES[event],
+            "from": self._state_name(old_state),
+            "event": self._event_name(ev),
             "action": "ALLOWED",
-            "to": STATE_NAMES[self.state],
+            "to": self._state_name(next_state),
         })
         return self.state, True, "ALLOWED"
 
+    # ---------- proposal API (WO-08) ----------
+
+    def propose(self, max_candidates: int = 3) -> List[CandidateTransition]:
+        """Propose legal transitions from the current state, ranked by cost.
+
+        Ported from KRISPERcell.propose (echo-box/pssh).  Turns MorphSAT
+        from a gate ("no, illegal") into a constrained steering system
+        ("no, illegal -- here are your legal options").
+
+        Cost heuristic: distance from the terminal state (highest index).
+        Lower cost = closer to completion.
+
+        Args:
+            max_candidates: Maximum number of alternatives to return.
+
+        Returns:
+            List of :class:`CandidateTransition` sorted by cost ascending.
+        """
+        n_events = self.T.shape[1]
+        terminal = self.T.shape[0] - 1  # highest state = terminal
+        cur = int(self.state)
+        candidates: List[CandidateTransition] = []
+
+        for ev in range(n_events):
+            next_val = int(self.T[cur, ev])
+            if next_val == -1:
+                continue
+            if (cur, ev) in self.guardian_blocked:
+                continue
+            cost = float(terminal - next_val)
+            candidates.append(CandidateTransition(
+                event=ev,
+                event_name=self._event_name(ev),
+                next_state=next_val,
+                next_state_name=self._state_name(next_val),
+                cost=cost,
+            ))
+
+        candidates.sort(key=lambda c: c.cost)
+        return candidates[:max_candidates]
+
+    def step_or_propose(
+        self, event: int, max_candidates: int = 3,
+    ) -> Tuple[int, bool, str, List[CandidateTransition]]:
+        """Step if legal; if blocked, also return ranked alternatives.
+
+        Convenience method combining :meth:`step` and :meth:`propose`.
+
+        Returns:
+            A 4-tuple ``(state, legal, action, alternatives)`` where
+            *alternatives* is empty if the step was legal.
+        """
+        state, legal, action = self.step(event)
+        if legal:
+            return state, legal, action, []
+        return state, legal, action, self.propose(max_candidates)
+
+    # ---------- state management ----------
+
     def reset(self) -> None:
-        """Reset gate to IDLE state."""
-        self.state = TaskState.IDLE
+        """Reset gate to initial state (index 0)."""
+        self.state = 0
 
     def to_receipt(self) -> dict:
         """Export gate state and history as a receipt-compatible dict."""
-        return {
-            "final_state": STATE_NAMES[self.state],
+        receipt = {
+            "final_state": self._state_name(int(self.state)),
             "total_transitions": self.total_transitions,
             "illegal_caught": self.illegal_caught,
             "guardian_caught": self.guardian_caught,
             "history": self.history,
         }
+        if self._spec_id is not None:
+            receipt["spec_id"] = self._spec_id
+        return receipt
