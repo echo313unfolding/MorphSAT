@@ -1,5 +1,5 @@
 """
-MorphSAT -- Finite-state constraint enforcement for sequential decision systems.
+MorphSAT -- Constraint-control testbed for local LLM agents.
 
 Public API:
     MorphSATGate       Hard FSA enforcement gate with optional guardian vows.
@@ -14,7 +14,7 @@ Public API:
     wrap_receipt       Wrap a payload dict into a timestamped receipt.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from morphsat.core import (
     MorphSATGate,

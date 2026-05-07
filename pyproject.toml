@@ -4,15 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "morphsat"
-version = "0.1.0"
-description = "Finite-state constraint enforcement for sequential decision systems"
+version = "0.3.0"
+description = "Constraint-control testbed for local LLM agents"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "echo313unfolding" },
 ]
-keywords = ["finite-state-automaton", "constraint-enforcement", "decision-systems", "token-adjacency"]
+keywords = [
+    "llm-agents", "constraint-control", "commit-control",
+    "metacognition", "novelty-response", "tool-use",
+    "finite-state-automaton", "execution-traces",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
