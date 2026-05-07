@@ -1,10 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,100:1a6b6b&height=200&section=header&text=MorphSAT&fontSize=42&fontColor=58a6ff&animation=fadeIn&fontAlignY=35&desc=Constraint-control%20testbed%20for%20local%20LLM%20agents&descSize=16&descColor=8b949e&descAlignY=55">
-  <source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=waving&color=0:f0f6fc,100:2ababa&height=200&section=header&text=MorphSAT&fontSize=42&fontColor=1f2328&animation=fadeIn&fontAlignY=35&desc=Constraint-control%20testbed%20for%20local%20LLM%20agents&descSize=16&descColor=656d76&descAlignY=55">
-  <img alt="MorphSAT" src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,100:1a6b6b&height=200&section=header&text=MorphSAT&fontSize=42&fontColor=58a6ff&animation=fadeIn&fontAlignY=35&desc=Constraint-control%20testbed%20for%20local%20LLM%20agents&descSize=16&descColor=8b949e&descAlignY=55">
-</picture>
+<img alt="MorphSAT" src="https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,100:1a6b6b&height=200&section=header&text=MorphSAT&fontSize=42&fontColor=58a6ff&animation=fadeIn&fontAlignY=35&desc=Constraint-control%20testbed%20for%20local%20LLM%20agents&descSize=16&descColor=8b949e&descAlignY=55" width="100%">
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)

@@ -14,7 +14,7 @@ Public API:
     wrap_receipt       Wrap a payload dict into a timestamped receipt.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from morphsat.core import (
     MorphSATGate,
