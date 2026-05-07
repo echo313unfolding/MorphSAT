@@ -94,12 +94,14 @@ NORMAL ──→ ORIENTING ──→ SAFE_DISTANCE ──→ NORMAL (safe recove
 ## Install
 
 ```bash
-# From source
+pip install morphsat
+```
+
+Or from source:
+
+```bash
 git clone https://github.com/echo313unfolding/MorphSAT.git
 cd MorphSAT
-pip install -e .
-
-# Optional dev tools
 pip install -e ".[dev]"
 ```
 
