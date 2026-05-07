@@ -37,6 +37,17 @@ from morphsat.token import (
     LANE_NAMES,
 )
 
+from morphsat.commit_gate import (
+    CommitGate,
+    CommitAction,
+    SplitMemoryStore,
+)
+
+from morphsat.shadow_monitor import (
+    ShadowMonitor,
+    ShadowState,
+)
+
 from morphsat.receipt import wrap_receipt
 
 __all__ = [
@@ -57,6 +68,13 @@ __all__ = [
     "create_default_morph_table",
     "DEFAULT_LANE_ADJACENCY",
     "LANE_NAMES",
+    # commit gate v6
+    "CommitGate",
+    "CommitAction",
+    "SplitMemoryStore",
+    # shadow monitor v7
+    "ShadowMonitor",
+    "ShadowState",
     # receipt
     "wrap_receipt",
 ]
