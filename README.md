@@ -5,9 +5,10 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-109%20passed-brightgreen)]()
-[![Checkpoint](https://img.shields.io/badge/checkpoint-v7--shadow--monitor-blue)]()
+[![Checkpoint](https://img.shields.io/badge/checkpoint-v8.3--gate--authority-blue)]()
+[![PyPI](https://img.shields.io/pypi/v/morphsat)](https://pypi.org/project/morphsat/)
 
-**Evidence-based commit control, novelty response, and auditable execution traces.**
+**Structured commit control for LLM agent loops. The model proposes; the gate decides.**
 
 </div>
 
@@ -15,40 +16,44 @@
 
 MorphSAT is a testbed for studying **when a local LLM agent should stop gathering evidence and commit to an action.**
 
-An LLM agent with tool access can loop indefinitely — calling tools, reading results, calling more tools — without ever deciding. MorphSAT layers constraint-control mechanisms around the agent's loop and measures their effect on accuracy, tool usage, and commit timing.
+An LLM agent with tool access can loop indefinitely — calling tools, reading results, calling more tools — without ever deciding. Or it can commit prematurely on insufficient evidence. MorphSAT wraps the agent's loop in a structured cognitive control stack — an external state machine that accumulates evidence, tracks posture, and holds decision authority. The model proposes actions; the gate decides when and how to commit.
 
-The current checkpoint (v7) compares an **evidence-pressure controller** against an **anticipatory posture controller** that treats novelty as an orienting state rather than a scalar penalty.
+The current checkpoint (v8.3) achieves **100% accuracy** on a 20-scenario security triage benchmark across all three control conditions, up from 85% when the model decides alone.
 
-> **For cognitive architecture researchers:** See [`docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md`](docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md) for a term mapping between MorphSAT internal names and concepts from Soar, ACT-R, and active inference.
+> **For cognitive architecture researchers:** See [`docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md`](docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md) for a term mapping to Soar, ACT-R, and active inference. See [`docs/morphsat_technical_note.md`](docs/morphsat_technical_note.md) for the 2-page technical note with full results.
 
 ## The proof chain
 
-Seven versions tested on a 20-scenario security alert triage benchmark:
+Nine versions tested on a 20-scenario security alert triage benchmark (Qwen2.5-Coder-7B, temperature 0, simulated tools):
 
 | Version | Mechanism | Accuracy | Key finding |
 |---|---|---|---|
 | v1 | Static FSA constraints | 55% | 0 useful interventions — too weak |
 | v2 | Fixed tool-call counter | 67.5% | Any pressure helps |
-| v3 | Adaptive budget (2/3/5) | 55–67.5% | Ceiling irrelevant, floor matters |
-| **v4** | **Evidence-pressure gate** | **65%** | Best escalation (77.8%), best pre-v7 |
-| v5 | + pattern memory | 62.5% | Mechanics work, accuracy fails — learned threats without tolerance |
+| v3 | Adaptive budget (2/3/5) | 55-67.5% | Ceiling irrelevant, floor matters |
+| v4 | Evidence-pressure gate | 65% | Best escalation (77.8%), best pre-v7 |
+| v5 | + pattern memory | 62.5% | Learned threats without tolerance |
 | v6 | + bidirectional pressure | 55% | Novelty-as-penalty is the wrong abstraction |
-| **v7** | **Anticipatory posture control** | **70%** | Best accuracy, benign recovery 78.6% (was 35.7%) |
+| v7 | Anticipatory posture control | 70% | Benign recovery 78.6% (was 35.7%) |
+| v8.0 | + gate authority (assists) | 90% | Model follows structured direction |
+| v8.2 | + classifier/threshold fixes | 97.5% | 2 bugs: false yara match, threshold mismatch |
+| **v8.3** | **+ early-verdict guard** | **100%** | **Blocks premature verdicts before min evidence** |
 
-## v7 result
+## v8.3 result
 
-|  | Evidence-pressure (v4) | Anticipatory posture (v7) |
-|---|---|---|
-| Overall accuracy | 62.5% | **70.0%** |
-| Tool-loop rate | 35.0% | **25.0%** |
-| Avg turns to decision | 5.4 | **4.8** |
-| Benign accuracy | 35.7% | **78.6%** |
-| Suspicious accuracy | **75.0%** | 62.5% |
-| Escalation accuracy | **77.8%** | 66.7% |
+Three experimental conditions, 20 scenarios each (60 total runs):
 
-v7 fixes the tolerance problem (benign +42.9pp) at the cost of suspicious/escalate regression. The tradeoff is real and not yet resolved.
+| Condition | Accuracy | Benign | Suspicious | Escalate | Description |
+|---|---|---|---|---|---|
+| model_decides | 85.0% | 100% | 75.0% | 77.8% | Model alone, monitor runs silently |
+| gate_overrides | **100%** | 100% | 100% | 100% | Gate replaces model verdict |
+| gate_assists | **100%** | 100% | 100% | 100% | Gate steers model via strong prompt |
 
-**Key insight:** Novelty handling is a posture problem, not a threshold problem. When novelty was treated as a penalty (raise the commit threshold), the agent over-investigated benign scenarios and never learned tolerance. When novelty was treated as an orienting state (enter protective posture, gather bounded evidence, relax on safe evidence), benign recovery improved dramatically.
+- `gate_overrides` corrected 6 model errors (6 helped, 0 hurt).
+- `gate_assists` achieved 100% model agreement — the model followed the monitor's direction in every case.
+- Escalation accuracy: +22.2pp from model_decides to gate_assists.
+
+**Key insight:** The control structure, not the model, is the decision authority. The same 7B model achieves 85% accuracy alone and 100% when embedded in the MorphSAT control loop. The gap is structural, not prompt engineering: an external state machine accumulates evidence, tracks posture, and communicates direction through a typed interface.
 
 ## Architecture
 
@@ -56,36 +61,52 @@ v7 fixes the tolerance problem (benign +42.9pp) at the cost of suspicious/escala
 Layer 1: FSA lifecycle gate
          Legal task-state transitions. Blocks impossible sequences.
 
-Layer 2: Evidence-pressure gate (v4)
-         Sensor-driven commit timing. Se complexity threshold,
-         evidence quality, sidecar confidence, urgency decay.
-         Fires irreversibly when pressure crosses threshold.
+Layer 2: Evidence sensors
+         Bidirectional classification: each tool result produces
+         (threat_delta, safety_delta). Coincidence detection boosts
+         on multi-signal convergence. Sidecar confidence from model output.
 
-Layer 3: Anticipatory posture controller (v7)
-         Hidden state machine wrapping the agent's loop.
+Layer 3: Shadow monitor (v7+)
+         Hidden posture state machine wrapping the agent's loop.
          Novelty → ORIENT → bounded investigation → decide.
          Safe evidence decays protective posture (tolerance).
-         Multi-axis pressure → escalation signal.
+         The model never sees these states — they control what
+         happens AROUND the model.
 
-Layer 4: Dual-store memory
+Layer 4: Gate authority (v8+)
+         When the monitor commits to a direction, it communicates
+         that direction to the model (gate_assists) or overrides
+         the model's verdict entirely (gate_overrides).
+
+Layer 5: Early-verdict guard (v8.3)
+         Blocks the model from issuing a verdict before gathering
+         minimum evidence (2 tool calls). Structural, not prompt-based.
+
+Layer 6: Dual-store memory
          Threat patterns and tolerance patterns stored separately.
-         Familiarity with known configurations speeds future decisions.
+         Familiarity modulates future posture (the strange loop).
 
-Layer 5: Episodic traces
-         Turn-by-turn audit records of state, evidence, posture,
-         and outcomes. Every decision is reproducible.
+Layer 7: Receipts
+         Turn-by-turn JSON audit: state, evidence, posture, outcomes.
+         Every decision is reproducible. SHA256-stamped.
 ```
 
 ### Shadow monitor states
 
 ```
 NORMAL ──→ ORIENTING ──→ SAFE_DISTANCE ──→ NORMAL (safe recovery)
+              │                  └──→ ESCALATE_READY (threat confirmed)
+              │                  └──→ ABSTAIN_READY (contradictory)
               │
               └──→ INVESTIGATING ──→ COMMIT_READY (clear evidence)
                         │            ESCALATE_READY (high threat)
                         │            ABSTAIN_READY (contradictory)
                         └──→ SWARM_CALL (multi-axis pressure)
+
+Budget guards from any state: max tools, evidence loop, no new info → force commit
 ```
+
+> **Full architecture diagram:** See [`docs/morphsat_control_diagram.md`](docs/morphsat_control_diagram.md) for control flow, shadow state machine, Soar mapping, and a worked example (supply_01 trace).
 
 ## Install
 
@@ -114,22 +135,7 @@ assert state == TaskState.PLANNING
 assert legal is True
 ```
 
-### Evidence-pressure gate
-
-```python
-from morphsat import CommitGate, SplitMemoryStore
-
-memory = SplitMemoryStore("/tmp/memory.json")
-gate = CommitGate(memory=memory)
-gate.initialize(alert_text="Suspicious process spawned by cron")
-
-# Feed tool results
-action = gate.process_evidence("check_process", "PID 1234: /usr/bin/curl ...")
-# action.action is "CONTINUE", "COMMIT", or "ABSTAIN"
-# action.direction is "escalate", "benign", or None
-```
-
-### Shadow monitor (v7)
+### Shadow monitor + gate authority (v8.3)
 
 ```python
 from morphsat import ShadowMonitor, SplitMemoryStore
@@ -141,7 +147,7 @@ monitor.initialize(alert_text="Unknown binary in /tmp")
 # Monitor enters ORIENT if alert is novel
 print(monitor.state)  # ShadowState.ORIENTING
 
-# Feed evidence — monitor transitions through states
+# Feed evidence — monitor transitions through posture states
 action = monitor.process_evidence("check_hash", "Hash not in VirusTotal")
 print(monitor.state)       # ShadowState.INVESTIGATING
 print(action.action)       # "CONTINUE"
@@ -151,7 +157,11 @@ print(monitor.state)       # ShadowState.COMMIT_READY
 print(action.action)       # "COMMIT"
 print(action.direction)    # "benign"
 
-# Close episode — updates memory for next run
+# Gate authority: use monitor.last_action.direction to steer the model
+# gate_assists: "The controller concluded this is BENIGN. Issue verdict."
+# gate_overrides: verdict = monitor.last_action.direction (model discarded)
+
+# Close episode — updates memory for next run (the strange loop)
 monitor.close_episode("benign", confidence=0.8)
 ```
 
@@ -173,9 +183,14 @@ morphsat/
 │   └── test_shadow_monitor.py # 22 tests: v7 posture predictions
 ├── docs/
 │   ├── PRESSURE_GATE_SPEC.md
-│   └── COGNITIVE_ARCHITECTURE_TRANSLATION.md
+│   ├── COGNITIVE_ARCHITECTURE_TRANSLATION.md
+│   ├── morphsat_technical_note.md      # 2-page technical note (v8.3 results)
+│   └── morphsat_control_diagram.md     # Architecture diagrams + Soar mapping
 ├── receipts/
-│   └── v7_shadow_monitor/    # Benchmark receipts (single-seed + 3-seed)
+│   ├── v7_shadow_monitor/    # v7 benchmark receipts (single-seed + 3-seed)
+│   └── morphsat_v83_early_verdict_guard/  # v8.3 benchmark receipt (60 runs, 20 scenarios x 3 conditions, 100% gate modes)
+├── tools/
+│   └── bench_gate_authority.py  # Gate authority benchmark harness
 └── pyproject.toml
 ```
 
@@ -185,8 +200,10 @@ morphsat/
 
 - N=20 scenario benchmark with simulated tool responses
 - Temperature=0 (deterministic) — no stochastic variance across seeds
-- Qwen2.5-Coder-3B doing security triage — small model, not its strongest domain
+- Qwen2.5-Coder-7B doing security triage — not its primary domain
 - The shadow monitor is tested on one task type (alert triage)
+- 100% gate_assists accuracy is an upper bound on this benchmark, not a claim about arbitrary inputs
+- The evidence classifier is keyword-based, not learned
 - This is a research testbed, not a production system
 
 ## Companion projects
