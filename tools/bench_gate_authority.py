@@ -114,6 +114,9 @@ def commit_prompt_c(action, monitor):
 # Unified runner — parameterized by condition
 # ---------------------------------------------------------------------------
 
+MIN_TOOLS_BEFORE_VERDICT = 2
+
+
 def run_scenario(scenario: Dict, port: int, memory: SplitMemoryStore,
                  condition: str) -> Dict:
     """Run one scenario under a given condition.
@@ -191,6 +194,22 @@ def run_scenario(scenario: Dict, port: int, memory: SplitMemoryStore,
             })
 
         elif event_type == "VERDICT_ISSUED":
+            # v8.3: early-verdict guard — reject premature verdicts
+            # when the monitor hasn't committed and the model hasn't
+            # gathered enough evidence for the gate to act.
+            if (not monitor.committed
+                    and tool_call_count < MIN_TOOLS_BEFORE_VERDICT):
+                messages.append({"role": "assistant", "content": content})
+                messages.append({"role": "user", "content":
+                    "[SYSTEM] Insufficient evidence gathered. "
+                    "Use at least one more tool to investigate "
+                    "before issuing your final verdict."})
+                turns.append({"turn": turn_num, "type": "early_verdict_blocked",
+                              "blocked_verdict": payload.get("verdict", ""),
+                              "tool_calls_so_far": tool_call_count,
+                              "tokens": resp["tokens"], "wall_s": resp["wall_s"]})
+                continue
+
             model_verdict = payload.get("verdict", "").lower().strip()
             verdict = model_verdict
             turns.append({"turn": turn_num, "type": "verdict",
