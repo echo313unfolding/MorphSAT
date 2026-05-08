@@ -290,7 +290,22 @@ def classify_tool_result(tool_result: str) -> Tuple[str, float, float]:
     # --- THREAT signals first (catches negations before safety) ---
     # Specific indicators BEFORE generic "unexpected" to avoid over-collapsing
 
-    if any(kw in text_lower for kw in ["yara", "suspicious_packer"]):
+    # v8.2 fix: "no match" short-circuit BEFORE yara check.
+    # simulate_tool prefixes all scan_file responses with "YARA scan {path}:"
+    # so the word "yara" appears even when NO rule matched. Route these to
+    # the correct classification based on result content, not tool name prefix.
+    if any(kw in text_lower for kw in ["no rule match", "no matches"]):
+        if "not signed" in text_lower or "unsigned" in text_lower:
+            return "unsigned", THREAT_SIGNALS["unsigned"], 0.0
+        elif any(kw in text_lower for kw in [
+            "signed and in package", "package database"
+        ]):
+            return "known_good", 0.0, SAFETY_SIGNALS["known_good"]
+        else:
+            return "clean", 0.0, SAFETY_SIGNALS["clean"]
+
+    # v8.2 fix: match on RESULT content, not tool name prefix
+    if any(kw in text_lower for kw in ["suspicious_packer", "match on rule"]):
         return "yara_match", THREAT_SIGNALS["yara_match"], 0.0
 
     if any(kw in text_lower for kw in ["4444", "not in baseline"]):

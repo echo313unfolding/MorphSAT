@@ -571,7 +571,13 @@ class ShadowMonitor:
             self.state = ShadowState.ABSTAIN_READY
         elif self.threat_score > self.safety_score:
             margin = self.threat_score - self.safety_score
-            if margin > 0.3 or self.threat_score >= 0.5:
+            # v8.2 fix: align with _resolve_direction thresholds.
+            # Was margin>0.3/threat>=0.5 — lower than _resolve_direction's
+            # margin>0.4/threat>=0.55. This caused tool-order-dependent
+            # escalation: check_hash first → SAFE_DISTANCE → force_commit
+            # (escalate at 0.50) vs check_process first → INVESTIGATING →
+            # _resolve_direction (suspicious at 0.50).
+            if margin > 0.4 or self.threat_score >= self.escalate_threat:
                 direction = "escalate"
                 self.state = ShadowState.ESCALATE_READY
             else:
