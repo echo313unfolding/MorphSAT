@@ -14,7 +14,7 @@ Public API:
     wrap_receipt       Wrap a payload dict into a timestamped receipt.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from morphsat.core import (
     MorphSATGate,
@@ -48,6 +48,13 @@ from morphsat.shadow_monitor import (
     ShadowState,
 )
 
+from morphsat.recomp_gate import (
+    DualAgentGate,
+    DualAgentVerdict,
+    AgentResult,
+    RecompVerdict,
+)
+
 from morphsat.receipt import wrap_receipt
 
 __all__ = [
@@ -75,6 +82,11 @@ __all__ = [
     # shadow monitor v7
     "ShadowMonitor",
     "ShadowState",
+    # recomp gate v9
+    "DualAgentGate",
+    "DualAgentVerdict",
+    "AgentResult",
+    "RecompVerdict",
     # receipt
     "wrap_receipt",
 ]
