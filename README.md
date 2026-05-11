@@ -4,8 +4,8 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-109%20passed-brightgreen)]()
-[![Checkpoint](https://img.shields.io/badge/checkpoint-v8.3--gate--authority-blue)]()
+[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen)]()
+[![Checkpoint](https://img.shields.io/badge/checkpoint-v9--recomputation--gate-blue)]()
 [![PyPI](https://img.shields.io/pypi/v/morphsat)](https://pypi.org/project/morphsat/)
 
 **Structured commit control for LLM agent loops. The model proposes; the gate decides.**
@@ -18,7 +18,7 @@ MorphSAT is a testbed for studying **when a local LLM agent should stop gatherin
 
 An LLM agent with tool access can loop indefinitely — calling tools, reading results, calling more tools — without ever deciding. Or it can commit prematurely on insufficient evidence. MorphSAT wraps the agent's loop in a structured cognitive control stack — an external state machine that accumulates evidence, tracks posture, and holds decision authority. The model proposes actions; the gate decides when and how to commit.
 
-The current checkpoint (v8.3) achieves **100% accuracy** on a 20-scenario security triage benchmark across all three control conditions, up from 85% when the model decides alone.
+The current checkpoint (v9) adds a **dual-agent recomputation gate** — two independent agents analyze the same alert, and disagreement routes to human review. On adversarial scenarios designed to fool single agents, disagreement precision is 100% (every disagreement involved a real error). The underlying single-agent loop (v8.3) achieves **100% accuracy** on the standard 20-scenario benchmark.
 
 > **For cognitive architecture researchers:** See [`docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md`](docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md) for a term mapping to Soar, ACT-R, and active inference. See [`docs/morphsat_technical_note.md`](docs/morphsat_technical_note.md) for the 2-page technical note with full results.
 
@@ -37,7 +37,8 @@ Nine versions tested on a 20-scenario security alert triage benchmark (Qwen2.5-C
 | v7 | Anticipatory posture control | 70% | Benign recovery 78.6% (was 35.7%) |
 | v8.0 | + gate authority (assists) | 90% | Model follows structured direction |
 | v8.2 | + classifier/threshold fixes | 97.5% | 2 bugs: false yara match, threshold mismatch |
-| **v8.3** | **+ early-verdict guard** | **100%** | **Blocks premature verdicts before min evidence** |
+| v8.3 | + early-verdict guard | 100% | Blocks premature verdicts before min evidence |
+| **v9** | **+ dual-agent recomputation gate** | **100% precision** | **Independent second agent; disagreement = escalate. Catches overconfident errors (0.95 conf, wrong).** |
 
 ## v8.3 result
 
@@ -82,11 +83,18 @@ Layer 5: Early-verdict guard (v8.3)
          Blocks the model from issuing a verdict before gathering
          minimum evidence (2 tool calls). Structural, not prompt-based.
 
-Layer 6: Dual-store memory
+Layer 6: Dual-agent recomputation gate (v9)
+         Second agent analyzes same alert independently (different
+         prompt framing, never sees first agent's output). Verdicts
+         compared: AGREE → emit. DISAGREE → escalate to human.
+         Unconditional — no confidence gating (overconfident errors
+         are the exact failure mode this catches).
+
+Layer 7: Dual-store memory
          Threat patterns and tolerance patterns stored separately.
          Familiarity modulates future posture (the strange loop).
 
-Layer 7: Receipts
+Layer 8: Receipts
          Turn-by-turn JSON audit: state, evidence, posture, outcomes.
          Every decision is reproducible. SHA256-stamped.
 ```
@@ -165,6 +173,46 @@ print(action.direction)    # "benign"
 monitor.close_episode("benign", confidence=0.8)
 ```
 
+### Dual-agent recomputation gate (v9)
+
+```python
+from morphsat import DualAgentGate, AgentResult
+
+def my_agent_runner(system_prompt: str, alert_text: str, context=None) -> AgentResult:
+    """Your agent loop here — call LLM, simulate tools, extract verdict."""
+    ...
+
+gate = DualAgentGate(
+    primary_prompt="You are a security triage agent...",
+    verifier_prompt="You are an independent security analyst...",
+    runner=my_agent_runner,
+)
+
+result = gate.run(alert_text="Suspicious binary in /tmp")
+
+if result.escalated:
+    # Agents disagreed — route to human review
+    print(f"ESCALATE: {result.disagreement_detail}")
+else:
+    # Agents agreed — emit verdict
+    print(f"Verdict: {result.final_verdict} (conf={result.final_confidence})")
+```
+
+> **Design decision:** Dual-agent is unconditional. Pre-flight analysis showed overconfident wrong answers (0.95 confidence on incorrect verdict). Confidence does not predict error. See [`docs/RECOMPUTATION_GATED_ARCHITECTURE.md`](docs/RECOMPUTATION_GATED_ARCHITECTURE.md) for the full thesis.
+
+### v9 benchmark (WO-RECOMP-04)
+
+10 adversarial scenarios (ambiguous alerts designed to fool single agents), Qwen2.5-Coder-3B:
+
+| Metric | Value |
+|---|---|
+| Single-agent accuracy | 50-60% |
+| Disagreement rate | 20-30% |
+| Disagreement precision | **100%** (every disagreement involved a real error) |
+| Errors caught by disagreement | 2-3 per run |
+
+On the standard 20-scenario set without the full control stack, agreement rate is 80% with 100% disagreement precision. G5 gate (>85% agreement on standard) narrowly missed — agents disagree more than ideal on easy cases, but every disagreement flags a genuine error. The recomputation gate adds no false alarms at the cost of routing ~20% of verdicts to human review.
+
 ## Project structure
 
 ```
@@ -176,14 +224,17 @@ morphsat/
 │   ├── pressure_gate.py      # v4 evidence-pressure gate
 │   ├── commit_gate.py        # v6 bidirectional commit gate + split memory
 │   ├── shadow_monitor.py     # v7 anticipatory posture controller
+│   ├── recomp_gate.py        # v9 dual-agent recomputation gate
 │   └── receipt.py            # Receipt wrapping with SHA256 content hash
 ├── tests/
 │   ├── test_core.py          # 31 tests: FSA structure, transitions, receipts
 │   ├── test_token.py         # 22 tests: lane scoring, temperature, masking
-│   └── test_shadow_monitor.py # 22 tests: v7 posture predictions
+│   ├── test_shadow_monitor.py # 22 tests: v7 posture predictions
+│   └── test_recomp_gate.py   # 14 tests: dual-agent agreement, disagreement, receipts
 ├── docs/
 │   ├── PRESSURE_GATE_SPEC.md
 │   ├── COGNITIVE_ARCHITECTURE_TRANSLATION.md
+│   ├── RECOMPUTATION_GATED_ARCHITECTURE.md  # Four-layer RGA thesis
 │   ├── morphsat_technical_note.md      # 2-page technical note (v8.3 results)
 │   └── morphsat_control_diagram.md     # Architecture diagrams + Soar mapping
 ├── receipts/
@@ -194,7 +245,7 @@ morphsat/
 └── pyproject.toml
 ```
 
-109/109 tests passing (Python 3.10).
+123/123 tests passing (Python 3.10).
 
 ## Caveats
 
@@ -213,6 +264,7 @@ morphsat/
 | [helix-substrate](https://github.com/echo313unfolding/helix-substrate) | Calibration-free neural network compression (HXQ). |
 | [sentinel-hybrid-stack](https://github.com/echo313unfolding/sentinel-hybrid-stack) | Hybrid SSM-Transformer security monitoring pipeline. |
 | [helix-codec](https://github.com/echo313unfolding/helix-codec) | Standalone C99 tensor codec library. |
+| [hxq-solana](https://github.com/echo313unfolding/hxq-solana) | Codec-aware provenance for off-chain artifacts on Solana. |
 
 ## License
 
