@@ -97,6 +97,24 @@ v0.2 config needs: hard cap (e.g., 10K tokens = 500MB) + LRU eviction. LMDB on T
 
 (k/n)² means: short shared prefixes don't help much, but the sentinel's 400+ token system prompt (80%+ of total) hits the steep part of the curve. This is why the workload fit matters — generic workloads with short/varied prefixes would fail G2.
 
+## Phase 0 results (2026-05-10) — built-in cache_prompt baseline
+
+llama-server `cache_prompt: true` on Qwen 3B Q4_K_M, T2000, 20 scenarios:
+
+```
+                    Cold            Cached          Delta
+Prompt time:       ~1050ms         220ms           -79.1%
+Wall time/scenario: 4.021s         3.123s          -22.3%
+Total (20 scen):    80.43s         62.47s          -22.3%
+Tokens cached:     ~160 (system prompt prefix)
+Fresh per scenario: 28-81 tokens (alert-specific suffix)
+```
+
+**Built-in caching captures the in-session win with zero new code.** One boolean flag.
+
+Remaining WO-KVCAS-01 value proposition (cross-session, receipted, model-aware) is
+real but not urgent. WO PARKED until production sentinel has restart/multi-model needs.
+
 ## Pre-Phase-1 results (2026-05-10)
 
 Analyzer: `tools/analyze_prefix_overlap.py` (whitespace tokenization approximation).
