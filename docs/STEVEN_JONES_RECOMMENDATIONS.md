@@ -127,7 +127,7 @@ This is doable with existing receipt data. It's a verification section in the pa
 | **3** | Dual-boundary / uncertainty-preserving commitment | **DONE** | Cliff smoothed: 31.3pp → 12.5pp. Operating range widened [0.75,0.85] → [0.82,0.99]. ABSTAIN on budget exhaustion inside continue zone. See `ADVERSARIAL_ROBUSTNESS_RESULTS.md` Plan 3 section. |
 | **4** | Parameter sensitivity sweep | **DONE (merged into 1.6)** | Response surface characterized. Cliff explained. Competing objectives documented. |
 | **5** | PPLTL compliance proof from receipts | **DONE** | 7/7 properties × 1008 traces = 0 violations. Properties: never-commit-before-min-evidence, never-escalate-without-threat, continue-zone-budget-exhaustion-abstains, correction-before-terminal, commitment-cites-boundary, legal-state-transitions, threat-decay-monotonicity. See `tools/check_compliance.py`. Receipts: `~/receipts/morphsat_compliance/` |
-| **2** | Second domain (code review or financial triage) | 3-5 days | Proves generality beyond security |
+| **2** | Second domain (code review or financial triage) | **DONE** | **PARTIAL TRANSFER.** 2/4 gates PASS, 2/4 FAIL. Architecture transfers with fidelity — same strengths AND same weaknesses. 5/9 conditions at 100%. Gate failures are sensor problems (adversarial evidence replacement, heavy noise signal dilution), not architecture problems. ABSTAIN behavior transfers correctly. See `CODE_REVIEW_TRANSFER_RESULTS.md`. Receipts: `~/receipts/morphsat_code_review/` |
 
 ---
 

@@ -287,6 +287,8 @@ Benign recovery dips at strong decay (0.75–0.81) because the continue zone cau
 
 7. **Receipt-level compliance: 7/7 properties × 1,008 traces = 0 violations.** Plan 5 formal properties verified: (P1) never commit before minimum evidence, (P2) never escalate without threat evidence, (P3) budget exhaustion in continue zone → ABSTAIN, (P4) correction evidence processed before terminal verdict, (P5) every commitment cites boundary crossed, (P6) legal state transitions, (P7) threat decay monotonicity. These hold across both single-threshold and dual-boundary modes, across all 7 decay values and 9 conditions.
 
+8. **Second-domain transfer: PARTIAL — architecture transfers, classifier limits carry over.** Code review triage with zero architecture changes: 5/9 conditions at 100% accuracy. 2 failing gates (safe_recovery_under_noise, false_safe_on_dangerous) are both sensor problems — adversarial evidence replacement defeats the keyword classifier the same way in both domains. Heavy noise triggers correct ABSTAIN behavior (uncertainty preservation). This confirms the architecture/sensor separation: the exogenous monitoring boundary IS the contribution; the classifier is a swappable sensor. See `CODE_REVIEW_TRANSFER_RESULTS.md`.
+
 ---
 
 ## Plan 5: Receipt-Level Compliance Properties
@@ -338,6 +340,8 @@ These properties are **structural** — they hold by construction of the state m
 | `tools/check_compliance.py` | PPLTL compliance checker (7 properties, trace-level verification) |
 | `docs/VOCABULARY_COGARCH_MAPPING.md` | Implementation ↔ reviewer term translation table |
 | `docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md` | One-page architecture overview for cognitive architecture reviewers |
+| `tools/bench_code_review_transfer.py` | Plan 2: Code review transfer benchmark (8 scenarios, 9 conditions, 4 gates) |
+| `docs/CODE_REVIEW_TRANSFER_RESULTS.md` | Plan 2: Transfer results and failure analysis |
 
 ## Tests
 
@@ -355,3 +359,5 @@ These properties are **structural** — they hold by construction of the state m
 - Plan 3 ABSTAIN (dual): `~/receipts/morphsat_adversarial/decay_sensitivity_20260618T024004Z.json`
 - Plan 5 compliance (single): `~/receipts/morphsat_compliance/compliance_check_20260618T024511Z.json`
 - Plan 5 compliance (dual): `~/receipts/morphsat_compliance/compliance_check_20260618T024517Z.json`
+- Plan 2 code review (single): `~/receipts/morphsat_code_review/code_review_transfer_20260618T032825Z.json`
+- Plan 2 code review (dual): `~/receipts/morphsat_code_review/code_review_transfer_20260618T032837Z.json`
