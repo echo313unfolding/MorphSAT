@@ -46,6 +46,7 @@ from morphsat.commit_gate import (
     CommitAction,
     classify_tool_result,
 )
+from morphsat import commit_gate as cg
 
 RECEIPTS_DIR = Path.home() / "receipts" / "morphsat_code_review"
 
@@ -308,10 +309,20 @@ def run_cr_condition(scenarios: List[Dict], condition: str,
                      enable_dual_boundary: bool = False,
                      commit_threat_boundary: float = 0.55,
                      commit_safe_boundary: float = 0.40,
+                     classifier_fn=None,
                      ) -> List[Dict]:
     """Run all code-review scenarios through one condition.
     Returns list of result dicts (not EvalResult — standalone).
     """
+    # Monkey-patch classifier if provided — must patch BOTH modules
+    # because shadow_monitor.py does `from morphsat.commit_gate import classify_tool_result`
+    # which creates a local binding that module-level patching doesn't affect
+    from morphsat import shadow_monitor as sm
+    original_cg = cg.classify_tool_result
+    original_sm = sm.classify_tool_result
+    if classifier_fn is not None:
+        cg.classify_tool_result = classifier_fn
+        sm.classify_tool_result = classifier_fn
     results = []
 
     for scenario in scenarios:
@@ -418,6 +429,11 @@ def run_cr_condition(scenarios: List[Dict], condition: str,
             mark = "OK" if correct else "XX"
             print(f"    {scenario['id']:20s} [{expected:10s}] "
                   f"→ {domain_verdict:6s} ({verdict:10s}) {mark}")
+
+    # Restore original classifier
+    if classifier_fn is not None:
+        cg.classify_tool_result = original_cg
+        sm.classify_tool_result = original_sm
 
     return results
 
@@ -543,7 +559,9 @@ def run_experiment(evidence_decay: float = 0.85,
                    commit_threat_boundary: float = 0.55,
                    commit_safe_boundary: float = 0.40,
                    seed: int = 42,
-                   verbose: bool = False) -> Dict:
+                   verbose: bool = False,
+                   classifier_fn=None,
+                   sensor_name: str = "keyword") -> Dict:
     """Run the full code-review transfer benchmark."""
     start_iso = time.strftime("%Y-%m-%dT%H:%M:%S")
     t_start = time.time()
@@ -564,6 +582,7 @@ def run_experiment(evidence_decay: float = 0.85,
             enable_dual_boundary=enable_dual_boundary,
             commit_threat_boundary=commit_threat_boundary,
             commit_safe_boundary=commit_safe_boundary,
+            classifier_fn=classifier_fn,
         )
         summary = summarize_cr_results(results)
         all_summaries[condition] = summary
@@ -578,7 +597,7 @@ def run_experiment(evidence_decay: float = 0.85,
     # --- Print results ---
     mode = "dual-boundary" if enable_dual_boundary else "single-threshold"
     print(f"\n{'='*80}")
-    print(f"  MORPHSAT PLAN 2 — CODE REVIEW TRANSFER ({mode})")
+    print(f"  MORPHSAT PLAN 2 — CODE REVIEW TRANSFER ({mode}, sensor={sensor_name})")
     print(f"  decay={evidence_decay}  seed={seed}  scenarios={len(scenarios)}")
     print(f"{'='*80}")
 
@@ -649,6 +668,7 @@ def run_experiment(evidence_decay: float = 0.85,
         "experiment": "MORPHSAT_CODE_REVIEW_TRANSFER_V1",
         "domain": "code_review_triage",
         "claim": "Same exogenous governance architecture transfers with domain adapter only",
+        "sensor": sensor_name,
         "seed": seed,
         "n_scenarios": len(scenarios),
         "evidence_decay": evidence_decay,
@@ -664,8 +684,10 @@ def run_experiment(evidence_decay: float = 0.85,
             "on_safe": total_abs_benign,
             "on_dangerous": total_abs_escalate,
         },
-        "architecture_changes": "NONE — same ShadowMonitor, same classify_tool_result",
-        "adapter_changes": "Domain-specific scenario fixtures and tool outputs only",
+        "architecture_changes": "NONE — same ShadowMonitor, same dual-boundary logic",
+        "sensor_changes": f"classifier={sensor_name}" + (
+            " (all-MiniLM-L6-v2 nearest-centroid)" if sensor_name == "embedding" else
+            " (keyword rules from commit_gate.py)"),
         "cost": cost,
     }
 
@@ -690,16 +712,31 @@ def main():
     parser.add_argument("--safe-boundary", type=float, default=0.40)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--verbose", "-v", action="store_true")
+    parser.add_argument("--sensor", choices=["keyword", "embedding", "both"],
+                        default="keyword",
+                        help="Classifier sensor: keyword (default), embedding, or both")
     args = parser.parse_args()
 
-    run_experiment(
-        evidence_decay=args.decay,
-        enable_dual_boundary=args.dual_boundary,
-        commit_threat_boundary=args.threat_boundary,
-        commit_safe_boundary=args.safe_boundary,
-        seed=args.seed,
-        verbose=args.verbose,
-    )
+    sensors_to_run = (["keyword", "embedding"] if args.sensor == "both"
+                      else [args.sensor])
+
+    for sensor in sensors_to_run:
+        classifier_fn = None
+        if sensor == "embedding":
+            from morphsat.classify_embedding import make_classifier, reset
+            reset()  # Clear cached centroids
+            classifier_fn = make_classifier("code_review")
+
+        run_experiment(
+            evidence_decay=args.decay,
+            enable_dual_boundary=args.dual_boundary,
+            commit_threat_boundary=args.threat_boundary,
+            commit_safe_boundary=args.safe_boundary,
+            seed=args.seed,
+            verbose=args.verbose,
+            classifier_fn=classifier_fn,
+            sensor_name=sensor,
+        )
 
 
 if __name__ == "__main__":

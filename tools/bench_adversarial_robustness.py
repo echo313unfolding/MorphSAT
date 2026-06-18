@@ -482,12 +482,17 @@ def run_monitor_on_sequence(
                             commit_threat_boundary=commit_threat_boundary,
                             commit_safe_boundary=commit_safe_boundary)
 
-    # Monkey-patch the classifier if using semantic
+    # Monkey-patch the classifier if using semantic — must patch BOTH modules
+    # because shadow_monitor.py does `from morphsat.commit_gate import classify_tool_result`
     original_classify = None
+    original_sm_classify = None
     if classifier_fn is not classify_tool_result:
         import morphsat.commit_gate as cg
+        import morphsat.shadow_monitor as sm
         original_classify = cg.classify_tool_result
+        original_sm_classify = sm.classify_tool_result
         cg.classify_tool_result = classifier_fn
+        sm.classify_tool_result = classifier_fn
 
     try:
         monitor.initialize(scenario["alert"])
@@ -581,7 +586,9 @@ def run_monitor_on_sequence(
         # Restore original classifier
         if original_classify is not None:
             import morphsat.commit_gate as cg
+            import morphsat.shadow_monitor as sm
             cg.classify_tool_result = original_classify
+            sm.classify_tool_result = original_sm_classify
 
         # Cleanup temp memory
         Path(f"/tmp/adv_test_{int(time.time() * 1000)}.json").unlink(missing_ok=True)
