@@ -287,6 +287,19 @@ def classify_tool_result(tool_result: str) -> Tuple[str, float, float]:
     """
     text_lower = tool_result.lower()
 
+    # --- CORRECTION signals (highest priority, v9) ---
+    # Explicit corrections reverse prior false signals.
+    if any(kw in text_lower for kw in ["correction:", "false positive",
+                                        "false alarm", "was closed as"]):
+        return "correction", 0.0, 0.35
+
+    # --- Negated threat (v9) ---
+    # "no threat" / "not compromised" are SAFE, not threat
+    NEGATED = ["no threat", "not compromised", "no danger", "not suspicious",
+               "no unexpected", "no lateral movement"]
+    if any(kw in text_lower for kw in NEGATED):
+        return "negated_threat", 0.0, 0.25
+
     # --- THREAT signals first (catches negations before safety) ---
     # Specific indicators BEFORE generic "unexpected" to avoid over-collapsing
 

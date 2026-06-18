@@ -20,7 +20,7 @@ An LLM agent with tool access can loop indefinitely — calling tools, reading r
 
 The current checkpoint (v9) adds a **dual-agent recomputation gate** — two independent agents analyze the same alert, and disagreement routes to human review. On adversarial scenarios designed to fool single agents, disagreement precision is 100% (every disagreement involved a real error). The underlying single-agent loop (v8.3) achieves **100% accuracy** on the standard 20-scenario benchmark.
 
-> **For cognitive architecture researchers:** See [`docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md`](docs/COGNITIVE_ARCHITECTURE_TRANSLATION.md) for a term mapping to Soar, ACT-R, and active inference. See [`docs/morphsat_technical_note.md`](docs/morphsat_technical_note.md) for the 2-page technical note with full results.
+> **For cognitive architecture researchers:** See [`docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md`](docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md) for a one-page overview mapping MorphSAT to Soar, ACT-R, active inference, and SPRT. See [`docs/VOCABULARY_COGARCH_MAPPING.md`](docs/VOCABULARY_COGARCH_MAPPING.md) for the term-by-term translation table. See [`docs/morphsat_technical_note.md`](docs/morphsat_technical_note.md) for the 2-page technical note with full results.
 
 ## The proof chain
 
@@ -262,7 +262,7 @@ morphsat/
 | Project | Description |
 |---------|-------------|
 | [helix-substrate](https://github.com/echo313unfolding/helix-substrate) | Calibration-free neural network compression (HXQ). |
-| [sentinel-hybrid-stack](https://github.com/echo313unfolding/sentinel-hybrid-stack) | Hybrid SSM-Transformer security monitoring pipeline. |
+| [echo-sentry](https://github.com/echo313unfolding/echo-sentry) | Hybrid SSM-Transformer security monitoring pipeline. |
 | [helix-codec](https://github.com/echo313unfolding/helix-codec) | Standalone C99 tensor codec library. |
 | [hxq-solana](https://github.com/echo313unfolding/hxq-solana) | Codec-aware provenance for off-chain artifacts on Solana. |
 

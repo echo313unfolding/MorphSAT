@@ -131,6 +131,17 @@ class ShadowMonitor:
                  # Swarm trigger
                  swarm_axes_required: int = 3,
 
+                 # Evidence decay (leaky accumulator)
+                 evidence_decay: float = 1.0,
+
+                 # v9 correction pathway toggle
+                 enable_correction: bool = True,
+
+                 # Dual-boundary (uncertainty-preserving) mode
+                 enable_dual_boundary: bool = False,
+                 commit_threat_boundary: float = 0.55,
+                 commit_safe_boundary: float = 0.40,
+
                  # Memory
                  memory: Optional[SplitMemoryStore] = None):
 
@@ -152,6 +163,16 @@ class ShadowMonitor:
         self.evidence_tags: List[str] = []
         self.evidence_vector: List[Tuple[str, str]] = []
         self.turn = 0
+        self.evidence_decay = evidence_decay
+        self.enable_correction = enable_correction
+        self.enable_dual_boundary = enable_dual_boundary
+        self.commit_threat_boundary = commit_threat_boundary
+        self.commit_safe_boundary = commit_safe_boundary
+        self.total_threat_decayed = 0.0
+        self.total_safety_decayed = 0.0
+        self.time_in_continue_zone = 0
+        self.boundary_crossed = None  # "threat", "safe", or None
+        self.abstain_due_to_uncertainty = False
 
         # --- Thresholds ---
         self.commit_clarity = commit_clarity
@@ -263,19 +284,57 @@ class ShadowMonitor:
         if len(self.evidence_tags) >= 2:
             t_coin, s_coin = coincidence_check(self.evidence_tags)
 
+        # --- 1b. Leaky accumulator: decay prior evidence ---
+        # Before adding new evidence, decay accumulated scores so early
+        # signals lose weight over time. This prevents false early signals
+        # from permanently dominating the accumulator. Biological analogy:
+        # cytokine half-life — immune signals degrade naturally.
+        if self.evidence_decay < 1.0 and self.turn > 1:
+            pre_threat = self.threat_score
+            pre_safety = self.safety_score
+            self.threat_score *= self.evidence_decay
+            self.safety_score *= self.evidence_decay
+            self.total_threat_decayed += (pre_threat - self.threat_score)
+            self.total_safety_decayed += (pre_safety - self.safety_score)
+
         # --- 2. Update scores ---
         total_threat = threat_delta + t_conf + t_coin
         total_safety = safety_delta + s_conf + s_coin
-        self.threat_score += total_threat
+
+        # v9 correction pathway: when evidence explicitly corrects a
+        # prior signal, DECAY the opposite score. Without this, false
+        # threat signals permanently accumulate with no reversal path.
+        # Biological analogy: anti-inflammatory response inhibits the
+        # accumulated inflammation, not just adds safety.
+        if self.enable_correction and category == "correction":
+            # Strong safety-only signal: decay accumulated threat
+            decay = min(self.threat_score, 0.30)
+            self.threat_score = max(0.0, self.threat_score - decay)
+            total_threat = -decay  # record as negative delta for receipt
+        elif self.enable_correction and category == "negated_threat":
+            # Weaker: evidence that negates threat keywords
+            decay = min(self.threat_score, 0.15)
+            self.threat_score = max(0.0, self.threat_score - decay)
+            total_threat = -decay
+        else:
+            self.threat_score += total_threat
+
         self.safety_score += total_safety
         self.threat_deltas.append(total_threat)
         self.safety_deltas.append(total_safety)
 
         # --- 3. Compute trajectory metrics ---
         evidence_clarity = abs(self.threat_score - self.safety_score)
+        evidence_balance = self.threat_score - self.safety_score
         contradiction = min(self.threat_score, self.safety_score)
         is_looping = self._detect_loop()
         no_new_info = self._no_new_evidence()
+
+        # Track dual-boundary zone occupancy
+        if self.enable_dual_boundary:
+            if evidence_balance < self.commit_threat_boundary and \
+               evidence_balance > -self.commit_safe_boundary:
+                self.time_in_continue_zone += 1
 
         # --- 4. State transitions ---
         action = self._transition(
@@ -285,6 +344,7 @@ class ShadowMonitor:
             safety_delta=total_safety,
             is_looping=is_looping,
             no_new_info=no_new_info,
+            evidence_balance=evidence_balance,
         )
 
         # --- 5. Record history ---
@@ -304,6 +364,14 @@ class ShadowMonitor:
             "orient_pressure": round(self.orient_pressure, 3),
             "action": action.action,
             "direction": action.direction,
+            "evidence_decay": self.evidence_decay,
+            "cumulative_threat_decayed": round(self.total_threat_decayed, 3),
+            "cumulative_safety_decayed": round(self.total_safety_decayed, 3),
+            "evidence_balance": round(evidence_balance, 3),
+            "dual_boundary": self.enable_dual_boundary,
+            "dist_to_threat_boundary": round(self.commit_threat_boundary - evidence_balance, 3) if self.enable_dual_boundary else None,
+            "dist_to_safe_boundary": round(self.commit_safe_boundary + evidence_balance, 3) if self.enable_dual_boundary else None,
+            "time_in_continue_zone": self.time_in_continue_zone,
         })
 
         self.last_action = action
@@ -318,7 +386,8 @@ class ShadowMonitor:
 
     def _transition(self, evidence_clarity: float, contradiction: float,
                     threat_delta: float, safety_delta: float,
-                    is_looping: bool, no_new_info: bool) -> CommitAction:
+                    is_looping: bool, no_new_info: bool,
+                    evidence_balance: float = 0.0) -> CommitAction:
         """Shadow state machine transitions.
 
         This is the core v7 logic: posture changes based on conditions,
@@ -326,7 +395,7 @@ class ShadowMonitor:
         """
         # Absolute ceiling — never exceed max tools
         if self.total_tools >= self.max_tools:
-            return self._force_commit("max_tools_reached")
+            return self._force_commit("max_tools_reached", evidence_balance)
 
         # Check swarm trigger (any state)
         if self._check_swarm_trigger(contradiction, is_looping):
@@ -342,25 +411,30 @@ class ShadowMonitor:
         if self.state == ShadowState.NORMAL:
             return self._from_normal(evidence_clarity, contradiction,
                                      threat_delta, safety_delta,
-                                     is_looping, no_new_info)
+                                     is_looping, no_new_info,
+                                     evidence_balance)
 
         elif self.state == ShadowState.ORIENTING:
             return self._from_orienting(evidence_clarity, contradiction,
-                                        threat_delta, safety_delta)
+                                        threat_delta, safety_delta,
+                                        evidence_balance)
 
         elif self.state == ShadowState.SAFE_DISTANCE:
             return self._from_safe_distance(evidence_clarity, contradiction,
-                                            threat_delta, safety_delta)
+                                            threat_delta, safety_delta,
+                                            evidence_balance)
 
         elif self.state == ShadowState.INVESTIGATING:
             return self._from_investigating(evidence_clarity, contradiction,
-                                            is_looping, no_new_info)
+                                            is_looping, no_new_info,
+                                            evidence_balance)
 
         # Terminal states — shouldn't arrive here
         return self._force_commit("terminal_state")
 
     def _from_normal(self, clarity, contradiction, t_delta, s_delta,
-                     is_looping, no_new_info) -> CommitAction:
+                     is_looping, no_new_info,
+                     evidence_balance=0.0) -> CommitAction:
         """NORMAL: ordinary evidence collection.
 
         Transitions:
@@ -379,16 +453,18 @@ class ShadowMonitor:
         # Enough clarity to commit
         if clarity >= self.commit_clarity:
             return self._resolve_direction(clarity, contradiction,
-                                           "normal_clarity")
+                                           "normal_clarity",
+                                           evidence_balance)
 
         # Loop or stagnation → commit with what we have
         if is_looping or no_new_info:
-            return self._force_commit("loop_in_normal")
+            return self._force_commit("loop_in_normal", evidence_balance)
 
         return CommitAction("CONTINUE", reason="normal: gathering evidence")
 
     def _from_orienting(self, clarity, contradiction,
-                        t_delta, s_delta) -> CommitAction:
+                        t_delta, s_delta,
+                        evidence_balance=0.0) -> CommitAction:
         """ORIENTING: something surprised me, pause and assess.
 
         The protective reflex. Allow limited probing, then decide posture.
@@ -413,11 +489,14 @@ class ShadowMonitor:
                         "safe evidence dissolved surprise")
             return CommitAction("CONTINUE", reason="orient resolved → normal")
 
-        # Immediate clear threat while orienting
-        if self.threat_score >= self.escalate_threat:
+        # Immediate clear threat while orienting — use boundary in dual mode
+        threat_threshold = self.commit_threat_boundary if self.enable_dual_boundary \
+            else self.escalate_threat
+        if evidence_balance >= threat_threshold:
             self.state = ShadowState.ESCALATE_READY
+            self.boundary_crossed = "threat"
             self._trace("orient_to_escalate", ShadowState.ESCALATE_READY,
-                        f"threat={self.threat_score:.2f}")
+                        f"balance={evidence_balance:.2f} >= boundary={threat_threshold:.2f}")
             return CommitAction("COMMIT", direction="escalate",
                                 reason="orienting: clear threat")
 
@@ -437,7 +516,8 @@ class ShadowMonitor:
         return CommitAction("CONTINUE", reason="orienting: assessing")
 
     def _from_safe_distance(self, clarity, contradiction,
-                            t_delta, s_delta) -> CommitAction:
+                            t_delta, s_delta,
+                            evidence_balance=0.0) -> CommitAction:
         """SAFE_DISTANCE: I see potential threat, gathering cautiously.
 
         Biased toward escalate/abstain. Strong safety evidence needed to
@@ -447,32 +527,53 @@ class ShadowMonitor:
             threat confirmed → ESCALATE_READY
             strong safety + low threat → NORMAL (normalize)
             contradiction → ABSTAIN_READY
-            budget exhausted → force commit
+            budget exhausted → force commit (or ABSTAIN in dual-boundary mode)
         """
         self.investigate_tools_used += 1
 
-        # Clear threat → escalate
-        if self.threat_score >= self.escalate_threat:
-            self.state = ShadowState.ESCALATE_READY
-            self._trace("safe_dist_escalate", ShadowState.ESCALATE_READY,
-                        f"threat={self.threat_score:.2f}")
-            return CommitAction("COMMIT", direction="escalate",
-                                reason="safe_distance: threat confirmed")
+        # In dual-boundary mode, use evidence_balance against boundaries
+        if self.enable_dual_boundary:
+            # Threat boundary crossed → escalate
+            if evidence_balance >= self.commit_threat_boundary:
+                self.state = ShadowState.ESCALATE_READY
+                self.boundary_crossed = "threat"
+                self._trace("safe_dist_escalate", ShadowState.ESCALATE_READY,
+                            f"balance={evidence_balance:.2f} >= "
+                            f"threat_boundary={self.commit_threat_boundary:.2f}")
+                return CommitAction("COMMIT", direction="escalate",
+                                    reason="safe_distance: threat boundary crossed")
 
-        # Strong safety + low threat → normalize
+            # Safe boundary crossed → normalize and commit benign
+            if evidence_balance <= -self.commit_safe_boundary:
+                self.state = ShadowState.COMMIT_READY
+                self.boundary_crossed = "safe"
+                self._trace("safe_dist_commit_safe", ShadowState.COMMIT_READY,
+                            f"balance={evidence_balance:.2f} <= "
+                            f"-safe_boundary={-self.commit_safe_boundary:.2f}")
+                return CommitAction("COMMIT", direction="benign",
+                                    reason="safe_distance: safe boundary crossed")
+        else:
+            # Original logic: clear threat → escalate
+            if self.threat_score >= self.escalate_threat:
+                self.state = ShadowState.ESCALATE_READY
+                self._trace("safe_dist_escalate", ShadowState.ESCALATE_READY,
+                            f"threat={self.threat_score:.2f}")
+                return CommitAction("COMMIT", direction="escalate",
+                                    reason="safe_distance: threat confirmed")
+
+        # Strong safety + low threat → normalize (both modes)
         if self.safety_score >= self.safety_clear and self.threat_score < 0.15:
             self.state = ShadowState.NORMAL
             self._trace("safe_dist_normalize", ShadowState.NORMAL,
                         f"safety={self.safety_score:.2f}")
-            # After normalizing from safe_distance, immediately check if
-            # we have enough clarity to commit benign
             if clarity >= self.commit_clarity:
                 return self._resolve_direction(clarity, contradiction,
-                                               "normalized_then_commit")
+                                               "normalized_then_commit",
+                                               evidence_balance)
             return CommitAction("CONTINUE",
                                 reason="safe_distance → normal: safety evidence")
 
-        # Contradiction → abstain
+        # Contradiction → abstain (both modes)
         if contradiction >= self.contradiction_gate:
             self.state = ShadowState.ABSTAIN_READY
             self._trace("safe_dist_abstain", ShadowState.ABSTAIN_READY,
@@ -484,13 +585,14 @@ class ShadowMonitor:
 
         # Budget exhausted
         if self.investigate_tools_used >= self.investigate_budget:
-            return self._force_commit("safe_distance_budget")
+            return self._force_commit("safe_distance_budget", evidence_balance)
 
         return CommitAction("CONTINUE",
                             reason="safe_distance: gathering cautiously")
 
     def _from_investigating(self, clarity, contradiction,
-                            is_looping, no_new_info) -> CommitAction:
+                            is_looping, no_new_info,
+                            evidence_balance=0.0) -> CommitAction:
         """INVESTIGATING: bounded evidence collection.
 
         Normal-posture investigation with a budget. The agent is not
@@ -500,14 +602,15 @@ class ShadowMonitor:
             clarity reached → COMMIT
             contradiction → ABSTAIN
             loop/stagnation → force commit
-            budget exhausted → force commit
+            budget exhausted → force commit (or ABSTAIN in dual-boundary mode)
         """
         self.investigate_tools_used += 1
 
         # Enough clarity
         if clarity >= self.commit_clarity:
             return self._resolve_direction(clarity, contradiction,
-                                           "investigate_clarity")
+                                           "investigate_clarity",
+                                           evidence_balance)
 
         # Contradiction
         if contradiction >= self.contradiction_gate:
@@ -519,11 +622,12 @@ class ShadowMonitor:
 
         # Loop or stagnation
         if is_looping or no_new_info:
-            return self._force_commit("investigate_no_progress")
+            return self._force_commit("investigate_no_progress",
+                                      evidence_balance)
 
         # Budget
         if self.investigate_tools_used >= self.investigate_budget:
-            return self._force_commit("investigate_budget")
+            return self._force_commit("investigate_budget", evidence_balance)
 
         return CommitAction("CONTINUE",
                             reason="investigating: bounded collection")
@@ -533,8 +637,15 @@ class ShadowMonitor:
     # ------------------------------------------------------------------
 
     def _resolve_direction(self, clarity, contradiction,
-                           trigger: str) -> CommitAction:
-        """Determine commit direction from accumulated evidence."""
+                           trigger: str,
+                           evidence_balance: float = 0.0) -> CommitAction:
+        """Determine commit direction from accumulated evidence.
+
+        In dual-boundary mode, only commits if evidence_balance has crossed
+        one of the two boundaries. If still in the continue zone, returns
+        CONTINUE — the system preserves uncertainty.
+        """
+        # Contradiction overrides both boundaries
         if contradiction >= self.contradiction_gate:
             self.state = ShadowState.ABSTAIN_READY
             self._trace(trigger, ShadowState.ABSTAIN_READY,
@@ -542,6 +653,47 @@ class ShadowMonitor:
             return CommitAction("ABSTAIN",
                                 reason=f"{trigger}: contradictory")
 
+        if self.enable_dual_boundary:
+            # Dual-boundary: only commit if a boundary is crossed
+            if evidence_balance >= self.commit_threat_boundary:
+                # Threat boundary crossed
+                self.boundary_crossed = "threat"
+                if evidence_balance >= self.escalate_threat or \
+                   evidence_balance > 0.4:
+                    direction = "escalate"
+                    self.state = ShadowState.ESCALATE_READY
+                else:
+                    direction = "suspicious"
+                    self.state = ShadowState.COMMIT_READY
+                self._trace(trigger, self.state,
+                            f"balance={evidence_balance:.2f} >= "
+                            f"threat_boundary={self.commit_threat_boundary:.2f}")
+                return CommitAction(
+                    "COMMIT", direction=direction,
+                    reason=f"{trigger}: threat boundary crossed "
+                           f"(bal={evidence_balance:.2f})")
+
+            elif evidence_balance <= -self.commit_safe_boundary:
+                # Safe boundary crossed
+                self.boundary_crossed = "safe"
+                self.state = ShadowState.COMMIT_READY
+                self._trace(trigger, self.state,
+                            f"balance={evidence_balance:.2f} <= "
+                            f"-safe_boundary={-self.commit_safe_boundary:.2f}")
+                return CommitAction(
+                    "COMMIT", direction="benign",
+                    reason=f"{trigger}: safe boundary crossed "
+                           f"(bal={evidence_balance:.2f})")
+            else:
+                # CONTINUE ZONE — uncertainty preserved
+                return CommitAction(
+                    "CONTINUE",
+                    reason=f"{trigger}: in continue zone "
+                           f"(bal={evidence_balance:.2f}, "
+                           f"zone=[{-self.commit_safe_boundary:.2f}, "
+                           f"{self.commit_threat_boundary:.2f}])")
+
+        # Original single-boundary logic
         if self.threat_score > self.safety_score:
             margin = self.threat_score - self.safety_score
             if margin > 0.4 or self.threat_score >= self.escalate_threat:
@@ -561,39 +713,73 @@ class ShadowMonitor:
             reason=f"{trigger} (t={self.threat_score:.2f}, "
                    f"s={self.safety_score:.2f})")
 
-    def _force_commit(self, reason: str) -> CommitAction:
-        """Forced commit — budget exhausted, loop, or max tools."""
+    def _force_commit(self, reason: str,
+                      evidence_balance: float = 0.0) -> CommitAction:
+        """Forced commit — budget exhausted, loop, or max tools.
+
+        In dual-boundary mode: if evidence_balance is still inside the
+        continue zone, ABSTAIN instead of inventing a verdict. The whole
+        point of uncertainty-preserving boundaries is that budget exhaustion
+        does not manufacture confidence.
+        """
         contradiction = min(self.threat_score, self.safety_score)
 
         if contradiction >= self.contradiction_gate:
             action = CommitAction("ABSTAIN",
                                   reason=f"forced:{reason} contradictory")
             self.state = ShadowState.ABSTAIN_READY
-        elif self.threat_score > self.safety_score:
-            margin = self.threat_score - self.safety_score
-            # v8.2 fix: align with _resolve_direction thresholds.
-            # Was margin>0.3/threat>=0.5 — lower than _resolve_direction's
-            # margin>0.4/threat>=0.55. This caused tool-order-dependent
-            # escalation: check_hash first → SAFE_DISTANCE → force_commit
-            # (escalate at 0.50) vs check_process first → INVESTIGATING →
-            # _resolve_direction (suspicious at 0.50).
-            if margin > 0.4 or self.threat_score >= self.escalate_threat:
-                direction = "escalate"
-                self.state = ShadowState.ESCALATE_READY
-            else:
-                direction = "suspicious"
+
+        elif self.enable_dual_boundary:
+            # Dual-boundary: only commit if a boundary was crossed
+            if evidence_balance >= self.commit_threat_boundary:
+                self.boundary_crossed = "threat"
+                if evidence_balance > 0.4 or \
+                   evidence_balance >= self.escalate_threat:
+                    direction = "escalate"
+                    self.state = ShadowState.ESCALATE_READY
+                else:
+                    direction = "suspicious"
+                    self.state = ShadowState.COMMIT_READY
+                action = CommitAction("COMMIT", direction=direction,
+                                      reason=f"forced:{reason} "
+                                             f"(threat boundary crossed)")
+            elif evidence_balance <= -self.commit_safe_boundary:
+                self.boundary_crossed = "safe"
                 self.state = ShadowState.COMMIT_READY
-            action = CommitAction("COMMIT", direction=direction,
-                                  reason=f"forced:{reason}")
-        elif self.safety_score > self.threat_score:
-            action = CommitAction("COMMIT", direction="benign",
-                                  reason=f"forced:{reason}")
-            self.state = ShadowState.COMMIT_READY
+                action = CommitAction("COMMIT", direction="benign",
+                                      reason=f"forced:{reason} "
+                                             f"(safe boundary crossed)")
+            else:
+                # INSIDE CONTINUE ZONE — do not invent confidence
+                self.abstain_due_to_uncertainty = True
+                self.state = ShadowState.ABSTAIN_READY
+                action = CommitAction(
+                    "ABSTAIN",
+                    reason=f"forced:{reason} insufficient_evidence "
+                           f"(bal={evidence_balance:.2f} in zone "
+                           f"[{-self.commit_safe_boundary:.2f}, "
+                           f"{self.commit_threat_boundary:.2f}])")
+
         else:
-            # Tie → suspicious (safest middle ground)
-            action = CommitAction("COMMIT", direction="suspicious",
-                                  reason=f"forced:{reason} ambiguous")
-            self.state = ShadowState.COMMIT_READY
+            # Original single-boundary logic
+            if self.threat_score > self.safety_score:
+                margin = self.threat_score - self.safety_score
+                if margin > 0.4 or self.threat_score >= self.escalate_threat:
+                    direction = "escalate"
+                    self.state = ShadowState.ESCALATE_READY
+                else:
+                    direction = "suspicious"
+                    self.state = ShadowState.COMMIT_READY
+                action = CommitAction("COMMIT", direction=direction,
+                                      reason=f"forced:{reason}")
+            elif self.safety_score > self.threat_score:
+                action = CommitAction("COMMIT", direction="benign",
+                                      reason=f"forced:{reason}")
+                self.state = ShadowState.COMMIT_READY
+            else:
+                action = CommitAction("COMMIT", direction="suspicious",
+                                      reason=f"forced:{reason} ambiguous")
+                self.state = ShadowState.COMMIT_READY
 
         self._trace(reason, self.state, "forced")
         self.committed = True
