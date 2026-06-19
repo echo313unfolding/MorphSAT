@@ -18,12 +18,13 @@ Architecture under test:
     7. cross_domain_structure   — same attack pattern in different domains
     8. hard_abstain_required    — genuinely ambiguous, ABSTAIN is correct
 
-Modes (same as bench_memory_usefulness.py + Mode H):
+Modes (same as bench_memory_usefulness.py + H, J):
     A: baseline       — no memory, no chain, no graph
     B: split_memory   — SplitMemoryStore only
     C: chain_only     — receipt chain only (should equal A)
     D: graph_hud      — SplitMemory + chain + graph + HUD
     H: qubo_gate      — SplitMemory + chain + graph + MemoryQUBO + GateQUBO
+    J: two_stage      — SplitMemory + chain + graph + TwoStageGate (threshold + QUBO)
 
 KEY HONEST FINDING: Mode D = Mode B behaviorally because the graph has
 no steering mechanism. Graph internal metrics (prediction accuracy, edge
@@ -62,6 +63,7 @@ from morphsat.receipt_chain import ReceiptChain, canonical_hash
 from morphsat.receipt_graph import ReceiptGraph
 from morphsat.memory_qubo import MemoryQUBO
 from morphsat.gate_qubo import GateQUBO, GateSnapshot
+from morphsat.two_stage_gate import TwoStageGate
 
 RECEIPTS_DIR = Path.home() / "receipts" / "morphsat_memory_stress"
 
@@ -765,6 +767,7 @@ def run_stress_episode(
     evidence_decay: float = 0.85,
     memory_qubo: Optional[MemoryQUBO] = None,
     gate_qubo: Optional[GateQUBO] = None,
+    two_stage_gate: Optional[TwoStageGate] = None,
 ) -> StressEpisodeResult:
     """Run one stress episode through shadow monitor."""
     if memory is None:
@@ -877,6 +880,71 @@ def run_stress_episode(
                 verdict = "suspicious"
             qubo_used = True
 
+        # --- Two-stage gate override (Mode J) ---
+        # Routes clear evidence to threshold, ambiguous/conflict/drift to QUBO.
+        if two_stage_gate is not None:
+            graph_hud = None
+            if memory_qubo is not None and receipt_graph is not None:
+                _, graph_hud = memory_qubo.select_for_hud(
+                    receipt_graph,
+                    tags=[w.lower() for w in scenario["alert"].split()
+                          if len(w) > 3 and w.isalpha()],
+                    domain="security",
+                    current_block=episode_index,
+                )
+
+            snap = GateSnapshot(
+                threat_score=monitor.threat_score,
+                safety_score=monitor.safety_score,
+                evidence_clarity=abs(monitor.threat_score - monitor.safety_score),
+                contradiction=min(monitor.threat_score, monitor.safety_score),
+                urgency=monitor.turn * 0.08,
+                tool_count=monitor.total_tools,
+                max_tools=monitor.max_tools,
+                novelty=monitor.novelty_at_start,
+                correction_seen="correction" in monitor.evidence_tags,
+            )
+
+            if memory is not None:
+                mem_result = memory.lookup(
+                    scenario["alert"], monitor.evidence_vector)
+                if mem_result:
+                    store_name, match = mem_result
+                    if store_name == "tolerance":
+                        snap.memory_outcome = "benign"
+                    elif store_name == "threat":
+                        snap.memory_outcome = "escalate"
+                    else:
+                        snap.memory_outcome = "abstain"
+                    snap.memory_confidence = match.confidence
+                    snap.memory_exposures = match.exposures
+
+            if receipt_graph is not None:
+                snap.graph_reinforcements = sum(
+                    e.reinforcements for e in receipt_graph.edges
+                    if not e.is_cold)
+                snap.graph_contradictions = sum(
+                    e.contradictions for e in receipt_graph.edges
+                    if not e.is_cold)
+                snap.graph_cold_edges = sum(
+                    1 for e in receipt_graph.edges if e.is_cold)
+
+            if graph_hud:
+                snap.graph_dominant_outcome = graph_hud.get(
+                    "dominant_outcome", "unknown")
+                snap.graph_strength = graph_hud.get(
+                    "memory_strength", "none")
+
+            ts_result = two_stage_gate.decide(snap)
+            # Only override when QUBO is routed — threshold path defers
+            # to the monitor's existing decision (Hydra pattern: router
+            # decides when to intervene, not when to replace)
+            if ts_result.gate_backend_used == "qubo":
+                raw_action = ts_result.action
+                verdict = ts_result.direction
+                if verdict is None:
+                    verdict = "suspicious"
+
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
         adjacent_map = {
@@ -982,7 +1050,10 @@ def run_stress_mode(
                "use_qubo": False},
         "H": {"classifier": classify_tool_result, "cls_name": "keyword",
                "use_memory": True, "use_chain": True, "use_graph": True,
-               "use_qubo": True},
+               "use_qubo": True, "use_two_stage": False},
+        "J": {"classifier": classify_tool_result, "cls_name": "keyword",
+               "use_memory": True, "use_chain": True, "use_graph": True,
+               "use_qubo": False, "use_two_stage": True},
     }
 
     cfg = mode_config[mode]
@@ -1001,8 +1072,11 @@ def run_stress_mode(
             if cfg["use_graph"] else None
 
         # QUBO objects for Mode H
-        m_qubo = MemoryQUBO(max_k=5) if cfg.get("use_qubo") else None
+        m_qubo = MemoryQUBO(max_k=5) if cfg.get("use_qubo") or cfg.get("use_two_stage") else None
         g_qubo = GateQUBO() if cfg.get("use_qubo") else None
+
+        # Two-stage gate for Mode J
+        ts_gate = TwoStageGate() if cfg.get("use_two_stage") else None
 
         fam_episodes: List[StressEpisodeResult] = []
 
@@ -1023,6 +1097,7 @@ def run_stress_mode(
                 classifier_name=cls_name,
                 memory_qubo=m_qubo,
                 gate_qubo=g_qubo,
+                two_stage_gate=ts_gate,
             )
             fam_episodes.append(result)
             all_episodes.append(result)
@@ -1243,7 +1318,7 @@ def check_stress_gates(results: Dict[str, StressModeResult],
         ))
 
     # Gate 6: All modes handle hard_abstain episodes as suspicious
-    for m in ("A", "B", "D", "H"):
+    for m in ("A", "B", "D", "H", "J"):
         if m in results and "hard_abstain_required" in results[m].families:
             fr = results[m].families["hard_abstain_required"]
             # Suspicious or adjacent to suspicious (benign/escalate) are all
@@ -1313,6 +1388,65 @@ def check_stress_gates(results: Dict[str, StressModeResult],
             passed,
             f"A={a_fsr:.3f} H={h_fsr:.3f}",
         ))
+
+    # --- Mode J (TwoStageGate) gates ---
+
+    # Gate 11: J >= D overall
+    if "D" in results and "J" in results:
+        d_acc = results["D"].accuracy
+        j_acc = results["J"].accuracy
+        passed = j_acc >= d_acc - 0.01
+        gates.append((
+            "G11: J >= D overall (two-stage no worse than threshold)",
+            passed,
+            f"D={d_acc:.3f} J={j_acc:.3f}",
+        ))
+
+    # Gate 12: J > H overall (two-stage beats pure QUBO)
+    if "H" in results and "J" in results:
+        h_acc = results["H"].accuracy
+        j_acc = results["J"].accuracy
+        passed = j_acc > h_acc + 0.01
+        gates.append((
+            "G12: J > H overall (two-stage beats single-stage QUBO)",
+            passed,
+            f"H={h_acc:.3f} J={j_acc:.3f}",
+        ))
+
+    # Gate 13: J concept_drift >= D concept_drift
+    if "D" in results and "J" in results:
+        if "concept_drift" in results["D"].families and "concept_drift" in results["J"].families:
+            d_drift = results["D"].families["concept_drift"].accuracy
+            j_drift = results["J"].families["concept_drift"].accuracy
+            passed = j_drift >= d_drift - 0.01
+            gates.append((
+                "G13: J concept_drift >= D (two-stage handles drift)",
+                passed,
+                f"D={d_drift:.3f} J={j_drift:.3f}",
+            ))
+
+    # Gate 14: J false_safe_rate == 0
+    if "J" in results:
+        j_fsr = results["J"].false_safe_rate
+        passed = j_fsr < 0.01
+        gates.append((
+            "G14: J false_safe_rate == 0 (safety preserved)",
+            passed,
+            f"J false_safe={j_fsr:.3f}",
+        ))
+
+    # Gate 15: J hard_abstain no worse than D
+    if "D" in results and "J" in results:
+        if "hard_abstain_required" in results["D"].families and \
+           "hard_abstain_required" in results["J"].families:
+            d_ha = results["D"].families["hard_abstain_required"].accuracy
+            j_ha = results["J"].families["hard_abstain_required"].accuracy
+            passed = j_ha >= d_ha - 0.01
+            gates.append((
+                "G15: J hard_abstain >= D",
+                passed,
+                f"D={d_ha:.3f} J={j_ha:.3f}",
+            ))
 
     return gates
 
@@ -1423,7 +1557,7 @@ def main():
             sys.exit(1)
         families = {args.family: families[args.family]}
 
-    modes = [args.mode.upper()] if args.mode else ["A", "B", "C", "D", "H"]
+    modes = [args.mode.upper()] if args.mode else ["A", "B", "C", "D", "H", "J"]
 
     total_eps = sum(len(s) for s in families.values())
     print(f"MorphSAT Memory Stress Benchmark")
