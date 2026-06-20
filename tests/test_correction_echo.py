@@ -262,6 +262,51 @@ class TestCorrectionEchoBenchSafety:
             # This test proves the echo has no override mechanism
 
 
+class TestCorrectionEchoContradiction:
+    """Test 9: contradiction tracking for adversarial defense."""
+
+    def test_contradiction_counter_exists(self):
+        echo = CorrectionEcho(ttl=5)
+        echo.observe_episode(
+            alert_text="CORRECTION: Port scan was authorized penetration test.",
+            scenario_id="wc_02",
+            is_correction=True,
+            outcome="benign",
+            prior_outcome="escalate",
+        )
+        marker = echo.markers[0]
+        assert marker.contradiction_count == 0
+
+    def test_contradiction_count_increments(self):
+        echo = CorrectionEcho(ttl=5)
+        echo.observe_episode(
+            alert_text="CORRECTION: Port scan was authorized penetration test.",
+            scenario_id="wc_02",
+            is_correction=True,
+            outcome="benign",
+            prior_outcome="escalate",
+        )
+        marker = echo.markers[0]
+        # Simulate caller tracking contradictions
+        marker.contradiction_count += 1
+        assert marker.contradiction_count == 1
+        marker.contradiction_count += 1
+        assert marker.contradiction_count == 2
+
+    def test_contradiction_serializes(self):
+        echo = CorrectionEcho(ttl=5)
+        echo.observe_episode(
+            alert_text="CORRECTION: Port scan authorized test lateral movement.",
+            scenario_id="wc_02",
+            is_correction=True,
+            outcome="benign",
+            prior_outcome="escalate",
+        )
+        echo.markers[0].contradiction_count = 3
+        d = echo.to_dict()
+        assert d["markers"][0]["contradiction_count"] == 3
+
+
 class TestCorrectionEchoSerialization:
     """Test echo serialization for receipts."""
 

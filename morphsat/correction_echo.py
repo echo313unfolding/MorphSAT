@@ -38,6 +38,7 @@ class EchoMarker:
     ttl: int                          # episodes remaining before expiry
     fired_count: int = 0              # how many times this echo triggered routing
     reinforced: bool = False          # set True when a later episode confirms
+    contradiction_count: int = 0      # episodes where echo fired but live evidence disagreed
 
 
 class CorrectionEcho:
@@ -155,6 +156,7 @@ class CorrectionEcho:
                     "ttl": m.ttl,
                     "fired_count": m.fired_count,
                     "reinforced": m.reinforced,
+                    "contradiction_count": m.contradiction_count,
                 }
                 for m in self.markers
             ],

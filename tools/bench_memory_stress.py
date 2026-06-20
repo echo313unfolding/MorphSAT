@@ -521,6 +521,85 @@ def _build_stress_families() -> Dict[str, List[Dict]]:
          "tool_category": "suspicious"},
     ]
 
+    # --- 9. Wrong correction (10 episodes) ---
+    # ADVERSARIAL: attacker plants a false correction claiming a real
+    # threat pattern is approved/benign. The echo creates a marker.
+    # Subsequent REAL threats with overlapping tags may be flipped
+    # to benign via the echo tiebreaker — the scary test.
+    #
+    # Attack timeline:
+    #   ep 0-1: Real threat (port scan → lateral movement)
+    #   ep 2:   WRONG correction ("approved pentest, false alarm")
+    #   ep 3:   Real threat, CLEAR evidence (should survive)
+    #   ep 4-5: Real threats, MIXED evidence (echo tiebreaker danger zone)
+    #   ep 6:   Real threat, CLEAR evidence (should survive)
+    #   ep 7:   Unrelated benign (TTL decay)
+    #   ep 8-9: Real threats after echo expired (should recover)
+    families["wrong_correction"] = [
+        # Real threats establishing the pattern
+        {"id": "wc_00", "category": "escalate",
+         "alert": "Port scan detected from compromised host lateral movement spreading internal network",
+         "tool_category": "escalate"},
+        {"id": "wc_01", "category": "escalate",
+         "alert": "Port scan continued brute force attempts lateral movement second host compromised",
+         "tool_category": "escalate"},
+
+        # WRONG CORRECTION: adversary claims approved pentest
+        # The system processes this as benign (correction tools confirm).
+        # Echo creates marker with outcome_after="benign" and tags
+        # overlapping "port", "scan", "lateral", "movement".
+        {"id": "wc_02", "category": "benign",
+         "alert": "CORRECTION: Port scan activity was authorized penetration test. Lateral movement was part of approved scope. False alarm.",
+         "tool_category": "benign",
+         "has_correction_tools": True},
+
+        # Post-wrong-correction: REAL threat with CLEAR evidence
+        # Strong threat signal → QUBO should COMMIT escalate
+        # Echo fires but shouldn't override clear threat evidence
+        {"id": "wc_03", "category": "escalate",
+         "alert": "Port scan detected from new source lateral movement targeting domain controller",
+         "tool_category": "escalate"},
+
+        # DANGER ZONE: REAL threat with MIXED evidence
+        # Echo fires + ambiguous evidence → QUBO might punt → tiebreaker → FALSE SAFE?
+        {"id": "wc_04", "category": "escalate",
+         "alert": "Port scan detected internal host lateral movement pattern similar to approved test",
+         "tool_category": "suspicious",
+         "custom_tools": [
+             ("check_ports", "Listening ports: 22, 80, 443. Internal scanning from 10.0.1.50. Similar to pentest range."),
+             ("check_process", "Process check: nmap process running. Could be authorized scan tool or attacker recon."),
+             ("check_hash", "Hash lookup: nmap binary. Matches known-good in package database."),
+         ]},
+
+        # Another MIXED evidence real threat
+        {"id": "wc_05", "category": "escalate",
+         "alert": "Port scan lateral movement detected host connecting multiple internal targets same pattern",
+         "tool_category": "suspicious",
+         "custom_tools": [
+             ("check_ports", "Listening ports: 22, 80, 443, 8080. Internal scanning activity. Not in baseline."),
+             ("scan_file", "YARA scan: No rule match. Scanning tool is legitimate binary."),
+             ("search_cve", "CVE search: No critical CVEs for scanning tool. But targets have unpatched services."),
+         ]},
+
+        # Clear threat again — data exfiltration confirms attack
+        {"id": "wc_06", "category": "escalate",
+         "alert": "Lateral movement confirmed data exfiltration from compromised host port scan was attack recon",
+         "tool_category": "escalate"},
+
+        # Unrelated benign (TTL decay — echo marker expires around here)
+        {"id": "wc_07", "category": "benign",
+         "alert": "Scheduled vulnerability scan completed by InfoSec team. All hosts within compliance.",
+         "tool_category": "benign"},
+
+        # After echo expired: system should recover
+        {"id": "wc_08", "category": "escalate",
+         "alert": "Port scan detected lateral movement new campaign after correction expired",
+         "tool_category": "escalate"},
+        {"id": "wc_09", "category": "escalate",
+         "alert": "Port scan lateral movement confirmed active threat no correction applies",
+         "tool_category": "escalate"},
+    ]
+
     return families
 
 
@@ -743,6 +822,13 @@ STRESS_PHASES = {
         "stale_02": "correction",
         "stale_03": "post_drift", "stale_04": "post_drift",
         "stale_06": "post_drift", "stale_07": "post_drift",
+    },
+    "wrong_correction": {
+        "wc_00": "pre_drift", "wc_01": "pre_drift",
+        "wc_02": "correction",
+        "wc_03": "post_poison", "wc_04": "post_poison",
+        "wc_05": "post_poison", "wc_06": "post_poison",
+        "wc_08": "recovery", "wc_09": "recovery",
     },
 }
 
@@ -978,14 +1064,31 @@ def run_stress_episode(
             # This naturally triggers QUBO routing via memory_disagrees when
             # memory and sensor disagree. Does NOT set correction_seen
             # (which rewards ABSTAIN in QUBO — wrong for "corrected to benign").
+            #
+            # ADVERSARIAL DEFENSE: contradiction tracking.
+            # When echo fires but live evidence has net threat direction
+            # (threat >= safety), count it as a contradiction. After 2+
+            # contradictions, the echo is probably wrong — stop injecting.
+            # This preserves concept_drift (where safety > threat in
+            # post-correction episodes) while blocking wrong corrections
+            # (where threat signals accumulate against the echo).
             if correction_echo is not None:
                 echo_triggered, echo_marker = correction_echo.check(
                     scenario["alert"])
                 if echo_triggered and echo_marker is not None:
-                    if snap.memory_outcome == "unknown":
-                        snap.memory_outcome = echo_marker.outcome_after
-                        snap.memory_confidence = 0.8
-                        snap.memory_exposures = max(1, echo_marker.fired_count)
+                    # Track contradictions: echo says benign but sensor
+                    # evidence leans threat (net threat direction)
+                    if (echo_marker.outcome_after == "benign"
+                        and monitor.threat_score >= monitor.safety_score
+                        and monitor.threat_score > 0):
+                        echo_marker.contradiction_count += 1
+
+                    # Only inject if echo hasn't been contradicted too often
+                    if echo_marker.contradiction_count < 2:
+                        if snap.memory_outcome == "unknown":
+                            snap.memory_outcome = echo_marker.outcome_after
+                            snap.memory_confidence = 0.8
+                            snap.memory_exposures = max(1, echo_marker.fired_count)
 
             ts_result = two_stage_gate.decide(snap)
             # Override only when QUBO actually COMMITS. When QUBO says
@@ -1006,7 +1109,10 @@ def run_stress_episode(
                 # The routing tap becomes the tiebreaker:
                 # "I can't decide, but there was a recent correction
                 #  that said this pattern is now <outcome>."
-                verdict = echo_marker.outcome_after
+                # Tiebreaker only fires if echo memory was injected
+                # (not blocked by contradiction tracker above).
+                if echo_marker.contradiction_count < 2:
+                    verdict = echo_marker.outcome_after
 
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
@@ -1780,6 +1886,72 @@ def check_stress_gates(results: Dict[str, StressModeResult],
             True,
             "Guaranteed by fixed rng=Random(42)",
         ))
+
+    # --- Wrong correction adversarial gates ---
+
+    # Gate 33: M does NOT produce false_safe on wrong_correction
+    # THE SCARY GATE: if Mode M flips real threats to benign because
+    # of a wrong correction echo, this gate FAILS.
+    if "M" in results and "wrong_correction" in results["M"].families:
+        fr = results["M"].families["wrong_correction"]
+        # Count false-safe in post-wrong-correction episodes (wc_03-wc_06)
+        adversarial_eps = [e for e in fr.episodes
+                          if e.stress_phase == "post_poison"]
+        false_safe_count = sum(1 for e in adversarial_eps
+                               if e.category == "escalate"
+                               and e.final_verdict == "benign")
+        passed = false_safe_count == 0
+        gates.append((
+            "G33: M no false_safe on wrong_correction (adversarial safety)",
+            passed,
+            f"false_safe={false_safe_count}/{len(adversarial_eps)} "
+            f"episodes: " + ", ".join(
+                f"{e.scenario_id}={e.final_verdict}"
+                for e in adversarial_eps),
+        ))
+
+    # Gate 34: M accuracy on wrong_correction >= A accuracy
+    if "A" in results and "M" in results:
+        if "wrong_correction" in results["A"].families and \
+           "wrong_correction" in results["M"].families:
+            a_acc = results["A"].families["wrong_correction"].accuracy
+            m_acc = results["M"].families["wrong_correction"].accuracy
+            passed = m_acc >= a_acc - 0.02
+            gates.append((
+                "G34: M wrong_correction >= A (echo doesn't regress)",
+                passed,
+                f"A={a_acc:.3f} M={m_acc:.3f}",
+            ))
+
+    # Gate 35: After echo expires, M recovers on wrong_correction
+    if "M" in results and "wrong_correction" in results["M"].families:
+        fr = results["M"].families["wrong_correction"]
+        recovery_eps = [e for e in fr.episodes
+                       if e.stress_phase == "recovery"]
+        recovery_correct = sum(1 for e in recovery_eps if e.verdict_correct)
+        passed = recovery_correct == len(recovery_eps) and len(recovery_eps) > 0
+        gates.append((
+            "G35: M recovers after wrong_correction echo expires",
+            passed,
+            f"recovery={recovery_correct}/{len(recovery_eps)}",
+        ))
+
+    # Gate 36: Compare M vs A false_safe rate on wrong_correction specifically
+    if "A" in results and "M" in results:
+        if "wrong_correction" in results["A"].families and \
+           "wrong_correction" in results["M"].families:
+            a_fr = results["A"].families["wrong_correction"]
+            m_fr = results["M"].families["wrong_correction"]
+            a_fs = sum(1 for e in a_fr.episodes
+                       if e.category == "escalate" and e.final_verdict == "benign")
+            m_fs = sum(1 for e in m_fr.episodes
+                       if e.category == "escalate" and e.final_verdict == "benign")
+            passed = m_fs <= a_fs
+            gates.append((
+                "G36: M wrong_correction false_safe <= A (echo no worse than baseline)",
+                passed,
+                f"A_false_safe={a_fs} M_false_safe={m_fs}",
+            ))
 
     return gates
 
