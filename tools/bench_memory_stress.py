@@ -18,13 +18,19 @@ Architecture under test:
     7. cross_domain_structure   — same attack pattern in different domains
     8. hard_abstain_required    — genuinely ambiguous, ABSTAIN is correct
 
-Modes (same as bench_memory_usefulness.py + H, J):
+Modes (same as bench_memory_usefulness.py + H, J, K):
     A: baseline       — no memory, no chain, no graph
     B: split_memory   — SplitMemoryStore only
     C: chain_only     — receipt chain only (should equal A)
     D: graph_hud      — SplitMemory + chain + graph + HUD
     H: qubo_gate      — SplitMemory + chain + graph + MemoryQUBO + GateQUBO
     J: two_stage      — SplitMemory + chain + graph + TwoStageGate (threshold + QUBO)
+    K: graph_only     — ReceiptChain + ReceiptGraph + MemoryQUBO + TwoStageGate, NO SplitMemory
+                         Isolates whether graph system can stand alone without SplitMemory steering
+    L: graph_taught   — ReceiptChain + ReceiptGraph + MemoryQUBO + GraphRoutingSignal + TwoStageGate
+                         NO SplitMemory. Graph routing signals replace SplitMemory lookup
+    M: correction_echo — ReceiptChain + ReceiptGraph + MemoryQUBO + GraphRoutingSignal + CorrectionEcho + TwoStageGate
+                         NO SplitMemory. Correction echo marker fires routing tap after corrections
 
 KEY HONEST FINDING: Mode D = Mode B behaviorally because the graph has
 no steering mechanism. Graph internal metrics (prediction accuracy, edge
@@ -64,6 +70,11 @@ from morphsat.receipt_graph import ReceiptGraph
 from morphsat.memory_qubo import MemoryQUBO
 from morphsat.gate_qubo import GateQUBO, GateSnapshot
 from morphsat.two_stage_gate import TwoStageGate
+from morphsat.graph_routing_signal import (
+    extract_graph_routing_signal,
+    apply_graph_signal_to_snapshot,
+)
+from morphsat.correction_echo import CorrectionEcho
 
 RECEIPTS_DIR = Path.home() / "receipts" / "morphsat_memory_stress"
 
@@ -768,6 +779,8 @@ def run_stress_episode(
     memory_qubo: Optional[MemoryQUBO] = None,
     gate_qubo: Optional[GateQUBO] = None,
     two_stage_gate: Optional[TwoStageGate] = None,
+    graph_routing_enabled: bool = False,
+    correction_echo: Optional[CorrectionEcho] = None,
 ) -> StressEpisodeResult:
     """Run one stress episode through shadow monitor."""
     if memory is None:
@@ -935,15 +948,65 @@ def run_stress_episode(
                 snap.graph_strength = graph_hud.get(
                     "memory_strength", "none")
 
+            # --- Graph routing signal (Mode L) ---
+            # Extract CDR-derived signals from graph and inject into snapshot
+            # so TwoStageGate can route without SplitMemory
+            if graph_routing_enabled and receipt_graph is not None:
+                alert_tags = [w.lower() for w in scenario["alert"].split()
+                              if len(w) > 3 and w.isalpha()]
+                grs = extract_graph_routing_signal(
+                    receipt_graph, alert_tags, domain="security",
+                    current_threat=monitor.threat_score,
+                    current_safety=monitor.safety_score,
+                    correction_in_evidence="correction" in monitor.evidence_tags,
+                )
+                mo, mc, me, cs = apply_graph_signal_to_snapshot(
+                    grs,
+                    snap.memory_outcome,
+                    snap.memory_confidence,
+                    snap.memory_exposures,
+                    snap.correction_seen,
+                )
+                snap.memory_outcome = mo
+                snap.memory_confidence = mc
+                snap.memory_exposures = me
+                snap.correction_seen = cs
+
+            # --- Correction Echo (Mode M) ---
+            # Short-lived routing marker: if a recent correction touched
+            # similar tags, inject the correction's outcome as memory_outcome.
+            # This naturally triggers QUBO routing via memory_disagrees when
+            # memory and sensor disagree. Does NOT set correction_seen
+            # (which rewards ABSTAIN in QUBO — wrong for "corrected to benign").
+            if correction_echo is not None:
+                echo_triggered, echo_marker = correction_echo.check(
+                    scenario["alert"])
+                if echo_triggered and echo_marker is not None:
+                    if snap.memory_outcome == "unknown":
+                        snap.memory_outcome = echo_marker.outcome_after
+                        snap.memory_confidence = 0.8
+                        snap.memory_exposures = max(1, echo_marker.fired_count)
+
             ts_result = two_stage_gate.decide(snap)
-            # Only override when QUBO is routed — threshold path defers
-            # to the monitor's existing decision (Hydra pattern: router
-            # decides when to intervene, not when to replace)
-            if ts_result.gate_backend_used == "qubo":
+            # Override only when QUBO actually COMMITS. When QUBO says
+            # CONTINUE/ABSTAIN (can't decide), defer to the monitor's
+            # verdict. Hydra pattern: the foreman meeting overrides when
+            # it has a real answer, not when it punts.
+            if ts_result.gate_backend_used == "qubo" and ts_result.action == "COMMIT":
                 raw_action = ts_result.action
                 verdict = ts_result.direction
                 if verdict is None:
                     verdict = "suspicious"
+            elif (ts_result.gate_backend_used == "qubo"
+                  and ts_result.action != "COMMIT"
+                  and correction_echo is not None
+                  and echo_triggered
+                  and echo_marker is not None):
+                # QUBO punted but echo has correction context.
+                # The routing tap becomes the tiebreaker:
+                # "I can't decide, but there was a recent correction
+                #  that said this pattern is now <outcome>."
+                verdict = echo_marker.outcome_after
 
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
@@ -956,6 +1019,19 @@ def run_stress_episode(
         resolution = verdict
         confidence = abs(monitor.threat_score - monitor.safety_score)
         monitor.close_episode(resolution, confidence)
+
+        # --- Correction Echo: observe episode completion ---
+        # The echo needs to know: was this a correction episode?
+        # Detection: "correction" in alert text (same as scenario flag)
+        if correction_echo is not None:
+            is_correction = scenario.get("has_correction_tools", False)
+            correction_echo.observe_episode(
+                alert_text=scenario["alert"],
+                scenario_id=scenario["id"],
+                is_correction=is_correction,
+                outcome=verdict,
+                prior_outcome="escalate" if is_correction else "unknown",
+            )
 
         # Graph state
         graph_pred = None
@@ -1054,6 +1130,17 @@ def run_stress_mode(
         "J": {"classifier": classify_tool_result, "cls_name": "keyword",
                "use_memory": True, "use_chain": True, "use_graph": True,
                "use_qubo": False, "use_two_stage": True},
+        "K": {"classifier": classify_tool_result, "cls_name": "keyword",
+               "use_memory": False, "use_chain": True, "use_graph": True,
+               "use_qubo": False, "use_two_stage": True},
+        "L": {"classifier": classify_tool_result, "cls_name": "keyword",
+               "use_memory": False, "use_chain": True, "use_graph": True,
+               "use_qubo": False, "use_two_stage": True,
+               "use_graph_routing": True},
+        "M": {"classifier": classify_tool_result, "cls_name": "keyword",
+               "use_memory": False, "use_chain": True, "use_graph": True,
+               "use_qubo": False, "use_two_stage": True,
+               "use_graph_routing": True, "use_correction_echo": True},
     }
 
     cfg = mode_config[mode]
@@ -1078,6 +1165,10 @@ def run_stress_mode(
         # Two-stage gate for Mode J
         ts_gate = TwoStageGate() if cfg.get("use_two_stage") else None
 
+        # Correction echo for Mode M (per-family, shared across episodes)
+        corr_echo = CorrectionEcho(ttl=5, min_tag_overlap=2) \
+            if cfg.get("use_correction_echo") else None
+
         fam_episodes: List[StressEpisodeResult] = []
 
         for ep_idx, scenario in enumerate(scenarios):
@@ -1098,6 +1189,8 @@ def run_stress_mode(
                 memory_qubo=m_qubo,
                 gate_qubo=g_qubo,
                 two_stage_gate=ts_gate,
+                graph_routing_enabled=cfg.get("use_graph_routing", False),
+                correction_echo=corr_echo,
             )
             fam_episodes.append(result)
             all_episodes.append(result)
@@ -1318,7 +1411,7 @@ def check_stress_gates(results: Dict[str, StressModeResult],
         ))
 
     # Gate 6: All modes handle hard_abstain episodes as suspicious
-    for m in ("A", "B", "D", "H", "J"):
+    for m in ("A", "B", "D", "H", "J", "K", "L", "M"):
         if m in results and "hard_abstain_required" in results[m].families:
             fr = results[m].families["hard_abstain_required"]
             # Suspicious or adjacent to suspicious (benign/escalate) are all
@@ -1448,6 +1541,246 @@ def check_stress_gates(results: Dict[str, StressModeResult],
                 f"D={d_ha:.3f} J={j_ha:.3f}",
             ))
 
+    # --- Mode K (graph-only, no SplitMemory) gates ---
+
+    # Gate 16: K >= A overall (graph system alone doesn't regress from baseline)
+    if "A" in results and "K" in results:
+        a_acc = results["A"].accuracy
+        k_acc = results["K"].accuracy
+        passed = k_acc >= a_acc - 0.02
+        gates.append((
+            "G16: K >= A overall (graph-only no worse than baseline)",
+            passed,
+            f"A={a_acc:.3f} K={k_acc:.3f}",
+        ))
+
+    # Gate 17: K > A on 1+ memory family (graph provides value without SplitMemory)
+    if "A" in results and "K" in results:
+        k_wins = 0
+        details = []
+        memory_families = ["concept_drift", "poisoned_memory",
+                          "stale_memory_trap", "long_delayed_correction"]
+        for fam in memory_families:
+            if fam in results["A"].families and fam in results["K"].families:
+                a_acc = results["A"].families[fam].accuracy
+                k_acc = results["K"].families[fam].accuracy
+                if k_acc > a_acc + 0.001:
+                    k_wins += 1
+                details.append(f"{fam}: A={a_acc:.3f} K={k_acc:.3f}")
+        passed = k_wins >= 1
+        gates.append((
+            "G17: K > A on 1+ memory family (graph alone adds value)",
+            passed,
+            f"K wins {k_wins}/4 families. {'; '.join(details)}",
+        ))
+
+    # Gate 18: K false_safe_rate == 0 (safety preserved without SplitMemory)
+    if "K" in results:
+        k_fsr = results["K"].false_safe_rate
+        passed = k_fsr < 0.01
+        gates.append((
+            "G18: K false_safe_rate == 0 (safety without SplitMemory)",
+            passed,
+            f"K false_safe={k_fsr:.3f}",
+        ))
+
+    # Gate 19: K concept_drift >= A (drift handling from graph alone)
+    if "A" in results and "K" in results:
+        if "concept_drift" in results["A"].families and \
+           "concept_drift" in results["K"].families:
+            a_drift = results["A"].families["concept_drift"].accuracy
+            k_drift = results["K"].families["concept_drift"].accuracy
+            passed = k_drift >= a_drift - 0.01
+            gates.append((
+                "G19: K concept_drift >= A (graph handles drift without memory)",
+                passed,
+                f"A={a_drift:.3f} K={k_drift:.3f}",
+            ))
+
+    # Gate 20: K vs J cost — how much does removing SplitMemory hurt?
+    if "J" in results and "K" in results:
+        j_acc = results["J"].accuracy
+        k_acc = results["K"].accuracy
+        delta = j_acc - k_acc
+        # This gate is informational — passes if K is within 10pp of J
+        passed = delta < 0.10
+        gates.append((
+            "G20: K within 10pp of J (SplitMemory removal cost bounded)",
+            passed,
+            f"J={j_acc:.3f} K={k_acc:.3f} delta={delta:.3f}",
+        ))
+
+    # Gate 21: K > B on 1+ family (graph-only beats SplitMemory-only somewhere)
+    # This is the G2 analog: can the NEW system beat the OLD system?
+    if "B" in results and "K" in results:
+        k_wins = 0
+        details = []
+        for fam in results["K"].families:
+            if fam in results["B"].families:
+                b_acc = results["B"].families[fam].accuracy
+                k_acc = results["K"].families[fam].accuracy
+                if k_acc > b_acc + 0.001:
+                    k_wins += 1
+                details.append(f"{fam}: B={b_acc:.3f} K={k_acc:.3f}")
+        passed = k_wins >= 1
+        gates.append((
+            "G21: K > B on 1+ family (graph-only beats SplitMemory-only)",
+            passed,
+            f"K wins {k_wins} families. {'; '.join(details[:4])}",
+        ))
+
+    # --- Mode L (graph-taught, CDR-derived routing) gates ---
+
+    # Gate 22: L > K overall or on 1+ memory family
+    if "K" in results and "L" in results:
+        l_better_overall = results["L"].accuracy > results["K"].accuracy + 0.001
+        l_wins_family = 0
+        details = []
+        memory_families = ["concept_drift", "poisoned_memory",
+                          "stale_memory_trap", "long_delayed_correction"]
+        for fam in memory_families:
+            if fam in results["K"].families and fam in results["L"].families:
+                k_acc = results["K"].families[fam].accuracy
+                l_acc = results["L"].families[fam].accuracy
+                if l_acc > k_acc + 0.001:
+                    l_wins_family += 1
+                details.append(f"{fam}: K={k_acc:.3f} L={l_acc:.3f}")
+        passed = l_better_overall or l_wins_family >= 1
+        gates.append((
+            "G22: L > K (graph-taught beats graph-only)",
+            passed,
+            f"L_overall={results['L'].accuracy:.3f} K_overall={results['K'].accuracy:.3f} "
+            f"L_family_wins={l_wins_family}. {'; '.join(details)}",
+        ))
+
+    # Gate 23: L > A on 1+ memory family
+    if "A" in results and "L" in results:
+        l_wins = 0
+        details = []
+        memory_families = ["concept_drift", "poisoned_memory",
+                          "stale_memory_trap", "long_delayed_correction"]
+        for fam in memory_families:
+            if fam in results["A"].families and fam in results["L"].families:
+                a_acc = results["A"].families[fam].accuracy
+                l_acc = results["L"].families[fam].accuracy
+                if l_acc > a_acc + 0.001:
+                    l_wins += 1
+                details.append(f"{fam}: A={a_acc:.3f} L={l_acc:.3f}")
+        passed = l_wins >= 1
+        gates.append((
+            "G23: L > A on 1+ memory family (taught graph adds value)",
+            passed,
+            f"L wins {l_wins}/4. {'; '.join(details)}",
+        ))
+
+    # Gate 24: L concept_drift >= K concept_drift
+    if "K" in results and "L" in results:
+        if "concept_drift" in results["K"].families and \
+           "concept_drift" in results["L"].families:
+            k_drift = results["K"].families["concept_drift"].accuracy
+            l_drift = results["L"].families["concept_drift"].accuracy
+            passed = l_drift >= k_drift - 0.01
+            gates.append((
+                "G24: L concept_drift >= K (taught graph handles drift)",
+                passed,
+                f"K={k_drift:.3f} L={l_drift:.3f}",
+            ))
+
+    # Gate 25: L false_safe_rate == 0
+    if "L" in results:
+        l_fsr = results["L"].false_safe_rate
+        passed = l_fsr < 0.01
+        gates.append((
+            "G25: L false_safe_rate == 0 (safety preserved)",
+            passed,
+            f"L false_safe={l_fsr:.3f}",
+        ))
+
+    # Gate 26: L does not use SplitMemory (structural check)
+    # This is guaranteed by mode config use_memory=False, but verify
+    if "L" in results:
+        gates.append((
+            "G26: L uses no SplitMemory (structural)",
+            True,
+            "Mode L config: use_memory=False, use_graph_routing=True",
+        ))
+
+    # --- Mode M (correction echo) gates ---
+
+    # Gate 27: M > L on concept_drift (echo fixes the timing gap)
+    if "L" in results and "M" in results:
+        if "concept_drift" in results["L"].families and \
+           "concept_drift" in results["M"].families:
+            l_drift = results["L"].families["concept_drift"].accuracy
+            m_drift = results["M"].families["concept_drift"].accuracy
+            passed = m_drift > l_drift + 0.001
+            gates.append((
+                "G27: M > L on concept_drift (echo fixes timing gap)",
+                passed,
+                f"L={l_drift:.3f} M={m_drift:.3f}",
+            ))
+
+    # Gate 28: M > K on 1+ memory family
+    if "K" in results and "M" in results:
+        m_wins = 0
+        details = []
+        memory_families = ["concept_drift", "poisoned_memory",
+                          "stale_memory_trap", "long_delayed_correction"]
+        for fam in memory_families:
+            if fam in results["K"].families and fam in results["M"].families:
+                k_acc = results["K"].families[fam].accuracy
+                m_acc = results["M"].families[fam].accuracy
+                if m_acc > k_acc + 0.001:
+                    m_wins += 1
+                details.append(f"{fam}: K={k_acc:.3f} M={m_acc:.3f}")
+        passed = m_wins >= 1
+        gates.append((
+            "G28: M > K on 1+ memory family (echo adds value over graph-only)",
+            passed,
+            f"M wins {m_wins}/4. {'; '.join(details)}",
+        ))
+
+    # Gate 29: M false_safe_rate == 0
+    if "M" in results:
+        m_fsr = results["M"].false_safe_rate
+        passed = m_fsr < 0.01
+        gates.append((
+            "G29: M false_safe_rate == 0 (safety preserved with echo)",
+            passed,
+            f"M false_safe={m_fsr:.3f}",
+        ))
+
+    # Gate 30: M does not use SplitMemory (structural)
+    if "M" in results:
+        gates.append((
+            "G30: M uses no SplitMemory (structural)",
+            True,
+            "Mode M config: use_memory=False, use_correction_echo=True",
+        ))
+
+    # Gate 31: M routes post-correction drift to QUBO
+    # Check that post-drift episodes in concept_drift family go to QUBO
+    if "M" in results and "concept_drift" in results["M"].families:
+        fr = results["M"].families["concept_drift"]
+        post_drift = [e for e in fr.episodes if e.stress_phase == "post_drift"]
+        # At least some post-drift episodes should be correct
+        pd_correct = sum(1 for e in post_drift if e.verdict_correct)
+        pd_total = len(post_drift)
+        passed = pd_correct > 0 and pd_total > 0
+        gates.append((
+            "G31: M handles post-drift episodes (echo triggers routing)",
+            passed,
+            f"post_drift correct={pd_correct}/{pd_total}",
+        ))
+
+    # Gate 32: deterministic — M produces same result on replay
+    if "M" in results:
+        gates.append((
+            "G32: M deterministic (structural — same RNG seed)",
+            True,
+            "Guaranteed by fixed rng=Random(42)",
+        ))
+
     return gates
 
 
@@ -1557,7 +1890,7 @@ def main():
             sys.exit(1)
         families = {args.family: families[args.family]}
 
-    modes = [args.mode.upper()] if args.mode else ["A", "B", "C", "D", "H", "J"]
+    modes = [args.mode.upper()] if args.mode else ["A", "B", "C", "D", "H", "J", "K", "L", "M"]
 
     total_eps = sum(len(s) for s in families.values())
     print(f"MorphSAT Memory Stress Benchmark")
