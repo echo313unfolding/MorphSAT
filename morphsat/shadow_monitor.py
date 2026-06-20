@@ -143,7 +143,11 @@ class ShadowMonitor:
                  commit_safe_boundary: float = 0.40,
 
                  # Memory
-                 memory: Optional[SplitMemoryStore] = None):
+                 memory: Optional[SplitMemoryStore] = None,
+
+                 # Layer 1+2: receipt chain and receipt graph
+                 receipt_chain=None,    # ReceiptChain or None
+                 receipt_graph=None):   # ReceiptGraph or None
 
         # --- State ---
         self.state = ShadowState.NORMAL
@@ -195,6 +199,11 @@ class ShadowMonitor:
         self.alert_text = ""
         self.committed = False
         self.last_action = CommitAction("CONTINUE")
+        self.terrain = "uncharted"  # cached terrain label from initialize()
+
+        # --- Receipt chain + graph (Layers 1+2) ---
+        self._receipt_chain = receipt_chain
+        self._receipt_graph = receipt_graph
 
         # --- Receipt ---
         self.posture_trace: List[PostureTrace] = []
@@ -230,20 +239,37 @@ class ShadowMonitor:
                 self.commit_clarity *= (1.0 - 0.2 * match.confidence)
                 self._trace("initialize", ShadowState.NORMAL,
                             f"known_{store_name} (conf={match.confidence:.2f})")
+                # Terrain: strong match — classify by store
+                if store_name == "tolerance":
+                    self.terrain = "familiar"
+                elif store_name == "threat":
+                    self.terrain = "flagged"
+                else:  # abstain
+                    self.terrain = "unstable"
             else:
                 self.state = ShadowState.NORMAL
                 self._trace("initialize", ShadowState.NORMAL,
                             f"partial_match_{store_name}")
+                self.terrain = "recognized"
         elif novelty_dist > 0.8:
             # Highly novel — ORIENT (protective reflex, NOT penalty)
             self.state = ShadowState.ORIENTING
             self.orient_pressure = novelty_dist
             self._trace("initialize", ShadowState.ORIENTING,
                         f"novel (dist={novelty_dist:.2f})")
+            self.terrain = "uncharted"
         else:
             self.state = ShadowState.NORMAL
             self._trace("initialize", ShadowState.NORMAL,
                         f"moderate_novelty (dist={novelty_dist:.2f})")
+            self.terrain = "uncharted"
+
+        # Graph prediction: prime the graph before the episode
+        if self._receipt_graph is not None:
+            tags = [self.terrain, self.state.value]
+            if alert_text:
+                tags.append(alert_text[:50])
+            self._receipt_graph.predict(tags=tags, domain=self.terrain)
 
     # ------------------------------------------------------------------
     # Main evidence processing
@@ -854,7 +880,14 @@ class ShadowMonitor:
         self.previous_state = to_state
 
     def close_episode(self, final_resolution: str, confidence: float):
-        """Post-episode: write to memory. Strange loop closure."""
+        """Post-episode: write to memory. Strange loop closure.
+
+        With receipt chain and receipt graph enabled, this also:
+        1. Appends the receipt to the chain (Layer 1 — fossil record)
+        2. Projects it into the graph (Layer 2 — living memory)
+        3. Scores the graph's prediction against actual outcome
+        4. Runs decay on graph edges
+        """
         if self.evidence_vector:
             self.memory.record_episode(
                 evidence_signature=self.evidence_vector,
@@ -865,6 +898,158 @@ class ShadowMonitor:
                 safety_score=self.safety_score,
                 turns=self.turn,
             )
+
+        # Layer 1: receipt chain (immutable provenance spine)
+        if self._receipt_chain is not None:
+            receipt = self.to_receipt()
+            receipt_hash = self._receipt_chain.append_receipt(receipt)
+            block = self._receipt_chain.close_block()
+            block_number = block.block_number if block else 0
+
+            # Layer 2: receipt graph (living associative memory)
+            if self._receipt_graph is not None:
+                # Score previous prediction before adding new node
+                actual_outcome = receipt.get("final_direction", "unknown")
+                self._receipt_graph.score_prediction(actual_outcome)
+
+                # Add new node and auto-connect
+                self._receipt_graph.add_node(
+                    receipt_hash, receipt, block_number)
+                self._receipt_graph.auto_connect(receipt_hash)
+
+                # Decay edges
+                self._receipt_graph.decay_all(block_number)
+
+    # ------------------------------------------------------------------
+    # HUD — coarse navigation signal for the model
+    # ------------------------------------------------------------------
+
+    def render_hud(self) -> dict:
+        """Render a coarse navigation HUD for the model.
+
+        The model's weights are fixed during inference. It cannot grow
+        new internal structure to track evidence dynamics. So we give
+        it an instrument panel: enough signal to orient, not enough
+        to game the governor.
+
+        The HUD exposes:
+            grid_position  — coarse location on the evidence grid (A1-C10)
+            zone           — safe / continue / threat / committed / abstained
+            compass        — which direction evidence is drifting
+            clearance      — whether the model is cleared to commit
+            allowed        — what actions are permitted
+            blocked        — what actions are forbidden
+
+        The HUD does NOT expose:
+            raw threat_score / safety_score
+            exact boundary distances
+            decay rate or cumulative decay accounting
+            posture state machine internals
+            coincidence bonuses or novelty distances
+        """
+        # --- Grid position: map evidence_balance to coarse cell ---
+        # A1-A3: safe side (balance < -safe_boundary)
+        # B4-B7: continue zone (between boundaries)
+        # C8-C10: threat side (balance > threat_boundary)
+        balance = self.threat_score - self.safety_score
+
+        if self.enable_dual_boundary:
+            threat_b = self.commit_threat_boundary
+            safe_b = self.commit_safe_boundary
+        else:
+            threat_b = self.escalate_threat
+            safe_b = self.safety_clear
+
+        if balance <= -safe_b:
+            # Safe side: A1 (deep safe) to A3 (near safe boundary)
+            depth = min(1.0, abs(balance + safe_b) / max(safe_b, 0.01))
+            cell_num = max(1, 3 - int(depth * 2))
+            grid_pos = f"A{cell_num}"
+            zone = "safe"
+        elif balance >= threat_b:
+            # Threat side: C8 (near threat boundary) to C10 (deep threat)
+            depth = min(1.0, (balance - threat_b) / max(threat_b, 0.01))
+            cell_num = min(10, 8 + int(depth * 2))
+            grid_pos = f"C{cell_num}"
+            zone = "threat"
+        else:
+            # Continue zone: B4-B7
+            zone_width = threat_b + safe_b
+            if zone_width > 0:
+                frac = (balance + safe_b) / zone_width
+            else:
+                frac = 0.5
+            cell_num = 4 + int(frac * 3)
+            cell_num = max(4, min(7, cell_num))
+            grid_pos = f"B{cell_num}"
+            zone = "continue"
+
+        # Override zone for terminal states
+        if self.committed:
+            if self.last_action.action == "ABSTAIN":
+                zone = "abstained"
+            elif self.last_action.action == "COMMIT":
+                zone = "committed"
+
+        # --- Compass: drift direction from last 2 deltas ---
+        compass = "steady"
+        if len(self.threat_deltas) >= 2:
+            recent_t = sum(self.threat_deltas[-2:])
+            recent_s = sum(self.safety_deltas[-2:])
+            net = recent_t - recent_s
+            if net > 0.10:
+                compass = "drifting threat-side"
+            elif net < -0.10:
+                compass = "drifting safe-side"
+            elif abs(recent_t) < 0.05 and abs(recent_s) < 0.05:
+                compass = "stalled"
+
+        # --- Clearance ---
+        if self.committed:
+            clearance = "committed" if self.last_action.action == "COMMIT" \
+                else "deferred"
+        elif zone in ("safe", "threat"):
+            clearance = "cleared"
+        else:
+            clearance = "not_cleared"
+
+        # --- Allowed / blocked moves ---
+        if self.committed:
+            allowed = []
+            blocked = ["all_actions"]
+        elif clearance == "cleared":
+            allowed = ["final_verdict"]
+            blocked = ["gather_more_evidence"]
+        else:
+            allowed = [
+                "gather_independent_confirmation",
+                "check_for_correction",
+                "request_additional_scan",
+            ]
+            blocked = [
+                "final_verdict",
+                "irreversible_action",
+            ]
+
+        hud = {
+            "grid_position": grid_pos,
+            "zone": zone,
+            "compass": compass,
+            "clearance": clearance,
+            "terrain": self.terrain,
+            "allowed": allowed,
+            "blocked": blocked,
+        }
+
+        # Graph memory HUD: coarse summary from Layer 2
+        if self._receipt_graph is not None:
+            graph_hud = self._receipt_graph.export_memory_hud(
+                tags=[self.terrain, self.state.value],
+                domain=self.terrain,
+            )
+            hud["memory"] = graph_hud
+
+        return hud
 
     def to_receipt(self) -> dict:
         """Full receipt — proof of shadow monitor behavior."""

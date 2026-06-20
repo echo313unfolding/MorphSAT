@@ -514,3 +514,242 @@ class TestIntegrationSequences:
 
         assert fresh_monitor.committed
         assert fresh_monitor.total_tools <= fresh_monitor.max_tools
+
+
+# ============================================================
+# HUD Tests — coarse navigation signal
+# ============================================================
+
+class TestHUD:
+    """HUD renders coarse grid position without exposing hidden state."""
+
+    def test_hud_fields_present(self, fresh_monitor):
+        """HUD returns all required fields."""
+        fresh_monitor.initialize("Test alert")
+        hud = fresh_monitor.render_hud()
+        assert "grid_position" in hud
+        assert "zone" in hud
+        assert "compass" in hud
+        assert "clearance" in hud
+        assert "allowed" in hud
+        assert "blocked" in hud
+
+    def test_hud_no_hidden_state(self, fresh_monitor):
+        """HUD must NOT expose raw scores or boundary distances."""
+        fresh_monitor.initialize("Test alert")
+        fresh_monitor.process_evidence("tool_1", "Ambiguous data")
+        hud = fresh_monitor.render_hud()
+        hud_str = str(hud)
+        # None of the hidden control-law variables should appear
+        assert "threat_score" not in hud
+        assert "safety_score" not in hud
+        assert "evidence_balance" not in hud
+        assert "dist_to_threat" not in hud_str
+        assert "dist_to_safe" not in hud_str
+        assert "decay" not in hud_str
+        assert "orient_pressure" not in hud_str
+
+    def test_hud_init_center(self, fresh_monitor):
+        """Fresh monitor starts in continue zone center."""
+        fresh_monitor.initialize("Test alert")
+        hud = fresh_monitor.render_hud()
+        assert hud["zone"] == "continue"
+        assert hud["grid_position"].startswith("B")
+        assert hud["clearance"] == "not_cleared"
+
+    def test_hud_safe_side(self):
+        """3 safe tools should push to A zone."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("Routine check")
+        sm.process_evidence("t1", "All match baseline. No anomalies detected.")
+        sm.process_evidence("t2", "All processes within expected parameters.")
+        sm.process_evidence("t3", "No rule match. Signed and in package database.")
+        hud = sm.render_hud()
+        assert hud["grid_position"].startswith("A")
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_threat_side(self):
+        """3 threat tools should push to C zone."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("Critical alert")
+        sm.process_evidence("t1", "YARA scan: match on rule suspicious_packer.")
+        sm.process_evidence("t2", "Outbound connection to port 4444, not in baseline.")
+        sm.process_evidence("t3", "Unexpected child process /tmp/.x11")
+        hud = sm.render_hud()
+        assert hud["grid_position"].startswith("C")
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_committed_blocks_all(self, fresh_monitor):
+        """Once committed, HUD blocks all actions."""
+        fresh_monitor.initialize("Test")
+        # Force enough evidence to commit
+        fresh_monitor.process_evidence("t1", "YARA scan: match on rule suspicious_packer.")
+        fresh_monitor.process_evidence("t2", "Outbound connection to port 4444, not in baseline.")
+        fresh_monitor.process_evidence("t3", "Unexpected child process /tmp/.x11")
+        if fresh_monitor.committed:
+            hud = fresh_monitor.render_hud()
+            assert hud["blocked"] == ["all_actions"]
+            assert hud["allowed"] == []
+
+    def test_hud_not_cleared_blocks_verdict(self, fresh_monitor):
+        """In continue zone, final_verdict is blocked."""
+        fresh_monitor.initialize("Test alert")
+        fresh_monitor.process_evidence("t1", "Ambiguous data")
+        hud = fresh_monitor.render_hud()
+        if hud["zone"] == "continue":
+            assert "final_verdict" in hud["blocked"]
+            assert "gather_independent_confirmation" in hud["allowed"]
+
+    def test_hud_compass_drift(self):
+        """Compass should detect directional drift."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True,
+                           commit_threat_boundary=2.0)  # high boundary to stay in zone
+        sm.initialize("Test")
+        sm.process_evidence("t1", "YARA scan: match on rule suspicious_packer.")
+        sm.process_evidence("t2", "Unexpected child process /tmp/.x11")
+        hud = sm.render_hud()
+        assert hud["compass"] == "drifting threat-side"
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_terrain_present(self, fresh_monitor):
+        """HUD includes terrain field."""
+        fresh_monitor.initialize("Test alert")
+        hud = fresh_monitor.render_hud()
+        assert "terrain" in hud
+        assert hud["terrain"] in (
+            "uncharted", "familiar", "flagged", "unstable", "recognized")
+
+    def test_hud_terrain_uncharted_new_pattern(self, fresh_monitor):
+        """New pattern with no memory → uncharted."""
+        fresh_monitor.initialize("Completely novel never-seen-before alert")
+        hud = fresh_monitor.render_hud()
+        assert hud["terrain"] == "uncharted"
+
+    def test_hud_terrain_familiar_benign_history(self):
+        """Known benign pattern with multiple exposures → familiar."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        # Seed memory: 2 benign episodes with same keywords
+        for _ in range(2):
+            mem.record_episode(
+                evidence_signature=[("t1", "safe")],
+                resolution="benign",
+                confidence=0.9,
+                alert_text="routine baseline check normal",
+                threat_score=0.0,
+                safety_score=0.5,
+                turns=2,
+            )
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("routine baseline check normal")
+        hud = sm.render_hud()
+        assert hud["terrain"] == "familiar"
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_terrain_flagged_threat_history(self):
+        """Known threat pattern with multiple exposures → flagged."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        for _ in range(2):
+            mem.record_episode(
+                evidence_signature=[("t1", "threat")],
+                resolution="escalate",
+                confidence=0.85,
+                alert_text="suspicious packer detected lateral",
+                threat_score=0.7,
+                safety_score=0.0,
+                turns=3,
+            )
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("suspicious packer detected lateral")
+        hud = sm.render_hud()
+        assert hud["terrain"] == "flagged"
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_terrain_unstable_abstain_history(self):
+        """Known abstain pattern → unstable."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        for _ in range(2):
+            mem.record_episode(
+                evidence_signature=[("t1", "mixed")],
+                resolution="abstain",
+                confidence=0.75,
+                alert_text="ambiguous conflicting signals mixed",
+                threat_score=0.3,
+                safety_score=0.3,
+                turns=5,
+            )
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("ambiguous conflicting signals mixed")
+        hud = sm.render_hud()
+        assert hud["terrain"] == "unstable"
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_terrain_recognized_weak_match(self):
+        """Single exposure / low confidence → recognized (not familiar/flagged)."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        # Only 1 exposure — below the exposures >= 2 gate
+        mem.record_episode(
+            evidence_signature=[("t1", "safe")],
+            resolution="benign",
+            confidence=0.5,
+            alert_text="partial match single exposure check",
+            threat_score=0.0,
+            safety_score=0.4,
+            turns=2,
+        )
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("partial match single exposure check")
+        hud = sm.render_hud()
+        assert hud["terrain"] == "recognized"
+        os.unlink(tmp) if os.path.exists(tmp) else None
+
+    def test_hud_terrain_no_raw_memory(self):
+        """Terrain label must not leak raw memory internals."""
+        tmp = tempfile.mktemp(suffix=".json")
+        mem = SplitMemoryStore(tmp)
+        mem.clear()
+        mem.record_episode(
+            evidence_signature=[("t1", "threat")],
+            resolution="escalate",
+            confidence=0.9,
+            alert_text="known threat pattern memory leak test",
+            threat_score=0.8,
+            safety_score=0.0,
+            turns=3,
+        )
+        mem.record_episode(
+            evidence_signature=[("t1", "threat")],
+            resolution="escalate",
+            confidence=0.9,
+            alert_text="known threat pattern memory leak test",
+            threat_score=0.8,
+            safety_score=0.0,
+            turns=3,
+        )
+        sm = ShadowMonitor(memory=mem, enable_dual_boundary=True)
+        sm.initialize("known threat pattern memory leak test")
+        hud = sm.render_hud()
+        hud_str = str(hud)
+        # No raw memory values should appear
+        assert "novelty_distance" not in hud_str
+        assert "confidence" not in hud_str
+        assert "exposures" not in hud_str
+        assert "pattern_hash" not in hud_str
+        assert "alert_keywords" not in hud_str
+        os.unlink(tmp) if os.path.exists(tmp) else None
