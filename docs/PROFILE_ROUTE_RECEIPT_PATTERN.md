@@ -130,22 +130,22 @@ conflict, drift, or recent correction.
 | Shadow/Ghost/GlyphDAR | same file | 217/217 total | 73.3% role, R^2=0.818 |
 | VaultManifest | same file | 52/52 | Merkle hash, DAG, topo sort |
 
-### Integration gaps
+### Integration gaps — CLOSED
 
-**Gap 1: Shadow → Hydra bridge.** Ghost can pre-route tensors from their encoded
-body (53.8% cleared, precision 0.955). But this signal does not yet feed into
-`HydraRouter.route()`. Today Hydra only sees offline probe data. Wiring Ghost in
-would let the router skip expensive probes when Ghost is confident, and would
-move the system toward Level 3 on the execution ladder (routing from encoded
-representation).
+**Gap 1: Shadow → Hydra bridge — DONE.** `helix_substrate/ghost_bridge.py` bridges
+Crystal Vault's Ghost signal into Hydra Router. `GhostPreRoute` predicts tensor
+fragility from 4 encoded-body features (te, tr, mo, ac) and decides SKIP_PROBE
+vs PROBE_REQUIRED. `HydraRouter.route_with_ghost()` uses Ghost pre-screening to
+skip expensive codec probes when Ghost is confident. 25/25 tests.
 
-**Gap 2: Residual contract.** Every codec produces damage (E = W - W_hat). Today
-codecs are compared only by output cosine and error magnitude. Nobody profiles the
-residual's structure: its kurtosis, rank, entropy, autocorrelation, or channel-wise
-distribution. This is the actual "common language" that would make heterogeneous
-codecs comparable. The residual structure gate proved residuals ARE structured
-(spectral ratio 201x, ACF@10 0.157, SVD rank 41%), but that finding doesn't feed
-routing decisions yet.
+**Gap 2: Residual contract — DONE.** `helix_substrate/residual_contract.py` profiles
+the structure of codec damage (E = W - W_hat). `ResidualProfile` captures 12
+structural features: rms, cosine, kurtosis, sparsity, ACF, spectral ratio,
+SVD rank, channel concentration. `DamageType` classifies residuals as DISTRIBUTED,
+CONCENTRATED, LOW_RANK, or STRUCTURED. `compare_codecs()` ranks heterogeneous
+codecs by residual quality. `residual_routing_signal()` extracts routing-relevant
+signals (codec_optimal, try_correction, correction_hint). 26/26 tests including
+real-data VQ and affine comparison.
 
 ## The Scientific Claim
 
