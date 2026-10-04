@@ -1,0 +1,11 @@
+A admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+  probe outcomes: {('A', 'DEFER', 'HARNESS_END'): 300, ('B', 'DEFER', 'TOOL_BUDGET_EXHAUSTED'): 300}
+  history monitor actions: {'COMMIT': 2400}
+B admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+C admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+D admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+H admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+J admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+K admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+L admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
+M admitted: {'AP1': 60, 'AP2': 60, 'AP3': 60, 'AP4': 60, 'AP5': 60, 'BP1': 60, 'BP2': 60, 'BP3': 60, 'BP4': 60, 'BP5': 60} | total 600
