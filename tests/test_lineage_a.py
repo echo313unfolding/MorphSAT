@@ -67,6 +67,16 @@ class TestWorld:
         assert posterior(pat(recs), Env(0.9, 0.2, 1.0, 0.0))["mc"] == 0.0
         assert posterior(pat(recs), Env(0.9, 0.2, 1.0, 0.3))["mc"] > 0.0
 
+    def test_impossible_pattern_gets_zero_weight(self):
+        from lineage_a.evaluate import weights
+        bad = [R(0, "threat", "S_p0", "U_p0"), R(1, "benign", "S_c", "U_c", True), R(2, "threat", "S_c", "U_c")]
+        good = [R(0, "threat", "S_p0", "U_p0"), R(1, "benign", "S_c", "U_c", True), R(2, "benign", "S_c", "U_c")]
+        pb, pg = Pattern("bad", "X", "cell", tuple(bad)), Pattern("good", "X", "cell", tuple(good))
+        e = Env(0.7, 0.5, 1.0, 0.0)
+        posts = {"bad": posterior(pb, e), "good": posterior(pg, e)}
+        assert posts["bad"]["Z"] == 0.0 and posts["bad"]["q"] is None
+        assert weights([pb, pg], posts) == {"bad": 0.0, "good": 1.0}
+
     def test_grid(self):
         assert len(ENVS) == 24 and {e.rho for e in ENVS} == {0.0, 0.5, 1.0}
 

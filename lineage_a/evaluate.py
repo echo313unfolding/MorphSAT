@@ -61,8 +61,15 @@ def weights(patterns, posts) -> Dict[str, float]:
     for cell, ps in cells.items():
         z = sum(posts[p.pid]["Z"] for p in ps)
         for p in ps:
-            w[p.pid] = (posts[p.pid]["Z"] / z) / n_cells
+            w[p.pid] = (posts[p.pid]["Z"] / z) / n_cells if z > 0 else 0.0
     return w
+
+
+def uniform_weights(patterns, posts) -> Dict[str, float]:
+    """Secondary diagnostic (v1.1 §6.1): equal weight over patterns that are
+    possible (Z > 0) in this environment."""
+    poss = [p for p in patterns if posts[p.pid]["Z"] > 0]
+    return {p.pid: (1.0 / len(poss) if posts[p.pid]["Z"] > 0 else 0.0) for p in patterns}
 
 
 def aggregate(fam_sets, decisions, posts, weight_maps, policy) -> Dict[str, float]:
@@ -72,6 +79,8 @@ def aggregate(fam_sets, decisions, posts, weight_maps, policy) -> Dict[str, floa
     for fam, ps in fam_sets.items():
         fw = 1.0 / len(fam_sets)
         for p in ps:
+            if weight_maps[fam][p.pid] == 0.0:
+                continue                                   # impossible pattern
             o = pattern_outcome(decisions[p.pid][policy], posts[p.pid], p.correction.direction)
             for k in keys:
                 acc[k] += fw * weight_maps[fam][p.pid] * o[k]
@@ -144,19 +153,24 @@ def run() -> Dict[str, object]:
     for env in ENVS:
         posts = {p.pid: posterior(p, env) for p in all_p}
         for p in all_p:
-            decisions[p.pid]["REF"] = _ref(posts[p.pid]["q"])
+            decisions[p.pid]["REF"] = _ref(posts[p.pid]["q"]) if posts[p.pid]["Z"] > 0 else ABSTAIN
         wmap = {"FAM-G": weights(g, posts), "FAM-T": weights(t, posts),
                 "FAM-I": weights(i_set, posts)}
         primary = {"FAM-G": g, "FAM-T": t}
         res = {pol: aggregate(primary, decisions, posts, wmap, pol) for pol in ALL_POLICIES}
         famI = {pol: aggregate({"FAM-I": i_set}, decisions, posts, wmap, pol) for pol in ALL_POLICIES}
         famT = {pol: aggregate({"FAM-T": t}, decisions, posts, wmap, pol) for pol in ALL_POLICIES}
+        umap = {"FAM-G": uniform_weights(g, posts), "FAM-T": uniform_weights(t, posts)}
+        unweighted = {pol: aggregate(primary, decisions, posts, umap, pol) for pol in ALL_POLICIES}
+        n_impossible = sum(posts[p.pid]["Z"] == 0 for p in all_p)
         # D1: manufactured-corroboration structures within FAM-G
         mc_set = [p for p in g if p.meta["structure"] in ("A-corr", "B-corr")]
         d1 = {pol: aggregate({"MC": mc_set}, decisions, posts, {"MC": weights(mc_set, posts)}, pol)
               for pol in ("A5", "A4", "A5n", "C1", "C2")}
         out["envs"][env.key] = {"env": env.__dict__, "primary": res, "FAM-I": famI,
-                                "FAM-T": famT, "D1_mc_structures": d1}
+                                "FAM-T": famT, "D1_mc_structures": d1,
+                                "unweighted_secondary": unweighted,
+                                "n_impossible_patterns": n_impossible}
     # D3 trust inflation (environment-independent: depends only on records)
     infl = defaultdict(list)
     for p in g:

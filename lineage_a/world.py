@@ -73,6 +73,10 @@ def posterior(p: Pattern, env: Env) -> Dict[str, float]:
             mc += w if a else 0.0
         if x_post == THREAT:
             tp += w
+    if z == 0.0:
+        # Pattern impossible under this environment (e.g. rho = 1 copies that
+        # disagree). Its weight is 0 under the frozen cell normalization.
+        return {"Z": 0.0, "q": None, "t_post": None, "mc": None}
     return {"Z": z, "q": qv / z, "t_post": tp / z, "mc": mc / z}
 
 
