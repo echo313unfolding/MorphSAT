@@ -1,4 +1,6 @@
-# P3 — DEFER → ARBITRATION: Design and Preregistration
+# P3 — DEFER → ARBITRATION: Design and Preregistration (v1 — SUPERSEDED)
+
+> **Superseded by `docs/P3_DEFER_ARBITRATION_PREREG_V2.md`. Do not implement v1.**
 
 Status: **DESIGN ONLY — not implemented.** Base: `claude/p2d-docs` @ `ae3130d`
 (public GitHub lineage of `14689b7`). This document is the preregistration; any
