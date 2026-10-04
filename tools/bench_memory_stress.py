@@ -897,7 +897,8 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
     """Assemble a DecisionEvent from values already decided (read-only)."""
     m_action = _obs["monitor_action"]
     m_dir = _obs["monitor_direction"]
-    auth = _obs["authority"]
+    # Post-arbitration authority if DEFER was resolved (P3), else downstream.
+    auth = _obs.get("final_authority", _obs["authority"])
     source = auth.applied_source
     ts = _obs.get("ts_result")
     final_dir = auth.final_direction          # canonical; None for ABSTAIN etc.

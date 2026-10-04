@@ -119,3 +119,30 @@ class TestAuthorityOnDefer:
     def test_arbitration_on_terminal_fails_closed(self, m):
         with pytest.raises(ValueError):
             R(*m, True, "COMMIT", "benign", "arbitration")
+
+
+class TestEventFinalAfterArbitration:
+    """Regression: DEFER events must record the POST-arbitration outcome."""
+
+    def test_events_match_emitted_outcome(self, tmp_path_factory):
+        import sys
+        from pathlib import Path
+        root = Path(__file__).resolve().parent.parent
+        sys.path.insert(0, str(root / "tools")); sys.path.insert(0, str(root / "tests"))
+        import bench_memory_stress as B
+        from test_decision_event import _isolate_bench
+        mp = pytest.MonkeyPatch()
+        _isolate_bench(B, mp, tmp_path_factory.mktemp("defer_ev"))
+        try:
+            r = B.run_stress_mode("A", B.STRESS_FAMILIES, enable_defer=True,
+                                  arbitration_baseline="B2")
+        finally:
+            mp.undo()
+        for ep, ev in zip(r.episodes, r.decision_events):
+            assert ev.final_action == ep.final_action
+            assert ev.final_action in ("COMMIT", "ABSTAIN")
+            assert (ev.final_direction is None) == (ev.final_action == "ABSTAIN")
+            assert ev.evaluation["scored_as"] == ep.final_verdict
+            if ev.monitor_action == "DEFER":
+                assert ev.override_source == "arbitration"
+                assert ev.arbitration_result["action"] == ev.final_action
