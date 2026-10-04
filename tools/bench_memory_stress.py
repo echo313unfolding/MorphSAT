@@ -76,6 +76,10 @@ from morphsat.graph_routing_signal import (
 )
 from morphsat.correction_echo import CorrectionEcho
 from morphsat.terminal_authority import resolve_terminal_authority
+from morphsat.history_projection import (
+    canonical_outcome_core,
+    memory_projection,
+)
 from morphsat.decision_event import (
     SCHEMA_VERSION as DECISION_EVENT_SCHEMA,
     SEVERITY as SEVERITY_RANK,
@@ -864,7 +868,8 @@ def _make_tmp(suffix: str) -> str:
 def _build_decision_event(_obs, monitor, scenario, mode, family,
                           episode_index, raw_action, verdict, expected,
                           resolution, receipt_chain, receipt_graph,
-                          correction_echo) -> DecisionEvent:
+                          correction_echo, memory=None,
+                          canonical_echo=True) -> DecisionEvent:
     """Assemble a DecisionEvent from values already decided (read-only)."""
     m_action = _obs["monitor_action"]
     m_dir = _obs["monitor_direction"]
@@ -891,18 +896,54 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
         history_refs["graph_routing_signal"] = {
             k: v for k, v in _obs["grs"].items() if k != "e10"}
 
-    stores = {"splitmemory_resolution": resolution}
-    if receipt_graph is not None:
-        # close_episode() builds the graph node from to_receipt(), i.e. the
-        # MONITOR direction, not the emitted verdict. Recorded as-is.
-        stores["receiptgraph_node_outcome"] = (
-            monitor.last_action.direction or "unknown")
-    if correction_echo is not None and scenario.get("has_correction_tools"):
-        stores["echo_marker_created_from"] = {
-            "outcome_after": verdict,
-            "outcome_before": "escalate",          # hard-coded (C7)
-            "is_correction_source": "scenario.has_correction_tools",  # oracle (C7)
-        }
+    # --- Stores: READ BACK what each store actually recorded (v3) ---
+    core = _obs["outcome_core"]
+    ref = core["outcome_ref"]
+    stores: Dict[str, Any] = {}
+    sig_hash = SplitMemoryStore.hash_evidence(monitor.evidence_vector)
+    store_of = lambda lbl: (None if lbl is None else
+                            "tolerance" if lbl == "benign" else
+                            "abstain" if lbl == "abstain" else "threat")
+    if _obs["canonical_memory"]:
+        label = memory_projection(core["final_action"], core["final_direction"],
+                                  core["posture_final"])
+    else:
+        label = resolution                       # legacy: scored value
+    sname = store_of(label)
+    entry = getattr(memory, sname).get(sig_hash) if (memory and sname) else None
+    stores["splitmemory"] = {
+        "label": label,
+        "store": sname,
+        "entry_present": entry is not None if sname else None,
+        "outcome_ref_present": (ref in entry.event_refs) if entry else False,
+    }
+    if receipt_graph is not None and receipt_chain is not None and receipt_chain.blocks:
+        node = receipt_graph.nodes.get(receipt_chain.blocks[-1].receipt_hashes[-1])
+        if node is not None:
+            stores["receiptgraph"] = {
+                "outcome": node.outcome, "action": node.action,
+                "monitor_outcome": node.monitor_outcome,
+                "override_source": node.override_source,
+                "attempted_override_source": node.attempted_override_source,
+                "outcome_ref": node.outcome_ref,
+            }
+    if correction_echo is not None:
+        if canonical_echo:
+            mk = correction_echo.last_created_marker
+            stores["echo"] = dict(_obs.get("echo_inputs", {}))
+            stores["echo"]["marker_created"] = None if mk is None else {
+                "outcome_before": mk.outcome_before,
+                "outcome_before_ref": mk.outcome_before_ref,
+                "outcome_after": mk.outcome_after,
+                "outcome_after_ref": mk.outcome_after_ref,
+                "provenance": mk.provenance,
+            }
+        elif scenario.get("has_correction_tools"):
+            stores["echo"] = {"marker_created": {
+                "outcome_after": verdict,
+                "outcome_before": "escalate",          # hard-coded (C7)
+                "provenance": "legacy: scenario.has_correction_tools",  # oracle (C7)
+            }}
 
     receipt_hash = canonical_hash(monitor.to_receipt())
     block = None
@@ -985,6 +1026,7 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
                 and (raw_action, final_dir) != (m_action, m_dir)),
         },
         e10_observed=_obs["grs"]["e10"] if "grs" in _obs else None,
+        outcome_ref=ref,
         monitor_receipt_hash=receipt_hash,
         receipt_block=block,
     )
@@ -1009,6 +1051,8 @@ def run_stress_episode(
     correction_echo: Optional[CorrectionEcho] = None,
     event_sink: Optional[List[DecisionEvent]] = None,
     enforce_terminal_authority: bool = True,
+    canonical_memory: bool = True,
+    canonical_echo: bool = True,
 ) -> StressEpisodeResult:
     """Run one stress episode through shadow monitor.
 
@@ -1068,6 +1112,7 @@ def run_stress_episode(
         m_action_raw = monitor.last_action.action
         m_dir_raw = monitor.last_action.direction
         prop_source, prop_action, prop_dir = "none", None, None
+        echo_injected = False
 
         # --- QUBO gate override ---
         # If gate_qubo is provided, build a snapshot from the monitor's
@@ -1270,6 +1315,7 @@ def run_stress_episode(
                             snap.memory_confidence = 0.8
                             snap.memory_exposures = max(1, echo_marker.fired_count)
                             _obs["echo_injected"] = True
+                            echo_injected = True
                 _obs["echo_cc_post"] = (echo_marker.contradiction_count
                                         if echo_marker is not None else None)
 
@@ -1327,12 +1373,47 @@ def run_stress_episode(
         # close_episode clears it, so copy it first (read-only).
         if receipt_graph is not None and receipt_graph._last_prediction:
             _obs["graph_prediction"] = dict(receipt_graph._last_prediction)
-        monitor.close_episode(resolution, confidence)
+
+        # --- P2C: one canonical outcome; every store is a projection of it
+        outcome_core = canonical_outcome_core(
+            episode_id=f"{mode}/{family}/{episode_index:03d}/{scenario['id']}",
+            final_action=auth.final_action,
+            final_direction=auth.final_direction,
+            monitor_action=m_action_raw,
+            monitor_direction=m_dir_raw,
+            posture_final=monitor.state.value,
+            override_source=auth.applied_source,
+            attempted_override_source=auth.attempted_source,
+            override_blocked_by_terminal=auth.blocked_by_terminal,
+        )
+        _obs["outcome_core"] = outcome_core
+        _obs["canonical_memory"] = canonical_memory
+        monitor.close_episode(
+            resolution, confidence,
+            canonical_outcome=outcome_core if canonical_memory else None)
 
         # --- Correction Echo: observe episode completion ---
         # The echo needs to know: was this a correction episode?
         # Detection: "correction" in alert text (same as scenario flag)
-        if correction_echo is not None:
+        if correction_echo is not None and canonical_echo:
+            # P2C (C7): correction detected from the system's OWN evidence
+            # categories; outcome_before from its own prior canonical
+            # outcome; no marker from echo-influenced episodes.
+            correction_detected = "correction" in monitor.evidence_tags
+            echo_influenced = echo_injected or prop_source == "echo_tiebreak"
+            _obs["echo_inputs"] = {"correction_detected": correction_detected,
+                                   "echo_influenced": echo_influenced}
+            correction_echo.observe_canonical(
+                alert_text=scenario["alert"],
+                scenario_id=scenario["id"],
+                outcome_ref=outcome_core["outcome_ref"],
+                final_action=auth.final_action,
+                final_direction=auth.final_direction,
+                correction_detected=correction_detected,
+                echo_influenced=echo_influenced,
+                applied_source=auth.applied_source,
+            )
+        elif correction_echo is not None:
             is_correction = scenario.get("has_correction_tools", False)
             correction_echo.observe_episode(
                 alert_text=scenario["alert"],
@@ -1376,7 +1457,8 @@ def run_stress_episode(
             event_sink.append(_build_decision_event(
                 _obs, monitor, scenario, mode, family, episode_index,
                 raw_action, verdict, expected, resolution,
-                receipt_chain, receipt_graph, correction_echo))
+                receipt_chain, receipt_graph, correction_echo,
+                memory, canonical_echo))
 
         return StressEpisodeResult(
             scenario_id=scenario["id"],
@@ -1427,6 +1509,8 @@ def run_stress_mode(
     verbose: bool = False,
     collect_events: bool = True,
     enforce_terminal_authority: bool = True,
+    canonical_memory: bool = True,
+    canonical_echo: bool = True,
 ) -> StressModeResult:
     """Run all stress families through one mode."""
 
@@ -1513,6 +1597,8 @@ def run_stress_mode(
                 correction_echo=corr_echo,
                 event_sink=events,
                 enforce_terminal_authority=enforce_terminal_authority,
+                canonical_memory=canonical_memory,
+                canonical_echo=canonical_echo,
             )
             fam_episodes.append(result)
             all_episodes.append(result)

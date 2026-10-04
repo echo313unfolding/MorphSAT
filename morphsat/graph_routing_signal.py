@@ -27,7 +27,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
-from morphsat.receipt_graph import ReceiptGraph, ReceiptNode, ReceiptEdge, COLD_THRESHOLD
+from morphsat.receipt_graph import (
+    ReceiptGraph, ReceiptNode, ReceiptEdge, COLD_THRESHOLD,
+    NON_DIRECTIONAL_OUTCOMES,
+)
 
 
 @dataclass
@@ -97,7 +100,7 @@ def extract_graph_routing_signal(
     # Step 2: Count outcome distribution in matching nodes
     outcome_counts: Dict[str, float] = {}
     for node, score in matching:
-        if node.outcome != "unknown":
+        if node.outcome not in NON_DIRECTIONAL_OUTCOMES:
             outcome_counts[node.outcome] = outcome_counts.get(
                 node.outcome, 0.0) + score
 

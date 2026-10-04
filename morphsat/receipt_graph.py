@@ -71,6 +71,10 @@ DECAY_RATES = {
 
 DEFAULT_DECAY = 0.05
 COLD_THRESHOLD = 0.15    # below this, edge is cold (not retrieved)
+
+# Outcome labels that are history but never a threat/benign vote (P2C).
+# None is included because pre-P2C receipts stored ABSTAIN as null.
+NON_DIRECTIONAL_OUTCOMES = frozenset({"unknown", "abstain", "handoff", None})
 REINFORCE_BOOST = 0.15   # weight gain on successful prediction
 CONTRADICT_PENALTY = 0.25 # weight loss on failed prediction
 
@@ -90,6 +94,11 @@ class ReceiptNode:
     timestamp: str
     receipt_class: str    # formal/decision/evidence/temporary
     tags: List[str] = field(default_factory=list)
+    # P2C provenance (defaults keep pre-P2C graph files loadable)
+    monitor_outcome: Optional[str] = None
+    override_source: str = "none"
+    attempted_override_source: str = "none"
+    outcome_ref: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -180,19 +189,40 @@ class ReceiptGraph:
         receipt: Dict[str, Any],
         block_number: int,
     ) -> ReceiptNode:
-        """Project a receipt into the graph as a node."""
+        """Project a receipt into the graph as a node.
+
+        If the receipt carries a ``canonical_outcome`` (P2C), the node's
+        outcome/action are the canonical EMITTED outcome and the monitor
+        result is kept as provenance. Otherwise the legacy projection
+        (monitor final_direction / final_action) is used.
+        """
+        canon = receipt.get("canonical_outcome")
+        if canon is not None:
+            from morphsat.history_projection import graph_projection
+            outcome = graph_projection(canon["final_action"],
+                                       canon["final_direction"],
+                                       canon.get("posture_final", ""))
+            action = canon["final_action"]
+        else:
+            outcome = receipt.get("final_direction", "unknown")
+            action = receipt.get("final_action", "CONTINUE")
         node = ReceiptNode(
             receipt_hash=receipt_hash,
             block_number=block_number,
             domain=self._extract_domain(receipt),
-            outcome=receipt.get("final_direction", "unknown"),
-            action=receipt.get("final_action", "CONTINUE"),
+            outcome=outcome,
+            action=action,
             timestamp=receipt.get("timestamp",
                                   time.strftime("%Y-%m-%dT%H:%M:%SZ",
                                                 time.gmtime())),
             receipt_class=self._classify_receipt(receipt),
             tags=self._extract_tags(receipt),
         )
+        if canon is not None:
+            node.monitor_outcome = canon.get("monitor_direction") or canon.get("monitor_action")
+            node.override_source = canon.get("override_source", "none")
+            node.attempted_override_source = canon.get("attempted_override_source", "none")
+            node.outcome_ref = canon.get("outcome_ref")
         self.nodes[receipt_hash] = node
         self._save()
         return node
@@ -386,14 +416,14 @@ class ReceiptGraph:
                 else:
                     continue
 
-                if other and other.outcome != "unknown":
+                if other and other.outcome not in NON_DIRECTIONAL_OUTCOMES:
                     vote = edge.weight * match_score
                     outcome_weights[other.outcome] = (
                         outcome_weights.get(other.outcome, 0.0) + vote)
                     basis_hashes.add(other.receipt_hash)
 
             # The candidate node itself votes too
-            if node.outcome != "unknown":
+            if node.outcome not in NON_DIRECTIONAL_OUTCOMES:
                 outcome_weights[node.outcome] = (
                     outcome_weights.get(node.outcome, 0.0) + match_score)
                 basis_hashes.add(node.receipt_hash)
@@ -552,7 +582,7 @@ class ReceiptGraph:
         for a in active:
             for outcome_key in ("from_outcome", "to_outcome"):
                 o = a[outcome_key]
-                if o != "unknown":
+                if o not in NON_DIRECTIONAL_OUTCOMES:
                     outcome_votes[o] = outcome_votes.get(o, 0.0) + a["weight"]
 
         dominant = max(outcome_votes, key=outcome_votes.get) if outcome_votes else "unknown"

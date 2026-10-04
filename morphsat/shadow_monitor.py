@@ -900,7 +900,8 @@ class ShadowMonitor:
         ))
         self.previous_state = to_state
 
-    def close_episode(self, final_resolution: str, confidence: float):
+    def close_episode(self, final_resolution: str, confidence: float,
+                      canonical_outcome: Optional[dict] = None):
         """Post-episode: write to memory. Strange loop closure.
 
         With receipt chain and receipt graph enabled, this also:
@@ -908,21 +909,41 @@ class ShadowMonitor:
         2. Projects it into the graph (Layer 2 — living memory)
         3. Scores the graph's prediction against actual outcome
         4. Runs decay on graph edges
+
+        P2C: if ``canonical_outcome`` is given, every store is a projection
+        of that one outcome (history_projection.py): SplitMemory via
+        record_canonical (ABSTAIN -> abstain store), the chain receipt
+        carries it, and the graph node/prediction score use the EMITTED
+        outcome. ``final_resolution`` is then ignored. Without it, the
+        legacy behavior is unchanged.
         """
         if self.evidence_vector:
-            self.memory.record_episode(
-                evidence_signature=self.evidence_vector,
-                resolution=final_resolution,
-                confidence=confidence,
-                alert_text=self.alert_text,
-                threat_score=self.threat_score,
-                safety_score=self.safety_score,
-                turns=self.turn,
-            )
+            if canonical_outcome is not None:
+                self.memory.record_canonical(
+                    evidence_signature=self.evidence_vector,
+                    canonical_outcome=canonical_outcome,
+                    confidence=confidence,
+                    alert_text=self.alert_text,
+                    threat_score=self.threat_score,
+                    safety_score=self.safety_score,
+                    turns=self.turn,
+                )
+            else:
+                self.memory.record_episode(
+                    evidence_signature=self.evidence_vector,
+                    resolution=final_resolution,
+                    confidence=confidence,
+                    alert_text=self.alert_text,
+                    threat_score=self.threat_score,
+                    safety_score=self.safety_score,
+                    turns=self.turn,
+                )
 
         # Layer 1: receipt chain (immutable provenance spine)
         if self._receipt_chain is not None:
             receipt = self.to_receipt()
+            if canonical_outcome is not None:
+                receipt["canonical_outcome"] = dict(canonical_outcome)
             receipt_hash = self._receipt_chain.append_receipt(receipt)
             block = self._receipt_chain.close_block()
             block_number = block.block_number if block else 0
@@ -930,7 +951,14 @@ class ShadowMonitor:
             # Layer 2: receipt graph (living associative memory)
             if self._receipt_graph is not None:
                 # Score previous prediction before adding new node
-                actual_outcome = receipt.get("final_direction", "unknown")
+                if canonical_outcome is not None:
+                    from morphsat.history_projection import graph_projection
+                    actual_outcome = graph_projection(
+                        canonical_outcome["final_action"],
+                        canonical_outcome["final_direction"],
+                        canonical_outcome.get("posture_final", ""))
+                else:
+                    actual_outcome = receipt.get("final_direction", "unknown")
                 self._receipt_graph.score_prediction(actual_outcome)
 
                 # Add new node and auto-connect

@@ -65,6 +65,7 @@ class MemoryEntry:
     avg_turns_to_resolve: float = 0.0
     avg_threat_score: float = 0.0
     avg_safety_score: float = 0.0
+    event_refs: List[str] = field(default_factory=list)  # P2C outcome_refs
 
 
 class SplitMemoryStore:
@@ -172,7 +173,8 @@ class SplitMemoryStore:
     def record_episode(self, evidence_signature: List[Tuple[str, str]],
                        resolution: str, confidence: float,
                        alert_text: str, threat_score: float,
-                       safety_score: float, turns: int):
+                       safety_score: float, turns: int,
+                       event_ref: Optional[str] = None):
         """Write pattern to the appropriate store after episode resolves.
 
         This is where the strange loop closes:
@@ -193,6 +195,8 @@ class SplitMemoryStore:
 
         if h in store:
             entry = store[h]
+            if event_ref is not None:
+                entry.event_refs.append(event_ref)
             entry.exposures += 1
             entry.last_seen = now
             n = entry.exposures
@@ -215,8 +219,30 @@ class SplitMemoryStore:
                 avg_turns_to_resolve=float(turns),
                 avg_threat_score=threat_score,
                 avg_safety_score=safety_score,
+                event_refs=[event_ref] if event_ref is not None else [],
             )
         self._save()
+
+    def record_canonical(self, evidence_signature: List[Tuple[str, str]],
+                         canonical_outcome: Dict, confidence: float,
+                         alert_text: str, threat_score: float,
+                         safety_score: float, turns: int) -> Optional[str]:
+        """Strict P2C entry point: project a canonical outcome into memory.
+
+        ABSTAIN goes to the abstain store (never threat); SWARM handoff and
+        CONTINUE write no verdict memory. Returns the store label written,
+        or None if nothing was written.
+        """
+        from morphsat.history_projection import memory_projection
+        label = memory_projection(canonical_outcome["final_action"],
+                                  canonical_outcome["final_direction"],
+                                  canonical_outcome.get("posture_final", ""))
+        if label is None:
+            return None
+        self.record_episode(evidence_signature, label, confidence, alert_text,
+                            threat_score, safety_score, turns,
+                            event_ref=canonical_outcome.get("outcome_ref"))
+        return label
 
     def clear(self):
         self.threat = {}

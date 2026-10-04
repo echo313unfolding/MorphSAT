@@ -1,0 +1,262 @@
+{
+  "work_order": "P2C_CANONICAL_SELF_HISTORY",
+  "scope": "public GitHub state 14689b7 lineage; no private/home-machine state",
+  "timestamp_utc": "2026-10-04T18:12:54Z",
+  "parent_commit": "0cf5fba",
+  "python": "3.11.15",
+  "changed_files": {
+    "morphsat/commit_gate.py": "4a2fa090d93873109b2591aa1641d79fb208e8700816c75eddaa30d1fb90a16c",
+    "morphsat/correction_echo.py": "3387638cc12c24b3e0d3bd6ff61e5244758c89d554438721a7255faf07b97974",
+    "morphsat/decision_event.py": "449a3fa803d6752aaa2d2a3eabd5873a2b667c3a3b19da7a9bcad248a7e30e6b",
+    "morphsat/graph_routing_signal.py": "e069ba0243d8838a54c80c88c1505b80723f58a9d140ebed982dd28af2d44e43",
+    "morphsat/memory_qubo.py": "b90070b60e897dc4de739ce79240ad97c2d9dae323db8467e5e63cc885ad8804",
+    "morphsat/receipt_graph.py": "aec8c91059603092a9eb6eaafa619b13460ecfad57c78dc1494ea0ed6413179e",
+    "morphsat/shadow_monitor.py": "212477e49c60ac67bae66969046f9e7f795ae68202dee5dae990f105fbf6f840",
+    "tests/test_decision_event.py": "a4708fe80293e06cd30528bd6b8ee334e29f0273e686087c1be5033f1ca93e67",
+    "tools/bench_memory_stress.py": "a9d0d8ad2fdfc75e738e9c354ebcf30936a3e1aafc6bafcae62d9d7f3d1db385",
+    "morphsat/history_projection.py": "c88c8f1cfd86d6c6e7f8421655b5629e3fb2b623a309772a86c0014c41c44213",
+    "tests/test_canonical_history.py": "676906e8dddc3084c797da129e866236ca0105f20537f9d58402b64d83bbcaaf"
+  },
+  "tests": {
+    "tests": 447,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "bench_modes": {
+    "A": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "B": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "C": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "D": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "H": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "J": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "K": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "L": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "M": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    }
+  },
+  "bench_gates": {
+    "total": 43,
+    "passed": 33,
+    "failed": 10
+  },
+  "bench_failed_gates": [
+    "G2: D>B on 2+ memory families (graph steering needed)",
+    "G8: H>D on 1+ family (QUBO gate improves over threshold)",
+    "G9: H>B on 1+ family (QUBO improves over SplitMemory alone)",
+    "G12: J > H overall (two-stage beats single-stage QUBO)",
+    "G17: K > A on 1+ memory family (graph alone adds value)",
+    "G21: K > B on 1+ family (graph-only beats SplitMemory-only)",
+    "G22: L > K (graph-taught beats graph-only)",
+    "G23: L > A on 1+ memory family (taught graph adds value)",
+    "G27: M > L on concept_drift (echo fixes timing gap)",
+    "G28: M > K on 1+ memory family (echo adds value over graph-only)"
+  ],
+  "decision_events_schema": "decision_event_v3",
+  "decision_event_digests": {
+    "A": "a9a1dca14c79638620a0c359ec05884621f578ccc723aa30622798198232a9a0",
+    "B": "58e267d371295ee3e8ca950c0ee510988abaa92e6f679489cc03a87d26c617e4",
+    "C": "5b476332641442638c66cb44c4eb5b358de637a556042892534bdff59e6dbc1e",
+    "D": "c69cbfb627ee2c8d5d8bd2af59b6751037b203ebd0ba6fe2db990243940a97f3",
+    "H": "a14a572a589f14450faf46042f9c7518767e1a2af96359223e87d579d3a56464",
+    "J": "18d2c2049c931a1d18e7f63a962e9518085485f87b0fedab07bd07d4bdcb35b3",
+    "K": "4e27f6172ae6253245b0496e04e71c957b5fd05b5fa5bb8d6fb29422b9cf4b0a",
+    "L": "cbb7d9c6625f76e3ee2b8006e02f676f36e37a22537554d3984055d4a4727319",
+    "M": "e277fded67b027c89c8c70f1a7fa1b45e0de00de519b42493b6c95ab414fb604"
+  },
+  "attribution_final_outcomes": {
+    "canonical_memory=False,canonical_echo=False": {
+      "A": 76,
+      "B": 76,
+      "C": 76,
+      "D": 76,
+      "H": 76,
+      "J": 76,
+      "K": 76,
+      "L": 76,
+      "M": 76
+    },
+    "canonical_memory=True,canonical_echo=False": {
+      "A": 76,
+      "B": 76,
+      "C": 76,
+      "D": 76,
+      "H": 76,
+      "J": 76,
+      "K": 76,
+      "L": 76,
+      "M": 76
+    },
+    "canonical_memory=False,canonical_echo=True": {
+      "A": 76,
+      "B": 76,
+      "C": 76,
+      "D": 76,
+      "H": 76,
+      "J": 76,
+      "K": 76,
+      "L": 76,
+      "M": 76
+    },
+    "canonical_memory=True,canonical_echo=True": {
+      "A": 76,
+      "B": 76,
+      "C": 76,
+      "D": 76,
+      "H": 76,
+      "J": 76,
+      "K": 76,
+      "L": 76,
+      "M": 76
+    }
+  },
+  "final_outcomes_identical_to_P2B_all_configs": true,
+  "internal_deltas_vs_P2B": {
+    "A": {},
+    "B": {},
+    "C": {},
+    "D": {},
+    "H": {
+      "memory_ref": 14
+    },
+    "J": {
+      "memory_ref": 14
+    },
+    "K": {},
+    "L": {},
+    "M": {}
+  },
+  "internal_delta_explanation": "H/J: 14 episodes' SplitMemory lookups now match abstain-store entries (formerly threat-store entries created from ABSTAIN). Their low confidence (<0.5) does not trip memory_disagrees, so routing is unchanged; under A2 finals are monitor-locked anyway.",
+  "c7_correction_detection_vs_oracle_M": "agree 82/82 (4 true corrections, 0 disagreements) - detection from system evidence category 'correction'",
+  "c7_outcome_before": "ldc_06: legacy hard-coded 'escalate' had no basis in the event chain -> canonical 'unknown' (no prior own outcome on overlapping ground). drift_04, stale_02, wc_02: canonical prior 'escalate' now referenced by outcome_ref. outcome_before is provenance-only (no behavioral consumer).",
+  "c7_example": {
+    "ldc_06": {
+      "P2B": {
+        "outcome_after": "benign",
+        "outcome_before": "escalate",
+        "is_correction_source": "scenario.has_correction_tools"
+      },
+      "P2C": {
+        "correction_detected": true,
+        "echo_influenced": false,
+        "marker_created": {
+          "outcome_before": "unknown",
+          "outcome_before_ref": null,
+          "outcome_after": "benign",
+          "outcome_after_ref": "39e22f83fb486894b55da2835b71e363a83c6408fda6d7812e1cdd17322a3a20",
+          "provenance": "canonical"
+        }
+      }
+    },
+    "drift_04": {
+      "P2B": {
+        "outcome_after": "benign",
+        "outcome_before": "escalate",
+        "is_correction_source": "scenario.has_correction_tools"
+      },
+      "P2C": {
+        "correction_detected": true,
+        "echo_influenced": false,
+        "marker_created": {
+          "outcome_before": "escalate",
+          "outcome_before_ref": "3612cc01ef16a9bfea39edb2f4e39be63fc256a4d93b168af93d78b605d58767",
+          "outcome_after": "benign",
+          "outcome_after_ref": "e71d32fd12d90ac1d7a7eabdff7610fe9a0be78d1e612efed8a25548e34c954b",
+          "provenance": "canonical"
+        }
+      }
+    }
+  },
+  "c10_example": {
+    "episode": "J/concept_drift/006/drift_06",
+    "final": [
+      "ABSTAIN",
+      null
+    ],
+    "P2B": {
+      "stores": {
+        "splitmemory_resolution": "suspicious",
+        "receiptgraph_node_outcome": "unknown"
+      },
+      "memory_ref_used_at_routing": [
+        "threat",
+        "ddc8dee4ecf759fb8d99cccb552303391eff2e2d93231debf8dbda9be346904a"
+      ]
+    },
+    "P2C": {
+      "stores": {
+        "splitmemory": {
+          "label": "abstain",
+          "store": "abstain",
+          "entry_present": true,
+          "outcome_ref_present": true
+        },
+        "receiptgraph": {
+          "outcome": "abstain",
+          "action": "ABSTAIN",
+          "monitor_outcome": "ABSTAIN",
+          "override_source": "none",
+          "attempted_override_source": "none",
+          "outcome_ref": "a4eea7d45b8d3bb14c4512dae085ce29800b6c5ff1e468c1c5c37c64d2ae4f53"
+        }
+      },
+      "memory_ref_used_at_routing": [
+        "abstain",
+        "ddc8dee4ecf759fb8d99cccb552303391eff2e2d93231debf8dbda9be346904a"
+      ],
+      "outcome_ref": "a4eea7d45b8d3bb14c4512dae085ce29800b6c5ff1e468c1c5c37c64d2ae4f53"
+    }
+  },
+  "p1_p2b_projection_correction": "P1/P2B events reported ReceiptGraph ABSTAIN outcome as 'unknown'; actual stored value was null (None), which passed the '!= \"unknown\"' vote filters in ReceiptGraph.predict/export_memory_hud, graph_routing_signal and MemoryQUBO. P2C stores 'abstain' and excludes NON_DIRECTIONAL_OUTCOMES (incl. legacy None) from directional votes.",
+  "legacy_paths_retained": [
+    "SplitMemoryStore.record_episode (LLM benches pass free-form verdicts)",
+    "ShadowMonitor.close_episode without canonical_outcome",
+    "CorrectionEcho.observe_episode",
+    "CommitGate.close_episode (unchanged)"
+  ],
+  "schema": "decision_event_v3"
+}

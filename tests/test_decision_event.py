@@ -248,13 +248,15 @@ class TestFaithfulness:
             assert not any(e.final_direction != e.monitor_direction
                            for e in evs), m
 
-    def test_splitmemory_records_scored_projection(self, runs):
-        """P2B leaves memory semantics unchanged: SplitMemory still receives
-        the legacy scored value (ABSTAIN -> 'suspicious'), i.e. C10."""
+    def test_splitmemory_records_canonical_projection(self, runs):
+        """P2C: SplitMemory receives the canonical projection (ABSTAIN ->
+        abstain store), never the legacy scored value."""
+        from morphsat.history_projection import memory_projection
         on, _ = runs
         for m in MODES:
             for e in on[m].decision_events:
-                assert e.stores["splitmemory_resolution"] == e.evaluation["scored_as"]
+                assert e.stores["splitmemory"]["label"] == memory_projection(
+                    e.final_action, e.final_direction, e.posture_final)
 
     def test_no_environment_noise_in_bench_events(self, runs):
         on, _ = runs
@@ -334,9 +336,9 @@ class TestTerminalAuthorityCharacterization:
         assert e.evaluation["committed_escalate_downgrade_attempt"] is True
         assert e.evaluation["committed_escalate_downgrade_applied"] is False
         assert e.evaluation["correct"] is True
-        # memory semantics unchanged in P2B: stores now agree on escalate
-        assert e.stores == {"splitmemory_resolution": "escalate",
-                            "receiptgraph_node_outcome": "escalate"}
+        assert e.stores["splitmemory"]["label"] == "escalate"
+        assert e.stores["receiptgraph"]["outcome"] == "escalate"
+        assert e.stores["receiptgraph"]["attempted_override_source"] == "two_stage_qubo"
 
     @pytest.mark.parametrize("sid", ["drift_05", "drift_06", "stale_03"])
     def test_M_echo_tiebreak_on_abstain_blocked(self, runs, sid):
@@ -356,27 +358,33 @@ class TestTerminalAuthorityCharacterization:
                 e.echo_contradiction_count_post) == (0, 1)
         assert e.echo_injected_memory is True
 
-    def test_stores_diverge_on_abstain_without_override(self, runs):
-        """C10 still present in P2B (memory semantics untouched): every
-        ABSTAIN is 'unknown' in ReceiptGraph projection but 'suspicious'
-        (threat store) in SplitMemory."""
+    def test_abstain_is_uncertainty_history_not_threat(self, runs):
+        """C10 fixed (P2C): every ABSTAIN goes to the abstain store and is an
+        'abstain' graph node; none becomes threat memory."""
         on, _ = runs
         abst = [e for e in on["D"].decision_events if e.monitor_action == "ABSTAIN"]
         assert len(abst) == 19
         for e in abst:
-            assert e.final_direction is None and e.final_direction_defaulted
-            assert e.stores == {"splitmemory_resolution": "suspicious",
-                                "receiptgraph_node_outcome": "unknown"}
+            assert e.final_direction is None
+            assert e.stores["splitmemory"]["label"] == "abstain"
+            assert e.stores["splitmemory"]["store"] == "abstain"
+            assert e.stores["receiptgraph"]["outcome"] == "abstain"
 
-    def test_echo_provenance_is_oracle_and_hardcoded(self, runs):
+    def test_echo_provenance_is_canonical(self, runs):
+        """C7 fixed (P2C): markers derive from the system's own events."""
         on, _ = runs
         made = [e for e in on["M"].decision_events
-                if "echo_marker_created_from" in e.stores]
-        assert made
+                if e.stores["echo"]["marker_created"]]
+        assert {e.scenario_id for e in made} == {"ldc_06", "drift_04", "stale_02", "wc_02"}
         for e in made:
-            src = e.stores["echo_marker_created_from"]
-            assert src["outcome_before"] == "escalate"
-            assert src["is_correction_source"] == "scenario.has_correction_tools"
+            mk = e.stores["echo"]["marker_created"]
+            assert mk["provenance"] == "canonical"
+            assert mk["outcome_after"] == e.final_direction
+            assert mk["outcome_after_ref"] == e.outcome_ref
+        ldc = next(e for e in made if e.scenario_id == "ldc_06")
+        # the legacy constant "escalate" had no basis in the event chain
+        assert ldc.stores["echo"]["marker_created"]["outcome_before"] == "unknown"
+        assert ldc.stores["echo"]["marker_created"]["outcome_before_ref"] is None
 
     def test_attempt_counts(self, runs):
         """Attempts that would have changed the scored direction. J and M

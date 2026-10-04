@@ -49,7 +49,10 @@ import time
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from morphsat.receipt_graph import ReceiptGraph, ReceiptNode, ReceiptEdge, COLD_THRESHOLD
+from morphsat.receipt_graph import (
+    ReceiptGraph, ReceiptNode, ReceiptEdge, COLD_THRESHOLD,
+    NON_DIRECTIONAL_OUTCOMES,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -535,7 +538,7 @@ class MemoryQUBO:
             # Weighted vote on outcome
             outcome_votes: Dict[str, float] = {}
             for c in sel:
-                if c.outcome != "unknown":
+                if c.outcome not in NON_DIRECTIONAL_OUTCOMES:
                     w = c.edge_weight_sum / max(c.edge_count, 1)
                     outcome_votes[c.outcome] = outcome_votes.get(c.outcome, 0.0) + w
 

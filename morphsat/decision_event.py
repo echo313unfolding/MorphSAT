@@ -13,6 +13,9 @@ Schema history:
                override_blocked_by_terminal); final_direction is canonical
                (None for ABSTAIN, never fabricated); the legacy bench
                scoring projection moves to evaluation["scored_as"].
+    v3 (P2C) — outcome_ref (hash of the canonical outcome core that every
+               store write carries); `stores` is a READ-BACK of what each
+               store actually recorded (splitmemory / receiptgraph / echo).
 
 Semantics (v1 text, public GitHub state 14689b7):
 
@@ -41,7 +44,7 @@ from typing import Any, Dict, List, Optional
 
 from morphsat.receipt_chain import canonical_hash
 
-SCHEMA_VERSION = "decision_event_v2"
+SCHEMA_VERSION = "decision_event_v3"
 
 # Preregistered negative-control observables (Phase 2.5, F/E10).
 # Computed by graph_routing_signal; expected to have NO behavioral consumer.
@@ -151,6 +154,7 @@ class DecisionEvent:
     e10_expected_dead: bool = True
 
     # --- Integrity ---
+    outcome_ref: Optional[str] = None      # v3: canonical outcome core hash
     monitor_receipt_hash: Optional[str] = None
     receipt_block: Optional[int] = None
     schema_version: str = SCHEMA_VERSION
