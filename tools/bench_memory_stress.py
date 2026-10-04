@@ -76,6 +76,11 @@ from morphsat.graph_routing_signal import (
 )
 from morphsat.correction_echo import CorrectionEcho
 from morphsat.terminal_authority import resolve_terminal_authority
+from morphsat.canonical_history import (
+    CanonicalHistory, HistoryRecord, alert_tags as _alert_tags, evidence_lean,
+)
+from morphsat.arbitration import ArbitrationRequest, arbitrate
+import dataclasses as _dc
 from morphsat.history_projection import (
     canonical_outcome_core,
     memory_projection,
@@ -865,6 +870,25 @@ def _make_tmp(suffix: str) -> str:
     return f"/tmp/bench_stress_{suffix}_{os.getpid()}_{_tmp_counter}"
 
 
+def _p3_event_fields(_obs, monitor) -> Dict[str, Any]:
+    """v4 fields; empty for DEFER-disabled runs (keeps v3 events identical)."""
+    if not monitor.enable_defer:
+        return {}
+    out: Dict[str, Any] = {
+        "schema_version": "decision_event_v4",
+        "reason_for_defer": monitor.reason_for_defer,
+        "unrecognized_defer_reason": monitor.unrecognized_defer_reason,
+        "monitor_local_acquisition_closed": monitor.local_acquisition_closed,
+        "monitor_decision_terminal": monitor.decision_terminal,
+    }
+    arb = _obs.get("arbitration")
+    if arb is not None:
+        req, res = arb["request"], arb["result"]
+        out["arbitration_request"] = {**req.payload(), "request_hash": req.request_hash}
+        out["arbitration_result"] = res.to_dict()
+    return out
+
+
 def _build_decision_event(_obs, monitor, scenario, mode, family,
                           episode_index, raw_action, verdict, expected,
                           resolution, receipt_chain, receipt_graph,
@@ -1027,6 +1051,7 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
         },
         e10_observed=_obs["grs"]["e10"] if "grs" in _obs else None,
         outcome_ref=ref,
+        **_p3_event_fields(_obs, monitor),
         monitor_receipt_hash=receipt_hash,
         receipt_block=block,
     )
@@ -1053,6 +1078,9 @@ def run_stress_episode(
     enforce_terminal_authority: bool = True,
     canonical_memory: bool = True,
     canonical_echo: bool = True,
+    enable_defer: bool = False,
+    arbitration_baseline: str = "B0",
+    canonical_history: Optional[CanonicalHistory] = None,
 ) -> StressEpisodeResult:
     """Run one stress episode through shadow monitor.
 
@@ -1073,6 +1101,7 @@ def run_stress_episode(
         commit_safe_boundary=0.40,
         receipt_chain=receipt_chain,
         receipt_graph=receipt_graph,
+        enable_defer=enable_defer,
     )
 
     # Monkey-patch classifier if needed
@@ -1090,12 +1119,12 @@ def run_stress_episode(
         monitor.initialize(scenario["alert"])
 
         for tool_name, tool_result in tool_sequence:
-            if monitor.terminal_latched:
+            if monitor.local_acquisition_closed:
                 break
             monitor.process_evidence(tool_name, tool_result, model_output="")
 
-        _obs["forced_at_bench_end"] = not monitor.terminal_latched
-        if not monitor.terminal_latched:
+        _obs["forced_at_bench_end"] = not monitor.local_acquisition_closed
+        if not monitor.local_acquisition_closed:
             balance = monitor.threat_score - monitor.safety_score
             monitor._force_commit("bench_end", balance)
 
@@ -1353,11 +1382,43 @@ def run_stress_episode(
             m_action_raw, m_dir_raw,
             monitor.terminal_latched if enforce_terminal_authority else False,
             prop_action, prop_dir, prop_source)
+        _obs["authority"] = auth
+
+        # --- P3: DEFER is resolved ONLY by arbitration (prereg v2/v2.1) ---
+        if auth.final_action == "DEFER":
+            tags_now = _alert_tags(scenario["alert"])
+            slots = (canonical_history.candidates(family, episode_index, tags_now)
+                     if canonical_history is not None else ())
+            arb_req = ArbitrationRequest(
+                run_id=family, order=episode_index,
+                target_key=f"{family}/{scenario['id']}",
+                episode_id=f"{mode}/{family}/{episode_index:03d}/{scenario['id']}",
+                baseline=arbitration_baseline,
+                reason_for_defer=monitor.reason_for_defer,
+                threat_score=monitor.threat_score,
+                safety_score=monitor.safety_score,
+                contradiction=min(monitor.threat_score, monitor.safety_score),
+                evidence_signature=tuple(tuple(x) for x in monitor.evidence_vector),
+                alert_tags=tuple(sorted(tags_now)),
+                slots=slots,
+            )
+            arb_res = arbitrate(arb_req)
+            arb_auth = resolve_terminal_authority(
+                "DEFER", None, monitor.terminal_latched,
+                arb_res.action, arb_res.direction, "arbitration")
+            # Final from arbitration; downstream attempted_* provenance kept.
+            auth = _dc.replace(auth, final_action=arb_auth.final_action,
+                               final_direction=arb_auth.final_direction,
+                               applied_source=arb_auth.applied_source)
+            _obs["arbitration"] = {"request": arb_req, "result": arb_res}
+            _obs["final_authority"] = auth
+        if auth.final_action not in ("COMMIT", "ABSTAIN"):
+            raise RuntimeError(f"invariant: final action {auth.final_action}")
+
         raw_action = auth.final_action
         verdict = auth.final_direction
         if verdict is None:
             verdict = "suspicious"      # legacy bench scoring convention
-        _obs["authority"] = auth
 
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
@@ -1423,6 +1484,28 @@ def run_stress_episode(
                 prior_outcome="escalate" if is_correction else "unknown",
             )
 
+        # --- P3: append the canonical history record AFTER all store writes
+        if canonical_history is not None:
+            tags_rec = _alert_tags(scenario["alert"])
+            corr_sys = "correction" in monitor.evidence_tags
+            canonical_history.append(HistoryRecord(
+                outcome_ref=outcome_core["outcome_ref"],
+                run_id=family,
+                order=episode_index,
+                episode_key=f"{family}/{scenario['id']}",
+                alert_tags=tuple(sorted(tags_rec)),
+                evidence_signature=tuple(tuple(x) for x in monitor.evidence_vector),
+                final_action=auth.final_action,
+                final_direction=auth.final_direction,
+                evidence_lean=evidence_lean(monitor.threat_score, monitor.safety_score),
+                correction_detected=corr_sys,
+                supersedes=canonical_history.compute_supersedes(
+                    family, episode_index, tags_rec, auth.final_action,
+                    auth.final_direction, corr_sys),
+                resolved_by="arbitration" if m_action_raw == "DEFER" else "monitor",
+                override_source=auth.applied_source,
+            ))
+
         # Graph state
         graph_pred = None
         graph_pred_correct = None
@@ -1468,7 +1551,8 @@ def run_stress_episode(
             episode_index=episode_index,
             final_verdict=verdict,
             final_action=raw_action,
-            abstained=monitor.abstain_due_to_uncertainty,
+            abstained=(monitor.abstain_due_to_uncertainty
+                       or (m_action_raw == "DEFER" and raw_action == "ABSTAIN")),
             committed=monitor.terminal_latched,  # legacy field name = terminal latch
             n_tools=monitor.total_tools,
             verdict_correct=verdict_correct,
@@ -1511,6 +1595,8 @@ def run_stress_mode(
     enforce_terminal_authority: bool = True,
     canonical_memory: bool = True,
     canonical_echo: bool = True,
+    enable_defer: bool = False,
+    arbitration_baseline: str = "B0",
 ) -> StressModeResult:
     """Run all stress families through one mode."""
 
@@ -1570,6 +1656,7 @@ def run_stress_mode(
         ts_gate = TwoStageGate() if cfg.get("use_two_stage") else None
 
         # Correction echo for Mode M (per-family, shared across episodes)
+        canon_hist = CanonicalHistory() if enable_defer else None
         corr_echo = CorrectionEcho(ttl=5, min_tag_overlap=2) \
             if cfg.get("use_correction_echo") else None
 
@@ -1599,6 +1686,9 @@ def run_stress_mode(
                 enforce_terminal_authority=enforce_terminal_authority,
                 canonical_memory=canonical_memory,
                 canonical_echo=canonical_echo,
+                enable_defer=enable_defer,
+                arbitration_baseline=arbitration_baseline,
+                canonical_history=canon_hist,
             )
             fam_episodes.append(result)
             all_episodes.append(result)

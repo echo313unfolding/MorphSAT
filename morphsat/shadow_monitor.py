@@ -75,6 +75,26 @@ class ShadowState(enum.Enum):
     ABSTAIN_READY = "abstain_ready"
     ESCALATE_READY = "escalate_ready"
     SWARM_CALL = "swarm_call"
+    DEFERRED = "deferred"         # P3: local acquisition closed, decision open
+
+
+# ---------------------------------------------------------------------------
+# P3 DEFER reason whitelist (preregistration v2.1 A3) — frozen
+# ---------------------------------------------------------------------------
+
+DEFER_REASON_CLASSES = {
+    "bench_end": "HARNESS_END",
+    "investigate_budget": "TOOL_BUDGET_EXHAUSTED",
+    "safe_distance_budget": "TOOL_BUDGET_EXHAUSTED",
+    "max_tools_reached": "MAX_TOOLS",
+    "loop_in_normal": "STAGNATION",
+    "investigate_no_progress": "STAGNATION",
+}
+# Recognized _force_commit reasons that are NOT DEFER-capable in P3.
+NON_DEFER_REASONS = frozenset({
+    "terminal_state", "max_turns_no_verdict", "adversarial_test_end",
+    "cr_test_end", "compliance_test_end",
+})
 
 
 @dataclass
@@ -139,6 +159,8 @@ class ShadowMonitor:
 
                  # Dual-boundary (uncertainty-preserving) mode
                  enable_dual_boundary: bool = False,
+                 # P3: in-zone end of local evidence -> DEFER (default off)
+                 enable_defer: bool = False,
                  commit_threat_boundary: float = 0.55,
                  commit_safe_boundary: float = 0.40,
 
@@ -177,6 +199,11 @@ class ShadowMonitor:
         self.time_in_continue_zone = 0
         self.boundary_crossed = None  # "threat", "safe", or None
         self.abstain_due_to_uncertainty = False
+        # --- P3 DEFER state ---
+        self.enable_defer = enable_defer
+        self._deferred = False
+        self.reason_for_defer: Optional[str] = None
+        self.unrecognized_defer_reason: Optional[str] = None
 
         # --- Thresholds ---
         self.commit_clarity = commit_clarity
@@ -226,6 +253,19 @@ class ShadowMonitor:
     @committed.setter
     def committed(self, value: bool) -> None:
         self.terminal_latched = value
+
+    # P3 (prereg v2): two orthogonal properties.
+    #   decision_terminal        == terminal_latched (COMMIT/ABSTAIN/SWARM only)
+    #   local_acquisition_closed == decision_terminal or DEFER
+    # With enable_defer=False they are always equal.
+
+    @property
+    def decision_terminal(self) -> bool:
+        return self.terminal_latched
+
+    @property
+    def local_acquisition_closed(self) -> bool:
+        return self.terminal_latched or self._deferred
 
     # ------------------------------------------------------------------
     # Initialization
@@ -308,6 +348,9 @@ class ShadowMonitor:
         if self.terminal_latched:
             return CommitAction("COMMITTED", self.last_action.direction,
                                 "already committed")
+        if self._deferred:
+            return CommitAction("DEFERRED", None,
+                                "local acquisition closed; awaiting arbitration")
 
         self.total_tools += 1
         self.turn += 1
@@ -798,6 +841,23 @@ class ShadowMonitor:
                                              f"(safe boundary crossed)")
             else:
                 # INSIDE CONTINUE ZONE — do not invent confidence
+                if self.enable_defer:
+                    cls = DEFER_REASON_CLASSES.get(reason)
+                    if cls is not None:
+                        # P3 R1: local acquisition closes, decision stays open.
+                        # decision_terminal (terminal_latched) is NOT set.
+                        self._deferred = True
+                        self.reason_for_defer = cls
+                        self.state = ShadowState.DEFERRED
+                        action = CommitAction(
+                            "DEFER",
+                            reason=f"forced:{reason} in_zone {cls} "
+                                   f"(bal={evidence_balance:.2f})")
+                        self._trace(reason, self.state, f"defer:{cls}")
+                        self.last_action = action
+                        return action
+                    if reason not in NON_DEFER_REASONS:
+                        self.unrecognized_defer_reason = reason
                 self.abstain_due_to_uncertainty = True
                 self.state = ShadowState.ABSTAIN_READY
                 action = CommitAction(
@@ -1136,4 +1196,11 @@ class ShadowMonitor:
             ],
             "history": self.history,
             "memory_state": self.memory.to_receipt(),
+            # P3 keys appear only when DEFER is enabled, so receipts (and
+            # their hashes) are unchanged when it is off.
+            **({"enable_defer": True,
+                "local_acquisition_closed": self.local_acquisition_closed,
+                "reason_for_defer": self.reason_for_defer,
+                "unrecognized_defer_reason": self.unrecognized_defer_reason}
+               if self.enable_defer else {}),
         }

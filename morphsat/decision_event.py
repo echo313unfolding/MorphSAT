@@ -13,6 +13,10 @@ Schema history:
                override_blocked_by_terminal); final_direction is canonical
                (None for ABSTAIN, never fabricated); the legacy bench
                scoring projection moves to evaluation["scored_as"].
+    v4 (P3)  — DEFER/arbitration fields (reason_for_defer, both state flags,
+               arbitration request/result). Emitted ONLY on DEFER-enabled runs;
+               v4 keys are dropped from the payload when unset, so v3 events
+               and their hashes are unchanged when DEFER is off.
     v3 (P2C) — outcome_ref (hash of the canonical outcome core that every
                store write carries); `stores` is a READ-BACK of what each
                store actually recorded (splitmemory / receiptgraph / echo).
@@ -57,6 +61,13 @@ E10_OBSERVABLES = (
 )
 
 SEVERITY = {"benign": 0, "suspicious": 1, "escalate": 2}
+
+SCHEMA_VERSION_V4 = "decision_event_v4"
+V4_OPTIONAL_KEYS = (
+    "reason_for_defer", "unrecognized_defer_reason",
+    "monitor_local_acquisition_closed", "monitor_decision_terminal",
+    "arbitration_request", "arbitration_result",
+)
 
 FLOAT_DIGITS = 4
 
@@ -153,6 +164,14 @@ class DecisionEvent:
     e10_observed: Optional[Dict[str, bool]] = None
     e10_expected_dead: bool = True
 
+    # --- P3 (v4; omitted from payload when None) ---
+    reason_for_defer: Optional[str] = None
+    unrecognized_defer_reason: Optional[str] = None
+    monitor_local_acquisition_closed: Optional[bool] = None
+    monitor_decision_terminal: Optional[bool] = None
+    arbitration_request: Optional[Dict[str, Any]] = None
+    arbitration_result: Optional[Dict[str, Any]] = None
+
     # --- Integrity ---
     outcome_ref: Optional[str] = None      # v3: canonical outcome core hash
     monitor_receipt_hash: Optional[str] = None
@@ -161,7 +180,11 @@ class DecisionEvent:
 
     def payload(self) -> Dict[str, Any]:
         """Semantic payload used for the canonical hash."""
-        return _norm(asdict(self))
+        d = asdict(self)
+        for k in V4_OPTIONAL_KEYS:
+            if d.get(k) is None:
+                d.pop(k, None)
+        return _norm(d)
 
     @property
     def event_hash(self) -> str:

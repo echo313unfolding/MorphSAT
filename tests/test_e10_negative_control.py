@@ -134,3 +134,34 @@ class TestEndToEndAblation:
                 cd, ad = c.payload(), a.payload()
                 cd.pop("e10_observed"); ad.pop("e10_observed")
                 assert cd == ad, (m, c.scenario_id)
+
+
+class TestE10UnderP3:
+    """E10 inversion must not change P3 DEFER arbitration (any baseline)."""
+
+    @pytest.mark.parametrize("baseline", ["B3"])
+    def test_inversion_inert_with_defer(self, tmp_path_factory, baseline):
+        import bench_memory_stress as B
+        from test_decision_event import _isolate_bench
+        mp = pytest.MonkeyPatch()
+        _isolate_bench(B, mp, tmp_path_factory.mktemp("e10_p3"))
+        try:
+            kw = dict(enable_defer=True, arbitration_baseline=baseline)
+            control = B.run_stress_mode("M", B.STRESS_FAMILIES, **kw)
+            real = B.extract_graph_routing_signal
+
+            def inverted(*a, **k):
+                sig = real(*a, **k)
+                for f in E10_OBSERVABLES:
+                    setattr(sig, f, not getattr(sig, f))
+                return sig
+
+            mp.setattr(B, "extract_graph_routing_signal", inverted)
+            ablated = B.run_stress_mode("M", B.STRESS_FAMILIES, **kw)
+        finally:
+            mp.undo()
+        assert [asdict(e) for e in control.episodes] == [asdict(e) for e in ablated.episodes]
+        for c, a in zip(control.decision_events, ablated.decision_events):
+            cd, ad = c.payload(), a.payload()
+            cd.pop("e10_observed"); ad.pop("e10_observed")
+            assert cd == ad
