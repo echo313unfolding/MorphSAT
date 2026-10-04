@@ -75,6 +75,12 @@ from morphsat.graph_routing_signal import (
     apply_graph_signal_to_snapshot,
 )
 from morphsat.correction_echo import CorrectionEcho
+from morphsat.decision_event import (
+    DecisionEvent,
+    E10_OBSERVABLES,
+    events_digest,
+    severity_change,
+)
 
 RECEIPTS_DIR = Path.home() / "receipts" / "morphsat_memory_stress"
 
@@ -749,6 +755,8 @@ class StressModeResult:
     total_abstain: int
     families: Dict[str, StressFamilyResult]
     episodes: List[StressEpisodeResult]
+    # P1: observational DecisionEvents (not used by any metric or gate)
+    decision_events: List[DecisionEvent] = field(default_factory=list)
 
     @property
     def accuracy(self) -> float:
@@ -850,6 +858,123 @@ def _make_tmp(suffix: str) -> str:
     return f"/tmp/bench_stress_{suffix}_{os.getpid()}_{_tmp_counter}"
 
 
+def _build_decision_event(_obs, monitor, scenario, mode, family,
+                          episode_index, raw_action, verdict, expected,
+                          resolution, receipt_chain, receipt_graph,
+                          correction_echo) -> DecisionEvent:
+    """Assemble a DecisionEvent from values already decided (P1, read-only)."""
+    m_action = _obs["monitor_action"]
+    m_dir = _obs["monitor_direction"]
+    source = _obs.get("override_source", "none")
+    ts = _obs.get("ts_result")
+
+    # Was the emitted direction a "suspicious" default for a None direction?
+    if source == "none":
+        defaulted = bool(_obs.get("defaulted_monitor"))
+    elif source == "gate_qubo":
+        defaulted = _obs["qubo_result"]["direction"] is None
+    elif source == "two_stage_qubo":
+        defaulted = ts.direction is None
+    else:  # echo_tiebreak sets an explicit outcome
+        defaulted = False
+
+    history_refs = {}
+    if "memory_ref" in _obs:
+        history_refs["memory"] = _obs["memory_ref"]
+    if _obs.get("graph_hud") is not None:
+        history_refs["graph_hud"] = {
+            k: _obs["graph_hud"].get(k)
+            for k in ("dominant_outcome", "memory_strength", "memory_status")}
+    if "grs" in _obs:
+        history_refs["graph_routing_signal"] = {
+            k: v for k, v in _obs["grs"].items() if k != "e10"}
+
+    stores = {"splitmemory_resolution": resolution}
+    if receipt_graph is not None:
+        # close_episode() builds the graph node from to_receipt(), i.e. the
+        # MONITOR direction, not the emitted verdict. Recorded as-is.
+        stores["receiptgraph_node_outcome"] = (
+            monitor.last_action.direction or "unknown")
+    if correction_echo is not None and scenario.get("has_correction_tools"):
+        stores["echo_marker_created_from"] = {
+            "outcome_after": verdict,
+            "outcome_before": "escalate",          # hard-coded (C7)
+            "is_correction_source": "scenario.has_correction_tools",  # oracle (C7)
+        }
+
+    receipt_hash = canonical_hash(monitor.to_receipt())
+    block = None
+    if receipt_chain is not None and receipt_chain.blocks:
+        block = receipt_chain.blocks[-1].block_number
+
+    final_dir = verdict
+    return DecisionEvent(
+        episode_id=f"{mode}/{family}/{episode_index:03d}/{scenario['id']}",
+        mode=mode,
+        family=family,
+        episode_index=episode_index,
+        scenario_id=scenario["id"],
+        evidence_signature=[list(x) for x in monitor.evidence_vector],
+        monitor_action=m_action,
+        monitor_direction=m_dir,
+        monitor_terminal=_obs["monitor_terminal"],
+        monitor_forced_at_bench_end=_obs["forced_at_bench_end"],
+        posture_initial=(monitor.posture_trace[0].to_state
+                         if monitor.posture_trace else "unknown"),
+        posture_final=monitor.state.value,
+        posture_transitions=[[t.from_state, t.to_state, t.trigger]
+                             for t in monitor.posture_trace],
+        monitor_abstain_due_to_uncertainty=monitor.abstain_due_to_uncertainty,
+        monitor_boundary_crossed=monitor.boundary_crossed,
+        threat_score=monitor.threat_score,
+        safety_score=monitor.safety_score,
+        contradiction=min(monitor.threat_score, monitor.safety_score),
+        route_backend=ts.gate_backend_used if ts else (
+            "gate_qubo" if source == "gate_qubo" else None),
+        route_reason=ts.routing_reason if ts else None,
+        routing_scores=dict(ts.routing_scores) if ts else {},
+        history_refs=history_refs,
+        graph_prediction=_obs.get("graph_prediction"),
+        threshold_result=dict(ts.threshold_result) if ts else None,
+        qubo_result=(dict(ts.qubo_result) if ts and ts.qubo_result
+                     else _obs.get("qubo_result")),
+        echo_enabled=correction_echo is not None,
+        echo_match=_obs.get("echo_match", False),
+        echo_outcome=_obs.get("echo_outcome"),
+        echo_contradiction_count_pre=_obs.get("echo_cc_pre"),
+        echo_contradiction_count_post=_obs.get("echo_cc_post"),
+        echo_injected_memory=_obs.get("echo_injected", False),
+        override_source=source,
+        final_action=raw_action,
+        final_direction=final_dir,
+        final_direction_defaulted=defaulted,
+        final_changed_from_monitor=(raw_action != m_action
+                                    or final_dir != (m_dir or "suspicious")),
+        # Incoherent: episode ended on CONTINUE, or a non-COMMIT action
+        # carries a substantive (non-default) direction.
+        final_action_direction_incoherent=(
+            raw_action == "CONTINUE"
+            or (raw_action != "COMMIT" and not defaulted)),
+        severity_change=severity_change(m_dir, final_dir),
+        stores=stores,
+        evaluation={
+            "ground_truth": expected,
+            "correct": final_dir == expected,
+            "false_safe": expected == "escalate" and final_dir == "benign",
+            "committed_escalate_downgrade": (
+                m_action == "COMMIT" and m_dir == "escalate"
+                and final_dir != "escalate"),
+            "terminal_state_overridden": (
+                _obs["monitor_terminal"] and source != "none"
+                and (raw_action != m_action
+                     or final_dir != (m_dir or "suspicious"))),
+        },
+        e10_observed=_obs["grs"]["e10"] if "grs" in _obs else None,
+        monitor_receipt_hash=receipt_hash,
+        receipt_block=block,
+    )
+
+
 def run_stress_episode(
     scenario: Dict,
     tool_sequence: List[Tuple[str, str]],
@@ -867,8 +992,15 @@ def run_stress_episode(
     two_stage_gate: Optional[TwoStageGate] = None,
     graph_routing_enabled: bool = False,
     correction_echo: Optional[CorrectionEcho] = None,
+    event_sink: Optional[List[DecisionEvent]] = None,
 ) -> StressEpisodeResult:
-    """Run one stress episode through shadow monitor."""
+    """Run one stress episode through shadow monitor.
+
+    event_sink (P1 instrumentation): if given, one observational
+    DecisionEvent is appended per episode. ``_obs`` below is write-only
+    during the decision path and is read only after close_episode.
+    """
+    _obs: Dict[str, Any] = {}
     if memory is None:
         memory = SplitMemoryStore(
             f"/tmp/stress_bench_{os.getpid()}_{id(scenario)}_{time.time_ns()}.json")
@@ -902,14 +1034,19 @@ def run_stress_episode(
                 break
             monitor.process_evidence(tool_name, tool_result, model_output="")
 
+        _obs["forced_at_bench_end"] = not monitor.committed
         if not monitor.committed:
             balance = monitor.threat_score - monitor.safety_score
             monitor._force_commit("bench_end", balance)
 
+        _obs["monitor_action"] = monitor.last_action.action
+        _obs["monitor_direction"] = monitor.last_action.direction
+        _obs["monitor_terminal"] = monitor.committed
         raw_action = monitor.last_action.action
         verdict = monitor.last_action.direction
         if verdict is None:
             verdict = "suspicious"
+            _obs["defaulted_monitor"] = True
 
         # --- QUBO gate override ---
         # If gate_qubo is provided, build a snapshot from the monitor's
@@ -945,6 +1082,8 @@ def run_stress_episode(
                 mem_result = memory.lookup(
                     scenario["alert"], monitor.evidence_vector)
                 if mem_result:
+                    _obs["memory_ref"] = [mem_result[0],
+                                          mem_result[1].pattern_hash]
                     store_name, match = mem_result
                     if store_name == "tolerance":
                         snap.memory_outcome = "benign"
@@ -978,6 +1117,14 @@ def run_stress_episode(
             if verdict is None:
                 verdict = "suspicious"
             qubo_used = True
+            _obs["override_source"] = "gate_qubo"
+            _obs["graph_hud"] = graph_hud
+            _obs["qubo_result"] = {
+                "action": qubo_result.action,
+                "direction": qubo_result.direction,
+                "selected_action_name": qubo_result.selected_action_name,
+                "objective_value": qubo_result.objective_value,
+            }
 
         # --- Two-stage gate override (Mode J) ---
         # Routes clear evidence to threshold, ambiguous/conflict/drift to QUBO.
@@ -1008,6 +1155,8 @@ def run_stress_episode(
                 mem_result = memory.lookup(
                     scenario["alert"], monitor.evidence_vector)
                 if mem_result:
+                    _obs["memory_ref"] = [mem_result[0],
+                                          mem_result[1].pattern_hash]
                     store_name, match = mem_result
                     if store_name == "tolerance":
                         snap.memory_outcome = "benign"
@@ -1057,6 +1206,13 @@ def run_stress_episode(
                 snap.memory_confidence = mc
                 snap.memory_exposures = me
                 snap.correction_seen = cs
+                _obs["grs"] = {
+                    "graph_memory_outcome": grs.graph_memory_outcome,
+                    "matching_nodes": grs.matching_nodes,
+                    "correction_related": grs.correction_related,
+                    "e10": {k: bool(getattr(grs, k))
+                            for k in E10_OBSERVABLES},
+                }
 
             # --- Correction Echo (Mode M) ---
             # Short-lived routing marker: if a recent correction touched
@@ -1075,6 +1231,11 @@ def run_stress_episode(
             if correction_echo is not None:
                 echo_triggered, echo_marker = correction_echo.check(
                     scenario["alert"])
+                _obs["echo_match"] = bool(echo_triggered)
+                _obs["echo_outcome"] = (echo_marker.outcome_after
+                                        if echo_marker is not None else None)
+                _obs["echo_cc_pre"] = (echo_marker.contradiction_count
+                                       if echo_marker is not None else None)
                 if echo_triggered and echo_marker is not None:
                     # Track contradictions: echo says benign but sensor
                     # evidence leans threat (net threat direction)
@@ -1089,8 +1250,13 @@ def run_stress_episode(
                             snap.memory_outcome = echo_marker.outcome_after
                             snap.memory_confidence = 0.8
                             snap.memory_exposures = max(1, echo_marker.fired_count)
+                            _obs["echo_injected"] = True
+                _obs["echo_cc_post"] = (echo_marker.contradiction_count
+                                        if echo_marker is not None else None)
 
             ts_result = two_stage_gate.decide(snap)
+            _obs["graph_hud"] = graph_hud
+            _obs["ts_result"] = ts_result
             # Override only when QUBO actually COMMITS. When QUBO says
             # CONTINUE/ABSTAIN (can't decide), defer to the monitor's
             # verdict. Hydra pattern: the foreman meeting overrides when
@@ -1100,6 +1266,7 @@ def run_stress_episode(
                 verdict = ts_result.direction
                 if verdict is None:
                     verdict = "suspicious"
+                _obs["override_source"] = "two_stage_qubo"
             elif (ts_result.gate_backend_used == "qubo"
                   and ts_result.action != "COMMIT"
                   and correction_echo is not None
@@ -1113,6 +1280,7 @@ def run_stress_episode(
                 # (not blocked by contradiction tracker above).
                 if echo_marker.contradiction_count < 2:
                     verdict = echo_marker.outcome_after
+                    _obs["override_source"] = "echo_tiebreak"
 
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
@@ -1124,6 +1292,10 @@ def run_stress_episode(
 
         resolution = verdict
         confidence = abs(monitor.threat_score - monitor.safety_score)
+        # Graph prediction made at initialize(); score_prediction() inside
+        # close_episode clears it, so copy it first (read-only).
+        if receipt_graph is not None and receipt_graph._last_prediction:
+            _obs["graph_prediction"] = dict(receipt_graph._last_prediction)
         monitor.close_episode(resolution, confidence)
 
         # --- Correction Echo: observe episode completion ---
@@ -1166,6 +1338,14 @@ def run_stress_episode(
             hud_dom_outcome = hud["memory"].get("dominant_outcome")
 
         stress_phase = get_stress_phase(family, scenario["id"])
+
+        # --- P1: observational DecisionEvent (built after all decisions
+        # and store writes; nothing below feeds back into behavior) ---
+        if event_sink is not None:
+            event_sink.append(_build_decision_event(
+                _obs, monitor, scenario, mode, family, episode_index,
+                raw_action, verdict, expected, resolution,
+                receipt_chain, receipt_graph, correction_echo))
 
         return StressEpisodeResult(
             scenario_id=scenario["id"],
@@ -1214,6 +1394,7 @@ def run_stress_mode(
     mode: str,
     families: Dict[str, List[Dict]],
     verbose: bool = False,
+    collect_events: bool = True,
 ) -> StressModeResult:
     """Run all stress families through one mode."""
 
@@ -1255,6 +1436,7 @@ def run_stress_mode(
 
     all_episodes: List[StressEpisodeResult] = []
     family_results: Dict[str, StressFamilyResult] = {}
+    events: Optional[List[DecisionEvent]] = [] if collect_events else None
 
     for fam_name, scenarios in families.items():
         memory = SplitMemoryStore(_make_tmp(f"{mode}_{fam_name}_mem") + ".json") \
@@ -1297,6 +1479,7 @@ def run_stress_mode(
                 two_stage_gate=ts_gate,
                 graph_routing_enabled=cfg.get("use_graph_routing", False),
                 correction_echo=corr_echo,
+                event_sink=events,
             )
             fam_episodes.append(result)
             all_episodes.append(result)
@@ -1378,6 +1561,7 @@ def run_stress_mode(
         total_abstain=total_abstain,
         families=family_results,
         episodes=all_episodes,
+        decision_events=events or [],
     )
 
 
@@ -2027,6 +2211,17 @@ def write_stress_receipt(results: Dict[str, StressModeResult],
                     "D_post_drift": round(d_fr.post_drift_accuracy, 4),
                 }
         receipt["D_vs_B_per_family"] = comparison
+
+    # P1: observational DecisionEvents + deterministic digests.
+    # Appended as NEW keys; no existing key above is changed.
+    receipt["decision_events_schema"] = "decision_event_v1"
+    receipt["decision_event_digests"] = {
+        m: events_digest(r.decision_events) for m, r in results.items()
+    }
+    receipt["decision_events"] = {
+        m: [e.to_dict() for e in r.decision_events]
+        for m, r in results.items()
+    }
 
     path = RECEIPTS_DIR / f"memory_stress_{ts}.json"
     path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")

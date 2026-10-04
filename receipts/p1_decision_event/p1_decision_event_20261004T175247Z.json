@@ -1,0 +1,199 @@
+{
+  "work_order": "P1_DECISION_EVENT_INSTRUMENTATION",
+  "scope": "public GitHub state 14689b7 (+ freeze receipts a1e8ec2); no private/home-machine state",
+  "timestamp_utc": "2026-10-04T17:52:47Z",
+  "base_commit": "a1e8ec2",
+  "python": "3.11.15",
+  "changed_files": {
+    "morphsat/decision_event.py": "7197aba4d9aa1f9e60a60e977787f9daf6ffb09496f72ea568392748983f2048",
+    "tools/bench_memory_stress.py": "8da7cc680d951df643ab8c244b39deda6abc46f4f17bdf5953a9851900db8a70",
+    "tests/test_decision_event.py": "b0ba951290c0db0112d22e5c6b7f553cf13ccf5b2b7c6f8adca756c13372f676",
+    "tests/test_e10_negative_control.py": "7d98e09cae9d67302f674f408bdb2a8030a2916f86cf2733ee577cf6f7b258de"
+  },
+  "tests": {
+    "total": 393,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pre_existing_subset": "321 passed (run separately)",
+    "new": {
+      "tests/test_decision_event.py": 28,
+      "tests/test_e10_negative_control.py": 44
+    },
+    "host_tmp_new_entries": 0
+  },
+  "benchmark_equivalence": {
+    "log_lines_compared": 117,
+    "log_identical_excluding_noise_lines": true,
+    "log_sha256_base": "0f074e5913c80df60ab8934a7df61cf351ce1c09d5bf37b97c33dbcc629fa6b0",
+    "log_sha256_new": "0f074e5913c80df60ab8934a7df61cf351ce1c09d5bf37b97c33dbcc629fa6b0",
+    "json_noise_keys_excluded": [
+      "cost",
+      "timestamp"
+    ],
+    "json_new_keys": [
+      "decision_event_digests",
+      "decision_events",
+      "decision_events_schema"
+    ],
+    "json_removed_keys": [],
+    "json_core_sha256_base": "ead777330d446dde92d50192e13d2ff0cf2125ba4bf7dc1c498df84d6f3e2290",
+    "json_core_sha256_new": "ead777330d446dde92d50192e13d2ff0cf2125ba4bf7dc1c498df84d6f3e2290",
+    "json_core_identical": true,
+    "json_differing_keys": []
+  },
+  "replay_gate_G7": "PASS (full run without --skip-replay; GATES 37/43 unchanged)",
+  "cdr_trace": {
+    "log_identical_excluding_receipt_path_line": true,
+    "json_core_identical": true
+  },
+  "decision_event_digests": {
+    "A": "7ba33b2a42a848e59d6a1490151573034cb743b60d57e85efd5c8727ed3f5d0e",
+    "B": "f0c6e31816b4cb59b4a710ff3cd99f87ee9da586633efdd840c5d37b98d6fde2",
+    "C": "185db0d46103a3041643dbdd695cae92e1e9a82db3050489c195661e7f77c37b",
+    "D": "499957d4cfb2ed151f117aa662c0c06dca9df03e0b24c03133fbbb47e50329da",
+    "H": "0e796ea4044e34ae622bca6ad33cef762096418797937f3ac707b11a0c8f4d16",
+    "J": "db06a1bd0d398a7f62799fd64ffd95568d0244dfe68c958be8f8c0ca94948838",
+    "K": "bf9a8a3993e43d4da236c3bad83adc20e39b3525b9b6dad2d405234add2a4f47",
+    "L": "536e31374d167ff1ef41f21b91410c5c9d5ea6e74722be08f08b52f1dfc31f3c",
+    "M": "7be460fc34f6ff442eefc56f2035555afa08f9e3f92a80fb2cc9725e03fa215c"
+  },
+  "decision_event_digests_cross_process_identical": true,
+  "e10_negative_control": "inverting all 5 E10 flags in modes L,M: ablation applied (observables changed), episodes/metrics/decision chain identical",
+  "neutrality_proofs": [
+    "collect_events on vs off: asdict(episodes) and to_dict() identical for all 9 modes",
+    "AST: no morphsat/* module imports morphsat.decision_event",
+    "AST: in run_stress_episode every read of _obs/event_sink occurs after close_episode()",
+    "AST: StressModeResult.decision_events read only in run_stress_mode and write_stress_receipt",
+    "bench log byte-identical and receipt core fields identical vs frozen baseline"
+  ],
+  "findings_receipted": {
+    "F_null_history": "At HEAD, A/B/C/D/J/K/L all produce 76/82. SplitMemory and ReceiptGraph provide no demonstrated net accuracy benefit. CorrectionEcho is the only history mechanism producing net behavioral changes (M 78/82), and those changes are confounded by C7 (oracle correction labeling, hard-coded prior outcome) and terminal-state violations (3x ABSTAIN->benign via echo_tiebreak, 1x committed escalate->suspicious via two_stage_qubo).",
+    "C9_incoherent_final": "final_action CONTINUE at episode end (H: 14) or ABSTAIN carrying substantive direction (M: 3).",
+    "C10_abstain_store_divergence": "Every ABSTAIN with no override: ReceiptGraph records 'unknown', SplitMemory records 'suspicious' into the THREAT store (19 per mode in D/J/K/L/M).",
+    "D1_decision": "A2: COMMIT terminal, ABSTAIN terminal (not yet enforced; P1 is observational)."
+  },
+  "event_example": {
+    "episode_id": "M/wrong_correction/003/wc_03",
+    "mode": "M",
+    "family": "wrong_correction",
+    "episode_index": 3,
+    "scenario_id": "wc_03",
+    "evidence_signature": [
+      [
+        "check_hash",
+        "not_in_known_good"
+      ],
+      [
+        "search_cve",
+        "critical_cve"
+      ],
+      [
+        "check_ports",
+        "outbound_port"
+      ]
+    ],
+    "monitor_action": "COMMIT",
+    "monitor_direction": "escalate",
+    "monitor_terminal": true,
+    "monitor_forced_at_bench_end": false,
+    "posture_initial": "orienting",
+    "posture_final": "escalate_ready",
+    "posture_transitions": [
+      [
+        "normal",
+        "orienting",
+        "initialize"
+      ],
+      [
+        "orienting",
+        "safe_distance",
+        "orient_to_safe_dist"
+      ],
+      [
+        "safe_distance",
+        "escalate_ready",
+        "safe_dist_escalate"
+      ]
+    ],
+    "monitor_abstain_due_to_uncertainty": false,
+    "monitor_boundary_crossed": "threat",
+    "threat_score": 0.742,
+    "safety_score": 0.0,
+    "contradiction": 0.0,
+    "route_backend": "qubo",
+    "route_reason": "memory_disagrees",
+    "routing_scores": {
+      "clarity": 0.742,
+      "contradiction": 0.0,
+      "mem_disagrees": 1.0,
+      "graph_disagrees": 0.0
+    },
+    "history_refs": {
+      "graph_hud": {
+        "dominant_outcome": "unknown",
+        "memory_strength": "none",
+        "memory_status": "no_relevant_memory"
+      },
+      "graph_routing_signal": {
+        "graph_memory_outcome": "unknown",
+        "matching_nodes": 0,
+        "correction_related": false
+      }
+    },
+    "graph_prediction": {
+      "predicted_outcome": "unknown",
+      "confidence": 0.0,
+      "supporting_receipts": 0,
+      "basis_hashes": []
+    },
+    "threshold_result": {
+      "action": "COMMIT",
+      "direction": "escalate",
+      "reason": "clear (t=0.74, s=0.00)"
+    },
+    "qubo_result": {
+      "action": "COMMIT",
+      "direction": "suspicious",
+      "reason": "qubo_selected=commit_suspicious | obj=-21.36 | t=0.74 | s=0.00 | mem=benign(0.80)",
+      "selected_action_name": "commit_suspicious",
+      "objective_value": -21.3647
+    },
+    "echo_enabled": true,
+    "echo_match": true,
+    "echo_outcome": "benign",
+    "echo_contradiction_count_pre": 0,
+    "echo_contradiction_count_post": 1,
+    "echo_injected_memory": true,
+    "override_source": "two_stage_qubo",
+    "final_action": "COMMIT",
+    "final_direction": "suspicious",
+    "final_direction_defaulted": false,
+    "final_changed_from_monitor": true,
+    "final_action_direction_incoherent": false,
+    "severity_change": "down",
+    "stores": {
+      "splitmemory_resolution": "suspicious",
+      "receiptgraph_node_outcome": "escalate"
+    },
+    "evaluation": {
+      "ground_truth": "escalate",
+      "correct": false,
+      "false_safe": false,
+      "committed_escalate_downgrade": true,
+      "terminal_state_overridden": true
+    },
+    "e10_observed": {
+      "drift_like": false,
+      "stale_memory_like": false,
+      "poisoned_memory_like": false,
+      "sensor_graph_conflict": false,
+      "routing_triggered": false
+    },
+    "e10_expected_dead": true,
+    "monitor_receipt_hash": "9c927c53f07d8cf4233929f7260224a20019bcbd0e9c480925fc18cf47540079",
+    "receipt_block": 3,
+    "schema_version": "decision_event_v1",
+    "event_hash": "a6cbd195481e2329eb071fe0cdbfa41ac68930d98f148f56ebd145cd225cab0e"
+  }
+}
