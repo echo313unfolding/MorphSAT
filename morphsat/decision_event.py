@@ -7,7 +7,14 @@ nothing in the decision path (ShadowMonitor, TwoStageGate, GateQUBO,
 CorrectionEcho, memory/graph stores) imports or reads it. Events are built
 after an episode has fully resolved and its stores have been written.
 
-Semantics (faithful to public GitHub state 14689b7, not repaired):
+Schema history:
+    v1 (P1)  — observational record of 14689b7 semantics.
+    v2 (P2B) — terminal authority provenance (attempted_*,
+               override_blocked_by_terminal); final_direction is canonical
+               (None for ABSTAIN, never fabricated); the legacy bench
+               scoring projection moves to evaluation["scored_as"].
+
+Semantics (v1 text, public GitHub state 14689b7):
 
     monitor_*   — what ShadowMonitor proposed. PROVENANCE, not the outcome.
                   monitor_terminal is the existing ``committed`` latch, which
@@ -34,7 +41,7 @@ from typing import Any, Dict, List, Optional
 
 from morphsat.receipt_chain import canonical_hash
 
-SCHEMA_VERSION = "decision_event_v1"
+SCHEMA_VERSION = "decision_event_v2"
 
 # Preregistered negative-control observables (Phase 2.5, F/E10).
 # Computed by graph_routing_signal; expected to have NO behavioral consumer.
@@ -117,11 +124,18 @@ class DecisionEvent:
     echo_contradiction_count_post: Optional[int] = None
     echo_injected_memory: bool = False
 
-    # --- Stage 5: canonical emitted outcome ---
+    # --- Stage 5: terminal authority + canonical emitted outcome ---
+    # override_source: stage whose output became final ("none" = monitor).
+    # attempted_*: a disagreeing downstream proposal, kept as provenance
+    # whether or not it was applied (v2, P2B).
     override_source: str = "none"          # none | gate_qubo | two_stage_qubo | echo_tiebreak
+    attempted_override_source: str = "none"
+    attempted_action: Optional[str] = None
+    attempted_direction: Optional[str] = None
+    override_blocked_by_terminal: bool = False
     final_action: str = ""
-    final_direction: Optional[str] = None
-    final_direction_defaulted: bool = False  # bench substitutes "suspicious" for None
+    final_direction: Optional[str] = None  # canonical; None when no substantive direction (e.g. ABSTAIN)
+    final_direction_defaulted: bool = False  # evaluation.scored_as substituted "suspicious" for None
     final_changed_from_monitor: bool = False
     final_action_direction_incoherent: bool = False  # ended on CONTINUE, or non-COMMIT with a non-default direction
     severity_change: str = "n/a"

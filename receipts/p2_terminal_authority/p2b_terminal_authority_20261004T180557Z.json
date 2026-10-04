@@ -1,0 +1,271 @@
+{
+  "work_order": "P2B_TERMINAL_AUTHORITY",
+  "scope": "public GitHub state 14689b7 lineage; no private/home-machine state",
+  "timestamp_utc": "2026-10-04T18:05:57Z",
+  "parent_commit": "275b946",
+  "python": "3.11.15",
+  "changed_files": {
+    "morphsat/decision_event.py": "9995579dde9eafa7459eb547ff0f9bc178f9717f7737e8e13f1291d3421e2e97",
+    "tests/test_decision_event.py": "27dd4aac89ef5756ba42eba75911b79d1bece3d112f5d9f6e4025c07fe024d99",
+    "tools/bench_memory_stress.py": "04f71fe96d1105fa4e38a6aeb50a1b229e12d97ddcc287738802fdca96b90d57",
+    "morphsat/terminal_authority.py": "5718ea576f7262a046ddeff82b6938eda541e15b17d13bfe0de966704895be0d",
+    "tests/test_terminal_authority.py": "1ca93eca17e3b09eda5b61dee7dc7cdd8c9a9448373d00567cba5c624d510f0c"
+  },
+  "tests": {
+    "tests": 418,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "bench_modes": {
+    "A": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "B": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "C": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "D": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "H": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "J": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "K": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "L": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "M": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    }
+  },
+  "bench_gates": {
+    "total": 43,
+    "passed": 33,
+    "failed": 10
+  },
+  "bench_failed_gates": [
+    "G2: D>B on 2+ memory families (graph steering needed)",
+    "G8: H>D on 1+ family (QUBO gate improves over threshold)",
+    "G9: H>B on 1+ family (QUBO improves over SplitMemory alone)",
+    "G12: J > H overall (two-stage beats single-stage QUBO)",
+    "G17: K > A on 1+ memory family (graph alone adds value)",
+    "G21: K > B on 1+ family (graph-only beats SplitMemory-only)",
+    "G22: L > K (graph-taught beats graph-only)",
+    "G23: L > A on 1+ memory family (taught graph adds value)",
+    "G27: M > L on concept_drift (echo fixes timing gap)",
+    "G28: M > K on 1+ memory family (echo adds value over graph-only)"
+  ],
+  "decision_events_schema": "decision_event_v2",
+  "decision_event_digests": {
+    "A": "cb73ab547bcb1dbbe23cef896c832898904452f70ad976271f29b73ee8e1b4dc",
+    "B": "589dd4260631aed3f04c54ab7591bc6355fed066b5eb2933c50964f9deac19ac",
+    "C": "071ad2aaae5cb5bff06a3d6ed7e133c2fee268c670ec6411a7a04f43b9431cf5",
+    "D": "974fc505033f50570193bf211844a9ba7e045cccf9a6b6f92a09fa51f715eeb5",
+    "H": "d43600b42f0d6e2dc85393c905662a782fd0ad2b908fbc6657faab0b8d08c91f",
+    "J": "8c8b79e10a2a0a14065f89d73b158c22cc017bd21a5d850fd6427c598b672759",
+    "K": "0c3a3229ba8d12257c0d87407191750a6eaba41d47fa6bfafa9eef794bb1c535",
+    "L": "fbe6b31aa523fea0db6a23a443bdf23c5713d193f1b6c00e471d066e6d2fcaa6",
+    "M": "04879a8329c2a4b554467bb6e0fb184f0d76952e17b961f478485c052603d540"
+  },
+  "accuracy": {
+    "A": "76/82 -> 76/82",
+    "B": "76/82 -> 76/82",
+    "C": "76/82 -> 76/82",
+    "D": "76/82 -> 76/82",
+    "H": "68/82 -> 76/82",
+    "J": "76/82 -> 76/82",
+    "K": "76/82 -> 76/82",
+    "L": "76/82 -> 76/82",
+    "M": "78/82 -> 76/82"
+  },
+  "episode_deltas": {
+    "A": [],
+    "B": [],
+    "C": [],
+    "D": [],
+    "H": [
+      "ldc_01: suspicious->benign (expected benign, correct False->True)",
+      "ldc_02: suspicious->benign (expected benign, correct False->True)",
+      "ldc_04: suspicious->benign (expected benign, correct False->True)",
+      "ldc_05: suspicious->benign (expected benign, correct False->True)",
+      "spdo_00: suspicious->benign (expected benign, correct False->True)",
+      "drift_05: benign->suspicious (expected benign, correct True->False)",
+      "sgd_00: suspicious->benign (expected benign, correct False->True)",
+      "sgd_06: escalate->suspicious (expected suspicious, correct False->True)",
+      "poison_00: suspicious->benign (expected benign, correct False->True)",
+      "poison_03: escalate->suspicious (expected escalate, correct True->False)",
+      "poison_07: escalate->suspicious (expected suspicious, correct False->True)",
+      "xdom_07: suspicious->benign (expected benign, correct False->True)"
+    ],
+    "J": [
+      "drift_05: benign->suspicious (expected benign, correct True->False)",
+      "sgd_06: escalate->suspicious (expected suspicious, correct False->True)"
+    ],
+    "K": [],
+    "L": [],
+    "M": [
+      "drift_05: benign->suspicious (expected benign, correct True->False)",
+      "drift_06: benign->suspicious (expected benign, correct True->False)",
+      "stale_03: benign->suspicious (expected benign, correct True->False)",
+      "wc_03: suspicious->escalate (expected escalate, correct False->True)"
+    ]
+  },
+  "gate_changes": {
+    "G8: H>D on 1+ family (QUBO gate improves over threshold)": "True -> False",
+    "G9: H>B on 1+ family (QUBO improves over SplitMemory alone)": "True -> False",
+    "G12: J > H overall (two-stage beats single-stage QUBO)": "True -> False",
+    "G27: M > L on concept_drift (echo fixes timing gap)": "True -> False",
+    "G28: M > K on 1+ memory family (echo adds value over graph-only)": "True -> False",
+    "G34: M wrong_correction >= A (echo doesn't regress)": "False -> True"
+  },
+  "attempt_vs_applied": {
+    "A": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "B": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "C": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "D": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "H": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 19,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 27,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {
+        "gate_qubo": 27
+      }
+    },
+    "J": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 3,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 3,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {
+        "two_stage_qubo": 3
+      }
+    },
+    "K": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "L": {
+      "committed_escalate_downgrade_attempt": 0,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 0,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 0,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {}
+    },
+    "M": {
+      "committed_escalate_downgrade_attempt": 1,
+      "committed_escalate_downgrade_applied": 0,
+      "terminal_abstain_override_attempt": 3,
+      "terminal_abstain_override_applied": 0,
+      "terminal_override_attempt": 4,
+      "terminal_state_overridden": 0,
+      "false_safe": 0,
+      "by_source": {
+        "echo_tiebreak": 3,
+        "two_stage_qubo": 1
+      }
+    }
+  },
+  "decision": "D1 = A2: COMMIT terminal, ABSTAIN terminal (morphsat/terminal_authority.py)",
+  "refactor_neutrality": "enforce_terminal_authority=False reproduces P2A mode metrics and episode_detail exactly for all 9 modes",
+  "preregistered_vs_actual": {
+    "M": "~76 -> 76",
+    "J": "~76 -> 76",
+    "H": "~72 -> 76 (preregistration arithmetic error, not second-order: first-order sum from Phase 2.5 attribution is 68+8-1+2-1=76)"
+  },
+  "second_order_effects": [
+    "H poison_07: pre-A2 QUBO used a threat-store memory entry created by an earlier overridden verdict; under A2 that entry does not exist, QUBO proposes CONTINUE (no direction attempt). Net effect on scoring included in deltas."
+  ],
+  "structural_finding": "In this harness the monitor is ALWAYS terminal before downstream stages run (natural terminal or _force_commit('bench_end') at 3 tools). Under A2, every downstream stage (GateQUBO, TwoStageGate QUBO, CorrectionEcho tiebreak) is therefore behaviorally inert with respect to final outcomes; all modes = 76/82. Arbitration in the current architecture is post-terminal by construction.",
+  "swarm_call_characterization": "SWARM_CALL resolves as action ABSTAIN (shadow_monitor.py swarm branch); occurrences in benchmark: 0 of 738 episode-runs. Covered by ABSTAIN rule; not redesigned.",
+  "abstain_direction": "final_direction is None for ABSTAIN (not fabricated). Legacy bench scoring maps ABSTAIN -> 'suspicious' via evaluation.scored_as (evaluation-only).",
+  "memory_semantics": "unchanged in P2B (SplitMemory still receives scored_as; C10 persists until P2C)",
+  "schema": "decision_event_v2",
+  "tests_changed": "P1 characterization tests of pre-A2 overrides replaced by blocked-attempt characterizations; K/L assignment test compares canonical directions; SplitMemory projection test renamed to scored projection (C10 still present)."
+}

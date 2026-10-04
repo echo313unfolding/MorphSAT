@@ -75,7 +75,10 @@ from morphsat.graph_routing_signal import (
     apply_graph_signal_to_snapshot,
 )
 from morphsat.correction_echo import CorrectionEcho
+from morphsat.terminal_authority import resolve_terminal_authority
 from morphsat.decision_event import (
+    SCHEMA_VERSION as DECISION_EVENT_SCHEMA,
+    SEVERITY as SEVERITY_RANK,
     DecisionEvent,
     E10_OBSERVABLES,
     events_digest,
@@ -862,21 +865,20 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
                           episode_index, raw_action, verdict, expected,
                           resolution, receipt_chain, receipt_graph,
                           correction_echo) -> DecisionEvent:
-    """Assemble a DecisionEvent from values already decided (P1, read-only)."""
+    """Assemble a DecisionEvent from values already decided (read-only)."""
     m_action = _obs["monitor_action"]
     m_dir = _obs["monitor_direction"]
-    source = _obs.get("override_source", "none")
+    auth = _obs["authority"]
+    source = auth.applied_source
     ts = _obs.get("ts_result")
+    final_dir = auth.final_direction          # canonical; None for ABSTAIN etc.
+    defaulted = final_dir is None             # scored_as uses "suspicious"
 
-    # Was the emitted direction a "suspicious" default for a None direction?
-    if source == "none":
-        defaulted = bool(_obs.get("defaulted_monitor"))
-    elif source == "gate_qubo":
-        defaulted = _obs["qubo_result"]["direction"] is None
-    elif source == "two_stage_qubo":
-        defaulted = ts.direction is None
-    else:  # echo_tiebreak sets an explicit outcome
-        defaulted = False
+    # Direction a blocked/applied attempt would have emitted under the
+    # legacy bench convention (None -> "suspicious").
+    would_emit = (auth.attempted_direction
+                  if auth.attempted_direction is not None else "suspicious")
+    sev = lambda d: SEVERITY_RANK.get(d, -1)
 
     history_refs = {}
     if "memory_ref" in _obs:
@@ -907,7 +909,6 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
     if receipt_chain is not None and receipt_chain.blocks:
         block = receipt_chain.blocks[-1].block_number
 
-    final_dir = verdict
     return DecisionEvent(
         episode_id=f"{mode}/{family}/{episode_index:03d}/{scenario['id']}",
         mode=mode,
@@ -945,29 +946,43 @@ def _build_decision_event(_obs, monitor, scenario, mode, family,
         echo_contradiction_count_post=_obs.get("echo_cc_post"),
         echo_injected_memory=_obs.get("echo_injected", False),
         override_source=source,
+        attempted_override_source=auth.attempted_source,
+        attempted_action=auth.attempted_action,
+        attempted_direction=auth.attempted_direction,
+        override_blocked_by_terminal=auth.blocked_by_terminal,
         final_action=raw_action,
         final_direction=final_dir,
         final_direction_defaulted=defaulted,
-        final_changed_from_monitor=(raw_action != m_action
-                                    or final_dir != (m_dir or "suspicious")),
+        final_changed_from_monitor=((raw_action, final_dir) != (m_action, m_dir)),
         # Incoherent: episode ended on CONTINUE, or a non-COMMIT action
-        # carries a substantive (non-default) direction.
+        # carries a substantive direction.
         final_action_direction_incoherent=(
             raw_action == "CONTINUE"
-            or (raw_action != "COMMIT" and not defaulted)),
+            or (raw_action != "COMMIT" and final_dir is not None)),
         severity_change=severity_change(m_dir, final_dir),
         stores=stores,
         evaluation={
             "ground_truth": expected,
-            "correct": final_dir == expected,
-            "false_safe": expected == "escalate" and final_dir == "benign",
-            "committed_escalate_downgrade": (
+            "scored_as": verdict,     # legacy convention: None -> "suspicious"
+            "correct": verdict == expected,
+            "false_safe": expected == "escalate" and verdict == "benign",
+            "committed_escalate_downgrade_attempt": (
+                m_action == "COMMIT" and m_dir == "escalate" and auth.attempted
+                and sev(would_emit) < sev("escalate")),
+            "committed_escalate_downgrade_applied": (
                 m_action == "COMMIT" and m_dir == "escalate"
                 and final_dir != "escalate"),
+            "terminal_abstain_override_attempt": (
+                _obs["monitor_terminal"] and m_action == "ABSTAIN"
+                and auth.attempted),
+            "terminal_abstain_override_applied": (
+                _obs["monitor_terminal"] and m_action == "ABSTAIN"
+                and (raw_action != "ABSTAIN" or final_dir is not None)),
+            "terminal_override_attempt": (
+                _obs["monitor_terminal"] and auth.attempted),
             "terminal_state_overridden": (
-                _obs["monitor_terminal"] and source != "none"
-                and (raw_action != m_action
-                     or final_dir != (m_dir or "suspicious"))),
+                _obs["monitor_terminal"]
+                and (raw_action, final_dir) != (m_action, m_dir)),
         },
         e10_observed=_obs["grs"]["e10"] if "grs" in _obs else None,
         monitor_receipt_hash=receipt_hash,
@@ -993,6 +1008,7 @@ def run_stress_episode(
     graph_routing_enabled: bool = False,
     correction_echo: Optional[CorrectionEcho] = None,
     event_sink: Optional[List[DecisionEvent]] = None,
+    enforce_terminal_authority: bool = True,
 ) -> StressEpisodeResult:
     """Run one stress episode through shadow monitor.
 
@@ -1047,6 +1063,11 @@ def run_stress_episode(
         if verdict is None:
             verdict = "suspicious"
             _obs["defaulted_monitor"] = True
+
+        # P2B: downstream stages PROPOSE; terminal authority decides below.
+        m_action_raw = monitor.last_action.action
+        m_dir_raw = monitor.last_action.direction
+        prop_source, prop_action, prop_dir = "none", None, None
 
         # --- QUBO gate override ---
         # If gate_qubo is provided, build a snapshot from the monitor's
@@ -1112,12 +1133,10 @@ def run_stress_episode(
                     "memory_strength", "none")
 
             qubo_result = gate_qubo.decide(snap)
-            raw_action = qubo_result.action
-            verdict = qubo_result.direction
-            if verdict is None:
-                verdict = "suspicious"
+            prop_source = "gate_qubo"
+            prop_action = qubo_result.action
+            prop_dir = qubo_result.direction
             qubo_used = True
-            _obs["override_source"] = "gate_qubo"
             _obs["graph_hud"] = graph_hud
             _obs["qubo_result"] = {
                 "action": qubo_result.action,
@@ -1262,11 +1281,9 @@ def run_stress_episode(
             # verdict. Hydra pattern: the foreman meeting overrides when
             # it has a real answer, not when it punts.
             if ts_result.gate_backend_used == "qubo" and ts_result.action == "COMMIT":
-                raw_action = ts_result.action
-                verdict = ts_result.direction
-                if verdict is None:
-                    verdict = "suspicious"
-                _obs["override_source"] = "two_stage_qubo"
+                prop_source = "two_stage_qubo"
+                prop_action = ts_result.action
+                prop_dir = ts_result.direction
             elif (ts_result.gate_backend_used == "qubo"
                   and ts_result.action != "COMMIT"
                   and correction_echo is not None
@@ -1279,8 +1296,22 @@ def run_stress_episode(
                 # Tiebreaker only fires if echo memory was injected
                 # (not blocked by contradiction tracker above).
                 if echo_marker.contradiction_count < 2:
-                    verdict = echo_marker.outcome_after
-                    _obs["override_source"] = "echo_tiebreak"
+                    prop_source = "echo_tiebreak"
+                    prop_action = raw_action      # echo keeps the action
+                    prop_dir = echo_marker.outcome_after
+
+        # --- P2B: terminal authority (D1 = A2) ---
+        # With enforce_terminal_authority=False the proposal is applied
+        # unconditionally, reproducing pre-P2B behavior exactly.
+        auth = resolve_terminal_authority(
+            m_action_raw, m_dir_raw,
+            monitor.terminal_latched if enforce_terminal_authority else False,
+            prop_action, prop_dir, prop_source)
+        raw_action = auth.final_action
+        verdict = auth.final_direction
+        if verdict is None:
+            verdict = "suspicious"      # legacy bench scoring convention
+        _obs["authority"] = auth
 
         expected = scenario["category"]
         verdict_correct = (verdict == expected)
@@ -1395,6 +1426,7 @@ def run_stress_mode(
     families: Dict[str, List[Dict]],
     verbose: bool = False,
     collect_events: bool = True,
+    enforce_terminal_authority: bool = True,
 ) -> StressModeResult:
     """Run all stress families through one mode."""
 
@@ -1480,6 +1512,7 @@ def run_stress_mode(
                 graph_routing_enabled=cfg.get("use_graph_routing", False),
                 correction_echo=corr_echo,
                 event_sink=events,
+                enforce_terminal_authority=enforce_terminal_authority,
             )
             fam_episodes.append(result)
             all_episodes.append(result)
@@ -2214,7 +2247,7 @@ def write_stress_receipt(results: Dict[str, StressModeResult],
 
     # P1: observational DecisionEvents + deterministic digests.
     # Appended as NEW keys; no existing key above is changed.
-    receipt["decision_events_schema"] = "decision_event_v1"
+    receipt["decision_events_schema"] = DECISION_EVENT_SCHEMA
     receipt["decision_event_digests"] = {
         m: events_digest(r.decision_events) for m, r in results.items()
     }

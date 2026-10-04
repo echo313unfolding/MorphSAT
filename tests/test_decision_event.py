@@ -220,7 +220,14 @@ class TestFaithfulness:
             for ep, ev in zip(on[m].episodes, on[m].decision_events):
                 assert ev.scenario_id == ep.scenario_id
                 assert ev.final_action == ep.final_action, (m, ep.scenario_id)
-                assert ev.final_direction == ep.final_verdict, (m, ep.scenario_id)
+                # v2: final_direction is canonical (None = no substantive
+                # direction); the legacy scoring projection is scored_as.
+                assert ev.evaluation["scored_as"] == ep.final_verdict
+                if ev.final_direction is None:
+                    assert ev.final_direction_defaulted
+                    assert ep.final_verdict == "suspicious"
+                else:
+                    assert ev.final_direction == ep.final_verdict
                 assert ev.evaluation["correct"] == ep.verdict_correct
 
     def test_no_gate_modes_have_no_override(self, runs):
@@ -238,14 +245,16 @@ class TestFaithfulness:
         for m in "KL":
             evs = on[m].decision_events
             assert any(e.override_source == "two_stage_qubo" for e in evs), m
-            assert not any(e.final_direction != (e.monitor_direction or "suspicious")
+            assert not any(e.final_direction != e.monitor_direction
                            for e in evs), m
 
-    def test_splitmemory_records_emitted_outcome(self, runs):
+    def test_splitmemory_records_scored_projection(self, runs):
+        """P2B leaves memory semantics unchanged: SplitMemory still receives
+        the legacy scored value (ABSTAIN -> 'suspicious'), i.e. C10."""
         on, _ = runs
         for m in MODES:
             for e in on[m].decision_events:
-                assert e.stores["splitmemory_resolution"] == e.final_direction
+                assert e.stores["splitmemory_resolution"] == e.evaluation["scored_as"]
 
     def test_no_environment_noise_in_bench_events(self, runs):
         on, _ = runs
@@ -279,30 +288,66 @@ print(json.dumps({{m: events_digest(B.run_stress_mode(m, B.STRESS_FAMILIES).deci
 # Characterization of CURRENT semantics (expected to change in P3)
 # ---------------------------------------------------------------------------
 
-class TestCurrentSemanticsCharacterization:
-    def test_M_wc03_committed_escalate_downgraded(self, runs):
+class TestTerminalAuthorityCharacterization:
+    """P2B (D1 = A2): COMMIT and ABSTAIN are terminal. Downstream
+    disagreement is preserved as attempted_* provenance, never applied."""
+
+    def test_hard_invariant_all_modes(self, runs):
+        on, _ = runs
+        for m in MODES:
+            for e in on[m].decision_events:
+                if e.monitor_terminal and e.monitor_action in ("COMMIT", "ABSTAIN"):
+                    assert e.final_action == e.monitor_action, (m, e.scenario_id)
+                    assert e.final_direction == e.monitor_direction, (m, e.scenario_id)
+
+    def test_abstain_direction_never_fabricated(self, runs):
+        on, _ = runs
+        for m in MODES:
+            for e in on[m].decision_events:
+                if e.final_action == "ABSTAIN":
+                    assert e.final_direction is None
+
+    def test_applied_safety_counts_zero(self, runs):
+        on, _ = runs
+        for m in MODES:
+            ev = [e.evaluation for e in on[m].decision_events]
+            assert sum(x["committed_escalate_downgrade_applied"] for x in ev) == 0, m
+            assert sum(x["terminal_abstain_override_applied"] for x in ev) == 0, m
+            assert sum(x["terminal_state_overridden"] for x in ev) == 0, m
+
+    def test_no_incoherent_finals(self, runs):
+        on, _ = runs
+        for m in MODES:
+            assert not any(e.final_action_direction_incoherent
+                           for e in on[m].decision_events), m
+
+    def test_M_wc03_downgrade_attempt_blocked(self, runs):
         e = _event(runs, "M", "wc_03")
         assert (e.monitor_action, e.monitor_direction) == ("COMMIT", "escalate")
-        assert e.monitor_terminal is True
         assert e.echo_match and e.echo_injected_memory and e.echo_outcome == "benign"
         assert e.route_backend == "qubo" and e.route_reason == "memory_disagrees"
-        assert e.override_source == "two_stage_qubo"
-        assert (e.final_action, e.final_direction) == ("COMMIT", "suspicious")
-        assert e.severity_change == "down"
-        assert e.evaluation["committed_escalate_downgrade"] is True
-        assert e.evaluation["terminal_state_overridden"] is True
-        assert e.evaluation["false_safe"] is False   # invisible to false_safe
-        assert e.stores == {"splitmemory_resolution": "suspicious",
+        assert e.override_source == "none"
+        assert (e.attempted_override_source, e.attempted_action,
+                e.attempted_direction) == ("two_stage_qubo", "COMMIT", "suspicious")
+        assert e.override_blocked_by_terminal is True
+        assert (e.final_action, e.final_direction) == ("COMMIT", "escalate")
+        assert e.evaluation["committed_escalate_downgrade_attempt"] is True
+        assert e.evaluation["committed_escalate_downgrade_applied"] is False
+        assert e.evaluation["correct"] is True
+        # memory semantics unchanged in P2B: stores now agree on escalate
+        assert e.stores == {"splitmemory_resolution": "escalate",
                             "receiptgraph_node_outcome": "escalate"}
 
     @pytest.mark.parametrize("sid", ["drift_05", "drift_06", "stale_03"])
-    def test_M_abstain_converted_by_echo_tiebreak(self, runs, sid):
+    def test_M_echo_tiebreak_on_abstain_blocked(self, runs, sid):
         e = _event(runs, "M", sid)
         assert e.monitor_action == "ABSTAIN" and e.monitor_terminal is True
-        assert e.override_source == "echo_tiebreak"
-        assert (e.final_action, e.final_direction) == ("ABSTAIN", "benign")
-        assert e.final_action_direction_incoherent is True
-        assert e.evaluation["terminal_state_overridden"] is True
+        assert (e.attempted_override_source, e.attempted_action,
+                e.attempted_direction) == ("echo_tiebreak", "ABSTAIN", "benign")
+        assert e.override_blocked_by_terminal is True
+        assert (e.final_action, e.final_direction) == ("ABSTAIN", None)
+        assert e.evaluation["terminal_abstain_override_attempt"] is True
+        assert e.evaluation["terminal_abstain_override_applied"] is False
 
     def test_M_drift06_first_contradiction_still_injects(self, runs):
         e = _event(runs, "M", "drift_06")
@@ -312,13 +357,14 @@ class TestCurrentSemanticsCharacterization:
         assert e.echo_injected_memory is True
 
     def test_stores_diverge_on_abstain_without_override(self, runs):
-        """Even with no override, every ABSTAIN is recorded as 'unknown' in
-        ReceiptGraph but as 'suspicious' (threat store) in SplitMemory."""
+        """C10 still present in P2B (memory semantics untouched): every
+        ABSTAIN is 'unknown' in ReceiptGraph projection but 'suspicious'
+        (threat store) in SplitMemory."""
         on, _ = runs
         abst = [e for e in on["D"].decision_events if e.monitor_action == "ABSTAIN"]
         assert len(abst) == 19
         for e in abst:
-            assert e.final_direction_defaulted is True
+            assert e.final_direction is None and e.final_direction_defaulted
             assert e.stores == {"splitmemory_resolution": "suspicious",
                                 "receiptgraph_node_outcome": "unknown"}
 
@@ -332,9 +378,28 @@ class TestCurrentSemanticsCharacterization:
             assert src["outcome_before"] == "escalate"
             assert src["is_correction_source"] == "scenario.has_correction_tools"
 
-    def test_override_counts(self, runs):
+    def test_attempt_counts(self, runs):
+        """Attempts that would have changed the scored direction. J and M
+        match the Phase 2.5 attribution (2, 4). H is 11, not 12: a
+        second-order history effect — in poison_07 the pre-A2 QUBO saw a
+        threat-store memory entry created by an earlier OVERRIDDEN verdict;
+        under A2 that entry never exists and the QUBO proposes CONTINUE,
+        whose scored direction equals the monitor's."""
         on, _ = runs
-        def dir_changed(m):
-            return sum(e.final_direction != (e.monitor_direction or "suspicious")
-                       for e in on[m].decision_events)
-        assert {m: dir_changed(m) for m in "HJM"} == {"H": 12, "J": 2, "M": 4}
+        def dir_attempts(m):
+            return sum(
+                e.override_blocked_by_terminal
+                and (e.attempted_direction or "suspicious")
+                != (e.monitor_direction or "suspicious")
+                for e in on[m].decision_events)
+        assert {m: dir_attempts(m) for m in "HJM"} == {"H": 11, "J": 2, "M": 4}
+
+    def test_enforcement_off_reproduces_pre_A2(self, bench):
+        r = bench.run_stress_mode("M", bench.STRESS_FAMILIES,
+                                  enforce_terminal_authority=False)
+        e = next(x for x in r.decision_events if x.scenario_id == "wc_03")
+        assert (e.final_action, e.final_direction) == ("COMMIT", "suspicious")
+        assert e.override_source == "two_stage_qubo"
+        assert e.override_blocked_by_terminal is False
+        assert e.evaluation["committed_escalate_downgrade_applied"] is True
+        assert r.correct == 78
