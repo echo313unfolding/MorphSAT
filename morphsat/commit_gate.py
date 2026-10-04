@@ -579,7 +579,7 @@ class CommitGate:
         self.threat_score = 0.0
         self.safety_score = 0.0
         self.turn = 0
-        self.committed = False
+        self.terminal_latched = False
         self.last_action = CommitAction("CONTINUE")
 
         # Evidence tracking
@@ -595,6 +595,24 @@ class CommitGate:
 
         # History for receipt
         self.history: List[dict] = []
+
+    # ------------------------------------------------------------------
+    # Terminal latch (P2A semantic normalization)
+    # ------------------------------------------------------------------
+    # `terminal_latched` is True once the controller has reached ANY
+    # terminal action: COMMIT, ABSTAIN, or SWARM_CALL (which resolves as
+    # ABSTAIN). It does NOT mean "a verdict was committed". The historical
+    # name `committed` is kept as a read/write alias for compatibility with
+    # existing callers and serialized receipts ("committed" key).
+
+    @property
+    def committed(self) -> bool:
+        """Deprecated alias of ``terminal_latched`` (kept for compatibility)."""
+        return self.terminal_latched
+
+    @committed.setter
+    def committed(self, value: bool) -> None:
+        self.terminal_latched = value
 
     def set_threshold(self, complexity: str, alert_text: str = ""):
         """Se sets the base threshold. Memory modulates via ∇Ω."""
@@ -617,7 +635,7 @@ class CommitGate:
         This is the core loop:
           classify result → update scores → check commit conditions → return action
         """
-        if self.committed:
+        if self.terminal_latched:
             return CommitAction("COMMITTED", self.last_action.direction,
                                 "gate already fired")
 
@@ -687,7 +705,7 @@ class CommitGate:
 
         self.last_action = action
         if action.action in ("COMMIT", "ABSTAIN"):
-            self.committed = True
+            self.terminal_latched = True
 
         return action
 
@@ -727,7 +745,7 @@ class CommitGate:
 
     def force_commit(self) -> CommitAction:
         """Force a decision (e.g., max turns reached). Still uses evidence."""
-        if self.committed:
+        if self.terminal_latched:
             return self.last_action
 
         contradiction = min(self.threat_score, self.safety_score)
@@ -745,7 +763,7 @@ class CommitGate:
             action = CommitAction("COMMIT", direction="suspicious",
                                   reason="forced: ambiguous at limit")
 
-        self.committed = True
+        self.terminal_latched = True
         self.last_action = action
         self.history.append({
             "turn": self.turn,
@@ -785,7 +803,9 @@ class CommitGate:
             "threat_score": round(self.threat_score, 3),
             "safety_score": round(self.safety_score, 3),
             "contradiction": round(min(self.threat_score, self.safety_score), 3),
-            "committed": self.committed,
+            # Serialized key kept as "committed" for receipt compatibility;
+            # value is the terminal latch (COMMIT, ABSTAIN or SWARM_CALL).
+            "committed": self.terminal_latched,
             "final_action": self.last_action.action,
             "final_direction": self.last_action.direction,
             "final_reason": self.last_action.reason,

@@ -197,7 +197,7 @@ class ShadowMonitor:
         # --- Memory ---
         self.memory = memory or SplitMemoryStore("/tmp/shadow_monitor_memory.json")
         self.alert_text = ""
-        self.committed = False
+        self.terminal_latched = False
         self.last_action = CommitAction("CONTINUE")
         self.terrain = "uncharted"  # cached terrain label from initialize()
 
@@ -208,6 +208,24 @@ class ShadowMonitor:
         # --- Receipt ---
         self.posture_trace: List[PostureTrace] = []
         self.history: List[dict] = []
+
+    # ------------------------------------------------------------------
+    # Terminal latch (P2A semantic normalization)
+    # ------------------------------------------------------------------
+    # `terminal_latched` is True once the controller has reached ANY
+    # terminal action: COMMIT, ABSTAIN, or SWARM_CALL (which resolves as
+    # ABSTAIN). It does NOT mean "a verdict was committed". The historical
+    # name `committed` is kept as a read/write alias for compatibility with
+    # existing callers and serialized receipts ("committed" key).
+
+    @property
+    def committed(self) -> bool:
+        """Deprecated alias of ``terminal_latched`` (kept for compatibility)."""
+        return self.terminal_latched
+
+    @committed.setter
+    def committed(self, value: bool) -> None:
+        self.terminal_latched = value
 
     # ------------------------------------------------------------------
     # Initialization
@@ -284,7 +302,10 @@ class ShadowMonitor:
         3. Evaluate state transitions
         4. Return action based on current posture
         """
-        if self.committed:
+        # NOTE: the "COMMITTED" pseudo-action is returned for ANY terminal
+        # latch (COMMIT, ABSTAIN or SWARM_CALL); the string is kept unchanged
+        # for caller compatibility. Inspect last_action for the real action.
+        if self.terminal_latched:
             return CommitAction("COMMITTED", self.last_action.direction,
                                 "already committed")
 
@@ -402,7 +423,7 @@ class ShadowMonitor:
 
         self.last_action = action
         if action.action in ("COMMIT", "ABSTAIN", "SWARM_CALL"):
-            self.committed = True
+            self.terminal_latched = True
 
         return action
 
@@ -429,7 +450,7 @@ class ShadowMonitor:
             self._trace("swarm_trigger", ShadowState.SWARM_CALL,
                         f"multi-axis pressure")
             # For now, SWARM_CALL resolves as ABSTAIN (no real swarm yet)
-            self.committed = True
+            self.terminal_latched = True
             self.last_action = CommitAction(
                 "ABSTAIN", reason="swarm_call: multi-axis pressure exceeds local capacity")
             return self.last_action
@@ -808,7 +829,7 @@ class ShadowMonitor:
                 self.state = ShadowState.COMMIT_READY
 
         self._trace(reason, self.state, "forced")
-        self.committed = True
+        self.terminal_latched = True
         self.last_action = action
         return action
 
@@ -851,7 +872,7 @@ class ShadowMonitor:
         if is_looping:
             axes += 1
         if (self.investigate_tools_used >= self.investigate_budget
-                and not self.committed):
+                and not self.terminal_latched):
             axes += 1
         if self.threat_score > 0.2 and self.safety_score > 0.2:
             axes += 1
@@ -985,7 +1006,7 @@ class ShadowMonitor:
             zone = "continue"
 
         # Override zone for terminal states
-        if self.committed:
+        if self.terminal_latched:
             if self.last_action.action == "ABSTAIN":
                 zone = "abstained"
             elif self.last_action.action == "COMMIT":
@@ -1005,7 +1026,7 @@ class ShadowMonitor:
                 compass = "stalled"
 
         # --- Clearance ---
-        if self.committed:
+        if self.terminal_latched:
             clearance = "committed" if self.last_action.action == "COMMIT" \
                 else "deferred"
         elif zone in ("safe", "threat"):
@@ -1014,7 +1035,7 @@ class ShadowMonitor:
             clearance = "not_cleared"
 
         # --- Allowed / blocked moves ---
-        if self.committed:
+        if self.terminal_latched:
             allowed = []
             blocked = ["all_actions"]
         elif clearance == "cleared":
@@ -1063,7 +1084,9 @@ class ShadowMonitor:
             "safety_score": round(self.safety_score, 3),
             "contradiction": round(
                 min(self.threat_score, self.safety_score), 3),
-            "committed": self.committed,
+            # Serialized key kept as "committed" for receipt compatibility;
+            # value is the terminal latch (COMMIT, ABSTAIN or SWARM_CALL).
+            "committed": self.terminal_latched,
             "final_action": self.last_action.action,
             "final_direction": self.last_action.direction,
             "final_reason": self.last_action.reason,

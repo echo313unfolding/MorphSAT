@@ -1030,18 +1030,18 @@ def run_stress_episode(
         monitor.initialize(scenario["alert"])
 
         for tool_name, tool_result in tool_sequence:
-            if monitor.committed:
+            if monitor.terminal_latched:
                 break
             monitor.process_evidence(tool_name, tool_result, model_output="")
 
-        _obs["forced_at_bench_end"] = not monitor.committed
-        if not monitor.committed:
+        _obs["forced_at_bench_end"] = not monitor.terminal_latched
+        if not monitor.terminal_latched:
             balance = monitor.threat_score - monitor.safety_score
             monitor._force_commit("bench_end", balance)
 
         _obs["monitor_action"] = monitor.last_action.action
         _obs["monitor_direction"] = monitor.last_action.direction
-        _obs["monitor_terminal"] = monitor.committed
+        _obs["monitor_terminal"] = monitor.terminal_latched
         raw_action = monitor.last_action.action
         verdict = monitor.last_action.direction
         if verdict is None:
@@ -1356,7 +1356,7 @@ def run_stress_episode(
             final_verdict=verdict,
             final_action=raw_action,
             abstained=monitor.abstain_due_to_uncertainty,
-            committed=monitor.committed,
+            committed=monitor.terminal_latched,  # legacy field name = terminal latch
             n_tools=monitor.total_tools,
             verdict_correct=verdict_correct,
             verdict_adjacent=verdict_adjacent,

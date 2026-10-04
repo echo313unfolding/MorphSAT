@@ -1,0 +1,126 @@
+{
+  "work_order": "P2A_TERMINAL_LATCH_NORMALIZATION",
+  "scope": "public GitHub state 14689b7 lineage; no private/home-machine state",
+  "timestamp_utc": "2026-10-04T17:59:52Z",
+  "parent_commit": "1524506",
+  "python": "3.11.15",
+  "changed_files": {
+    "morphsat/commit_gate.py": "50f652db95283c308d816c7c4e76e2827a1089830ba422ce1b0cd2f99af75e2e",
+    "morphsat/shadow_monitor.py": "868d0574ad33c9706b99c6474732b111c28312539efb3242bc50e76f60621700",
+    "tools/bench_memory_stress.py": "4c71c22a5cf35056719b78a760c0374a4877b54a52def530c8ba76f0834efd62",
+    "tests/test_terminal_latch.py": "3aa265e3991f9ead6dd3f240bf14f67299be1fa26f64ae807840a6d753045c12"
+  },
+  "tests": {
+    "tests": 401,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "bench_modes": {
+    "A": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "B": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "C": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "D": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "H": {
+      "correct": 68,
+      "total": 82,
+      "accuracy": 0.8293,
+      "false_safe_rate": 0.0
+    },
+    "J": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "K": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "L": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "M": {
+      "correct": 78,
+      "total": 82,
+      "accuracy": 0.9512,
+      "false_safe_rate": 0.0
+    }
+  },
+  "bench_gates": {
+    "total": 43,
+    "passed": 37,
+    "failed": 6
+  },
+  "bench_failed_gates": [
+    "G2: D>B on 2+ memory families (graph steering needed)",
+    "G17: K > A on 1+ memory family (graph alone adds value)",
+    "G21: K > B on 1+ family (graph-only beats SplitMemory-only)",
+    "G22: L > K (graph-taught beats graph-only)",
+    "G23: L > A on 1+ memory family (taught graph adds value)",
+    "G34: M wrong_correction >= A (echo doesn't regress)"
+  ],
+  "decision_events_schema": "decision_event_v1",
+  "decision_event_digests": {
+    "A": "7ba33b2a42a848e59d6a1490151573034cb743b60d57e85efd5c8727ed3f5d0e",
+    "B": "f0c6e31816b4cb59b4a710ff3cd99f87ee9da586633efdd840c5d37b98d6fde2",
+    "C": "185db0d46103a3041643dbdd695cae92e1e9a82db3050489c195661e7f77c37b",
+    "D": "499957d4cfb2ed151f117aa662c0c06dca9df03e0b24c03133fbbb47e50329da",
+    "H": "0e796ea4044e34ae622bca6ad33cef762096418797937f3ac707b11a0c8f4d16",
+    "J": "db06a1bd0d398a7f62799fd64ffd95568d0244dfe68c958be8f8c0ca94948838",
+    "K": "bf9a8a3993e43d4da236c3bad83adc20e39b3525b9b6dad2d405234add2a4f47",
+    "L": "536e31374d167ff1ef41f21b91410c5c9d5ea6e74722be08f08b52f1dfc31f3c",
+    "M": "7be460fc34f6ff442eefc56f2035555afa08f9e3f92a80fb2cc9725e03fa215c"
+  },
+  "equivalence_vs_P1": {
+    "log_lines_compared": 117,
+    "log_identical_excluding_noise_lines": true,
+    "log_sha256_base": "0f074e5913c80df60ab8934a7df61cf351ce1c09d5bf37b97c33dbcc629fa6b0",
+    "log_sha256_new": "0f074e5913c80df60ab8934a7df61cf351ce1c09d5bf37b97c33dbcc629fa6b0",
+    "json_noise_keys_excluded": [
+      "cost",
+      "timestamp"
+    ],
+    "json_new_keys": [],
+    "json_removed_keys": [],
+    "json_core_sha256_base": "ead777330d446dde92d50192e13d2ff0cf2125ba4bf7dc1c498df84d6f3e2290",
+    "json_core_sha256_new": "ead777330d446dde92d50192e13d2ff0cf2125ba4bf7dc1c498df84d6f3e2290",
+    "json_core_identical": true,
+    "json_differing_keys": []
+  },
+  "decision_events_identical_vs_P1": true,
+  "decision_event_digests_identical_vs_P1": true,
+  "tests_note": "393 pre-existing P1 tests passed BEFORE new tests were added; +8 P2A tests",
+  "semantic_change": "ShadowMonitor/CommitGate attribute committed -> terminal_latched (set by COMMIT, ABSTAIN, SWARM_CALL); committed kept as read/write property alias; serialized receipt key 'committed' unchanged; 'COMMITTED' pseudo-action string unchanged (documented as any-terminal).",
+  "not_changed": [
+    "pressure_gate.py legacy v4/v5 gates (own HOLD/OPEN/COMMITTED semantics)",
+    "StressEpisodeResult.committed field name (serialized; documented as terminal latch)",
+    "HUD zone/clearance strings"
+  ],
+  "behavior_change": "none"
+}
