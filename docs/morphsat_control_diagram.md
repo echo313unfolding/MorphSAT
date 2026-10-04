@@ -85,7 +85,7 @@ actions and is steered by the gate's accumulated evidence state.
  │   ┌─────────────────────────────────────────────────────────────┐ │
  │   │                   FINAL VERDICT                             │ │
  │   │   + JSON receipt   (proof of control path)                  │ │
- │   │   + Memory update  (strange loop: receipt → future posture) │ │
+ │   │   + Memory update  (memory  loop: receipt → future posture) │ │
  │   │   + Posture trace  (every shadow state transition logged)   │ │
  │   └─────────────────────────────────────────────────────────────┘ │
  │                                                                    │
@@ -95,7 +95,7 @@ actions and is steered by the gate's accumulated evidence state.
 ## Figure 2: Shadow State Machine — Posture Transitions
 
 The shadow monitor controls posture, not threshold. Novelty triggers state
-transitions (orienting reflex), not scalar penalties. The model never sees
+transitions (orienting reflex), not scalar penalties. By default the model is not shown
 these states directly — they control what happens AROUND the model.
 
 ```
@@ -191,7 +191,7 @@ MorphSAT concepts mapped to Soar cognitive architecture (Laird 2012).
    │  (stuck → subgoal)       │  (contradictory evidence →       │
    │                          │   ABSTAIN or SWARM_CALL)         │
    │                          │                                  │
-   │  Chunking                │  Split memory → strange loop     │
+   │  Chunking                │  Split memory → feedback loop    │
    │  (learn from impasses)   │  (receipt → memory → future      │
    │                          │   posture modulation)            │
    │                          │                                  │
@@ -202,7 +202,7 @@ MorphSAT concepts mapped to Soar cognitive architecture (Laird 2012).
    │  Metacognition           │  Shadow states                   │
    │  (monitor own reasoning) │  (NORMAL → ORIENTING →           │
    │                          │   SAFE_DISTANCE → COMMIT_READY)  │
-   │                          │  Model never sees these states.  │
+   │                          │  Hidden by default (see note).   │
    │                          │                                  │
    └──────────────────────────┴──────────────────────────────────┘
 
@@ -266,3 +266,6 @@ This is the scenario that motivated v8.3 (early-verdict guard).
 - **LaTeX/tikz**: These ASCII diagrams map directly to tikz node graphs
 - **The key claim**: Figure 1 is the architecture. Figure 4 is the proof.
   Together they show: structured control, not prompt engineering.
+
+
+> **Note (P2D):** posture state and evidence scores are included in model prompts in the `gate_assists` condition and in v8.1 (`_summarize_evidence`). The memory loop is ordinary feedback (receipt → memory → future posture); no strange-loop / level-crossing claim is made. See `docs/DECISION_SEMANTICS.md`.

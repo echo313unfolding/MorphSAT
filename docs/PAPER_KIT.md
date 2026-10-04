@@ -169,8 +169,14 @@ proposes actions. The architecture decides when to commit."
 ### Formal version:
 "Exogenous metacognitive control: a structured state machine external to the
 language model that accumulates evidence, tracks posture (control mode), and
-holds irreversible decision authority. The model never observes the governor's
-state and cannot reason about, game, or override the commitment boundary."
+holds irreversible decision authority. The model cannot override the commitment
+boundary."
+
+> **Correction (P2D):** "never observes the governor's state" is false for the
+> `gate_assists` condition and for v8.1 (prompts include posture state and evidence
+> scores). "Irreversible" held for the model but NOT for downstream harness stages
+> until P2B; since P2B, COMMIT and ABSTAIN are terminal for all stages. See
+> `docs/DECISION_SEMANTICS.md`.
 
 ---
 
@@ -606,7 +612,7 @@ The bridge from Josh's day job to MorphSAT:
 | Pressure relief valve | ABSTAIN (release uncertainty instead of exploding) |
 | Independent inspector | Dual-agent recomputation gate |
 | Fusion log/record | Receipt (episodic audit trail) |
-| "The pipe doesn't know the interlock exists" | "The model never sees the governor's state" |
+| "The pipe doesn't know the interlock exists" | "The model cannot override the governor" (state IS shown in gate_assists / v8.1 prompts) |
 
 This is not an analogy bolted on after the fact. Josh's intuition for exogenous
 control came FROM field safety systems. The architecture embodies the principle

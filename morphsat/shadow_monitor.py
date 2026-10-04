@@ -902,7 +902,7 @@ class ShadowMonitor:
 
     def close_episode(self, final_resolution: str, confidence: float,
                       canonical_outcome: Optional[dict] = None):
-        """Post-episode: write to memory. Strange loop closure.
+        """Post-episode: write to memory (memory feedback loop).
 
         With receipt chain and receipt graph enabled, this also:
         1. Appends the receipt to the chain (Layer 1 — fossil record)

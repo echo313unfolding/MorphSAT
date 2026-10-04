@@ -71,8 +71,10 @@ Layer 3: Shadow monitor (v7+)
          Hidden posture state machine wrapping the agent's loop.
          Novelty → ORIENT → bounded investigation → decide.
          Safe evidence decays protective posture (tolerance).
-         The model never sees these states — they control what
-         happens AROUND the model.
+         They control what happens AROUND the model. Posture is not
+         shown to the model by default, BUT the gate_assists /
+         v8.1 prompts include posture state and evidence scores
+         (see docs/DECISION_SEMANTICS.md, claim corrections).
 
 Layer 4: Gate authority (v8+)
          When the monitor commits to a direction, it communicates
@@ -92,7 +94,9 @@ Layer 6: Dual-agent recomputation gate (v9)
 
 Layer 7: Dual-store memory
          Threat patterns and tolerance patterns stored separately.
-         Familiarity modulates future posture (the strange loop).
+         Familiarity modulates future posture (an ordinary memory
+         feedback loop; no strange-loop / level-crossing claim —
+         see docs/DECISION_SEMANTICS.md).
 
 Layer 8: Receipts
          Turn-by-turn JSON audit: state, evidence, posture, outcomes.
@@ -169,7 +173,7 @@ print(action.direction)    # "benign"
 # gate_assists: "The controller concluded this is BENIGN. Issue verdict."
 # gate_overrides: verdict = monitor.last_action.direction (model discarded)
 
-# Close episode — updates memory for next run (the strange loop)
+# Close episode — updates memory for next run (memory feedback loop)
 monitor.close_episode("benign", confidence=0.8)
 ```
 

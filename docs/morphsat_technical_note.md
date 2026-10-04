@@ -28,7 +28,7 @@ MorphSAT wraps an LLM's tool-use loop in a five-layer control stack:
 |-------|-----------|------|
 | 1 | FSA lifecycle gate | Legal state transitions only. Blocks impossible sequences. |
 | 2 | Evidence sensors | Bidirectional classification: each tool result produces (threat_delta, safety_delta). Coincidence detection boosts on multi-signal convergence. |
-| 3 | Shadow monitor | Hidden posture state machine. Controls what happens *around* the model. The model never sees these states. |
+| 3 | Shadow monitor | Hidden posture state machine. Controls what happens *around* the model. Hidden from the model by default; included in gate_assists / v8.1 prompts. |
 | 4 | Split memory | Separate threat and tolerance pattern stores. Familiarity modulates future posture. |
 | 5 | Receipts | Turn-by-turn audit trace: every state transition, evidence classification, and posture change is logged in a JSON receipt. |
 

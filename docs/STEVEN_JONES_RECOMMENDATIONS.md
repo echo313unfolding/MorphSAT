@@ -24,7 +24,7 @@ Steven (via LLM + his own agreement) identified the core architectural distincti
 | | Soar | MorphSAT |
 |---|---|---|
 | **Where metacognition lives** | Inside the agent (impasse -> substate -> self-reasoning) | Outside the model (Shadow Monitor -> environment manipulation) |
-| **Model awareness** | Agent sees its own impasses | Model never sees governor states |
+| **Model awareness** | Agent sees its own impasses | Governor states hidden by default; shown in gate_assists / v8.1 prompts |
 | **Design philosophy** | Make the agent self-aware | Make the deployment fault-tolerant |
 
 Steven's framing: "MorphSAT isn't trying to make the LLM smarter; it's making the system around the LLM fault-tolerant."

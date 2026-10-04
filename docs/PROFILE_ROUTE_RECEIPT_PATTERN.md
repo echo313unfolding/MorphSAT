@@ -50,12 +50,22 @@ decision state
 ```
 
 **Code:** `morphsat/two_stage_gate.py`, `morphsat/correction_echo.py`, `tools/trace_splitmemory_cdr.py`
-**Tests:** 321/321. **Key result:** Mode M = 98.6%, false_safe = 0%.
+**Tests:** 321/321 at `c8f8c17`. **Key result (historical):** Mode M = 95.1% (78/82),
+false_safe = 0% at `c8f8c17`/`14689b7`. The 98.6% (71/72) figure is from `3c59918`,
+before the 10-episode `wrong_correction` family was added; it should not be paired
+with the 321-test count.
+
+> **Status at P2C (`7478602`):** with COMMIT/ABSTAIN terminal, every mode — including
+> M — scores 76/82. Mode M's earlier gain came from post-terminal overrides (echo
+> tiebreak converting terminal ABSTAIN to benign) and contaminated echo provenance
+> (C7). See `docs/DECISION_SEMANTICS.md`.
 
 **Critical finding (CDR replay, v8.5):** SplitMemory's value was routing (operator
-selection), not verdict generation. old_guy_helped = 0/72 episodes. The memory
-changed which decision process ran, not what that process decided. CorrectionEcho
-made this mechanism explicit and receipted.
+selection), not verdict generation. old_guy_helped = 0/72 episodes at `3c59918`
+(8 families); 0/82 at `c8f8c17` and later (9 families). The memory changed which
+decision process ran, not what that process decided. CorrectionEcho made this
+mechanism explicit and receipted — but its routing effect reached final outcomes
+only through post-terminal overrides, which P2B removed.
 
 ### 3. Crystal Vault / Ghost Runtime
 
@@ -124,7 +134,7 @@ conflict, drift, or recent correction.
 | Hydra Router | `helix_substrate/hydra_router.py` | 19/19 | Shipped, 7 models |
 | TensorProfile + probes | `helix_substrate/hydra_router.py` + bench tools | receipted | 154 tensors x 7 strategies |
 | TwoStageGate | `morphsat/two_stage_gate.py` | 321/321 | Tagged v8.5.2 |
-| CorrectionEcho | `morphsat/correction_echo.py` | 321/321 | Contradiction defense proven |
+| CorrectionEcho | `morphsat/correction_echo.py` | 321/321 | Contradiction defense at `c8f8c17`; no final-outcome effect at P2C |
 | CDR replay | `tools/trace_splitmemory_cdr.py` | deterministic | old_guy_helped=0/82 |
 | Crystal Vault shard | `cell-runtime/src/cell/vault_shard.py` | 52/52 | Phase 0-0.19 complete |
 | Shadow/Ghost/GlyphDAR | same file | 217/217 total | 73.3% role, R^2=0.818 |

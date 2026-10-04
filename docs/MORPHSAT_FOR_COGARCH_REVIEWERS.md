@@ -9,7 +9,7 @@
 
 MorphSAT is an **exogenous metacognitive control architecture** for LLM-based agents. It wraps an LLM's tool-use loop in a structured state machine that accumulates evidence, tracks posture (control mode), and holds decision authority. The LLM proposes actions; the architecture decides when to commit, abstain, or escalate.
 
-The key architectural distinction from Soar-style metacognition: MorphSAT's monitor is **outside** the model. The LLM never sees the governor's state. It cannot reason about its own posture, game the threshold, or override the commit boundary. In Soar terms, the impasse mechanism is replaced by an external straightjacket — the agent is not self-aware of its control mode.
+The key architectural distinction from Soar-style metacognition: MorphSAT's monitor is **outside** the model. By default the LLM is not shown the governor's state; however, posture state and evidence scores ARE included in the model prompt in the `gate_assists` condition of `tools/bench_gate_authority.py` and in all conditions of `tools/bench_gate_authority_v81.py` (via `_summarize_evidence`); `commit_prompt_a` reveals the commit direction in coarse wording. It cannot override the commit boundary: at P2C, COMMIT and ABSTAIN are terminal (see `docs/DECISION_SEMANTICS.md`). In Soar terms, the impasse mechanism is replaced by an external straightjacket — the agent is not self-aware of its control mode.
 
 Steven Jones (Laird/Soar group) identified this as the core contribution: *"MorphSAT isn't trying to make the LLM smarter; it's making the system around the LLM fault-tolerant."*
 

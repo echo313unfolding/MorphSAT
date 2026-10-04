@@ -445,7 +445,7 @@ Lineage: AGI equation Xi(t) → GuardianCell Theta(c_i) → MorphSAT FSA
 
 ### MorphSAT (March 2026 → present)
 - Finite-state automaton (FSA) for legal transitions
-- Exogenous monitoring (ShadowMonitor) — model never sees governor
+- Exogenous monitoring (ShadowMonitor) — governor state hidden by default (shown in gate_assists / v8.1 prompts)
 - Evidence accumulation with decay (leaky integrator)
 - Dual-boundary commitment: COMMIT / CONTINUE / ABSTAIN
 - Pattern memory: separate threat and tolerance stores

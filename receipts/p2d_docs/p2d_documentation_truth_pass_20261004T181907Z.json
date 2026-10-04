@@ -1,0 +1,149 @@
+{
+  "work_order": "P2D_DOCUMENTATION_TRUTH_PASS",
+  "scope": "public GitHub state 14689b7 lineage; no private/home-machine state",
+  "timestamp_utc": "2026-10-04T18:19:07Z",
+  "parent_commit": "7478602",
+  "python": "3.11.15",
+  "changed_files": {
+    "README.md": "936121ff9b106a2b06f738d01bc98dc9cd924443fd374841f8fa030070f9dee3",
+    "docs/EVIDENCE_FOR_PAPER.md": "ef80405594cf20e32c778e3bad988c689ef8e739c30924a2d45103d89a1746c3",
+    "docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md": "2b8cc5458a6cb0e52f6b4d2268386f3f93b680d875e4f9009078925a5b62ea5a",
+    "docs/PAPER_KIT.md": "bab717a91351506a5642bc190937b50b8c8f2d964e21f33507f177ae875be553",
+    "docs/PROFILE_ROUTE_RECEIPT_PATTERN.md": "7059de8ab25ad1526d623b2f95abceb68fcbcc2adfaf459e21de879195f8747f",
+    "docs/STEVEN_JONES_RECOMMENDATIONS.md": "da45596c13a27c53a3c1d5def2981c67fc24994cb302c465758d19fc14e5fb48",
+    "docs/TWO_STAGE_GATE_RESULTS.md": "628381cceb53bf1089f678fb517cce8cbecacce4fc2f5cd610e632f1f2d5d8cd",
+    "docs/VOCABULARY_COGARCH_MAPPING.md": "64075d43d7b321edccc474d2323ba8679c58dbec0b226c0269e941a9ba2fd846",
+    "docs/morphsat_control_diagram.md": "b8d83e62f574181f3969a9ac80fe2969fb96a2f6cb40de77240c5b37794e83a2",
+    "docs/morphsat_technical_note.md": "40af6b9bf174efc9b7241f9ad75504e074d9bad8e66c4790a38f9c79f863ee93",
+    "morphsat/commit_gate.py": "55e84f0e66d29ca31ef7c7b2be8e1258e5c2e1cd73de9915e53c0956b654ef15",
+    "morphsat/correction_echo.py": "41da7800a99e2d1b505dec1701af164a0fa75914104aa6c2e7f84ab4efddddf7",
+    "morphsat/shadow_monitor.py": "231a37a26495ee22988cb22ed61e14b302e222ab26e6d4164efc15f183db761f",
+    "pyproject.toml": "f67327c017177260f8d6c1570ed18c5af50b977ad86ea4e774383b5320c6f4d9",
+    "docs/DECISION_SEMANTICS.md": "5d5255cc140b05a43f60c5905157633a9a9c240e5193bb9f403cf4ee12b750ca"
+  },
+  "tests": {
+    "tests": 447,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "bench_modes": {
+    "A": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "B": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "C": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "D": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "H": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "J": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "K": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "L": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    },
+    "M": {
+      "correct": 76,
+      "total": 82,
+      "accuracy": 0.9268,
+      "false_safe_rate": 0.0
+    }
+  },
+  "bench_gates": {
+    "total": 43,
+    "passed": 33,
+    "failed": 10
+  },
+  "bench_failed_gates": [
+    "G2: D>B on 2+ memory families (graph steering needed)",
+    "G8: H>D on 1+ family (QUBO gate improves over threshold)",
+    "G9: H>B on 1+ family (QUBO improves over SplitMemory alone)",
+    "G12: J > H overall (two-stage beats single-stage QUBO)",
+    "G17: K > A on 1+ memory family (graph alone adds value)",
+    "G21: K > B on 1+ family (graph-only beats SplitMemory-only)",
+    "G22: L > K (graph-taught beats graph-only)",
+    "G23: L > A on 1+ memory family (taught graph adds value)",
+    "G27: M > L on concept_drift (echo fixes timing gap)",
+    "G28: M > K on 1+ memory family (echo adds value over graph-only)"
+  ],
+  "decision_events_schema": "decision_event_v3",
+  "decision_event_digests": {
+    "A": "a9a1dca14c79638620a0c359ec05884621f578ccc723aa30622798198232a9a0",
+    "B": "58e267d371295ee3e8ca950c0ee510988abaa92e6f679489cc03a87d26c617e4",
+    "C": "5b476332641442638c66cb44c4eb5b358de637a556042892534bdff59e6dbc1e",
+    "D": "c69cbfb627ee2c8d5d8bd2af59b6751037b203ebd0ba6fe2db990243940a97f3",
+    "H": "a14a572a589f14450faf46042f9c7518767e1a2af96359223e87d579d3a56464",
+    "J": "18d2c2049c931a1d18e7f63a962e9518085485f87b0fedab07bd07d4bdcb35b3",
+    "K": "4e27f6172ae6253245b0496e04e71c957b5fd05b5fa5bb8d6fb29422b9cf4b0a",
+    "L": "cbb7d9c6625f76e3ee2b8006e02f676f36e37a22537554d3984055d4a4727319",
+    "M": "e277fded67b027c89c8c70f1a7fa1b45e0de00de519b42493b6c95ab414fb604"
+  },
+  "equivalence_vs_P2C": {
+    "log_lines_compared": 119,
+    "log_identical_excluding_noise_lines": true,
+    "log_sha256_base": "a2b028e5a625becac2306921ae11e15d94894dbbccc6cf94fd531fc9a06af492",
+    "log_sha256_new": "a2b028e5a625becac2306921ae11e15d94894dbbccc6cf94fd531fc9a06af492",
+    "json_noise_keys_excluded": [
+      "cost",
+      "timestamp"
+    ],
+    "json_new_keys": [],
+    "json_removed_keys": [],
+    "json_core_sha256_base": "f8faa5c85b2bea73a490da18434cb3d61a05886d4da89e27ebf9602e023c80f0",
+    "json_core_sha256_new": "f8faa5c85b2bea73a490da18434cb3d61a05886d4da89e27ebf9602e023c80f0",
+    "json_core_identical": true,
+    "json_differing_keys": []
+  },
+  "decision_event_digests_identical_vs_P2C": true,
+  "code_change_proof": "AST of commit_gate.py, shadow_monitor.py, correction_echo.py identical to 7478602 with docstrings stripped; remaining edits are comments",
+  "metadata_change": "pyproject.toml version 0.4.0 -> 0.5.0 (d593ce9 explicitly bumped to 0.5.0 but missed pyproject)",
+  "docs_changed": [
+    "README.md",
+    "docs/DECISION_SEMANTICS.md (new)",
+    "docs/PROFILE_ROUTE_RECEIPT_PATTERN.md",
+    "docs/TWO_STAGE_GATE_RESULTS.md",
+    "docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md",
+    "docs/PAPER_KIT.md",
+    "docs/STEVEN_JONES_RECOMMENDATIONS.md",
+    "docs/VOCABULARY_COGARCH_MAPPING.md",
+    "docs/morphsat_control_diagram.md (box-aligned, same-length replacements)",
+    "docs/morphsat_technical_note.md",
+    "docs/EVIDENCE_FOR_PAPER.md"
+  ],
+  "primary_finding": "At P2C, canonical history exists but has no lawful causal effect on final decisions; all modes 76/82. Earlier history-related gains were produced through post-terminal arbitration and contaminated CorrectionEcho semantics.",
+  "behavior_change": "none"
+}

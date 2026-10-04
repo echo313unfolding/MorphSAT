@@ -75,6 +75,12 @@ the decision involves quadratic interactions between evidence sources.
 
 ## Benchmark results
 
+> **Status at P2C (`7478602`):** the results below are historical (pre-P2B). In this
+> harness the QUBO backend always ran after the monitor had already reached a
+> terminal state; its effect on final outcomes was a post-terminal override. With
+> COMMIT/ABSTAIN terminal (P2B), Modes D/H/J all score 76/82 and the QUBO path has
+> no final-outcome effect. See `docs/DECISION_SEMANTICS.md`.
+
 ```
 Mode  Overall  concept_drift  false_safe  Notes
 ----  -------  -------------  ----------  -----

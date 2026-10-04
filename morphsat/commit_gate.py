@@ -7,9 +7,10 @@ Architecture:
     FSA = legal lifecycle skeleton (what transitions are allowed)
     CommitGate = decision timing (when to stop investigating)
     Memory = learned context (threat patterns + tolerance patterns)
-    Receipt = proof of why the gate fired (the strange loop closes here)
+    Receipt = proof of why the gate fired (closes the memory feedback loop)
 
-The strange loop (Hofstadter / AGI equation lineage):
+Memory feedback loop (historically called a "strange loop"; no level-crossing
+or strange-loop claim is supported — see docs/DECISION_SEMANTICS.md):
     agent acts → gate records receipt → memory learns pattern
     → future threshold modulated by memory → different behavior → new receipt
 
@@ -177,7 +178,7 @@ class SplitMemoryStore:
                        event_ref: Optional[str] = None):
         """Write pattern to the appropriate store after episode resolves.
 
-        This is where the strange loop closes:
+        This closes the memory feedback loop:
         receipt → memory → future behavior change.
         """
         h = self.hash_evidence(evidence_signature)
@@ -613,7 +614,7 @@ class CommitGate:
         self.evidence_tags: List[str] = []
         self.tool_count = 0
 
-        # Memory (the strange loop)
+        # Memory (feedback loop)
         self.memory = memory or SplitMemoryStore("/tmp/commit_gate_memory.json")
         self.novelty = 1.0
         self.memory_match = None
@@ -804,7 +805,7 @@ class CommitGate:
         return action
 
     def close_episode(self, final_resolution: str, confidence: float):
-        """Post-episode: write to memory. The strange loop closes here.
+        """Post-episode: write to memory (closes the memory feedback loop).
 
         receipt → memory → future threshold change → different behavior
         """

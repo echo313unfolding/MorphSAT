@@ -11,7 +11,7 @@
 | Implementation Name | Reviewer Label | Domain | Notes |
 |---|---|---|---|
 | Shadow Monitor | Exogenous appraisal monitor | Soar/metacognition | "Exogenous" = outside the model. Steven's term. |
-| shadow state | control mode / posture | ACT-R, metacognition | The hidden state the model never sees. |
+| shadow state | control mode / posture | ACT-R, metacognition | Hidden from the model by default (included in gate_assists / v8.1 prompts). |
 | posture | metacognitive control mode | metacognition | NORMAL, ORIENTING, SAFE_DISTANCE, etc. |
 | gate authority | structured decision override | control theory | gate_assists = directive; gate_overrides = veto. |
 | commit gate | evidence-based commit controller | decision theory | Fires irreversibly. Action potential analogy. |
@@ -62,7 +62,7 @@
 | threat memory | threat-pattern familiarity | immune system (inflammation) | Known dangerous patterns. Lowers commit threshold. |
 | tolerance memory | benign-pattern familiarity | immune system (tolerance) | Known safe patterns. Prevents permanent inflammation. |
 | novelty_distance | familiarity gradient | pattern matching | How far the current alert is from anything seen before. |
-| close_episode | episodic encoding / memory consolidation | cognitive science | Post-decision: write experience to memory. The strange loop. |
+| close_episode | episodic encoding / memory consolidation | cognitive science | Post-decision: write experience to memory (feedback loop; no strange-loop claim). |
 
 ## Receipts / Audit
 

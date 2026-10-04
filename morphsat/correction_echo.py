@@ -16,7 +16,7 @@ reflex that said "this smells familiar, think harder" — with an
 explicit, receipted, expiring graph-side marker.
 
 Lineage:
-    SplitMemory.lookup() → CDR trace → old_guy_helped=0/72 →
+    SplitMemory.lookup() → CDR trace → old_guy_helped=0/72 (3c59918; 0/82 from c8f8c17) →
     real value was routing tap → CorrectionEcho (explicit version)
 """
 
