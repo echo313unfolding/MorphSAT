@@ -1,0 +1,22 @@
+CDR Memory Trace Distillation
+  Families: 9
+
+CDR Summary (82 episodes):
+  Old guy helped:  0/82
+  Old guy hurt:    0/82
+  Graph gaps:      0/82 (old guy helped, graph didn't)
+  Graph signals:   0/82
+
+Family                          Helped  Hurt  Gap  Signals
+------------------------------------------------------------
+  concept_drift                      0     0    0        0
+  cross_domain_structure             0     0    0        0
+  hard_abstain_required              0     0    0        0
+  long_delayed_correction            0     0    0        0
+  poisoned_memory                    0     0    0        0
+  same_phrase_diff_outcome           0     0    0        0
+  sensor_graph_disagreement          0     0    0        0
+  stale_memory_trap                  0     0    0        0
+  wrong_correction                   0     0    0        0
+
+Receipt: /tmp/claude-0/-home-user/5fbe54cf-bf58-5c80-a691-b2a9b47eeceb/scratchpad/run_home/receipts/morphsat_cdr_trace/cdr_trace_20261004T173932Z.json

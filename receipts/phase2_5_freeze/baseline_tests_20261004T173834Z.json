@@ -1,0 +1,28 @@
+{
+  "work_order": "PHASE_2_5_BASELINE_TESTS",
+  "timestamp_utc": "2026-10-04T17:38:34Z",
+  "git_commit": "14689b7a36f263c81a1a9f41522d55546fd76992",
+  "python": "3.11.15",
+  "platform": "Linux-6.18.44-fc-v64-x86_64-with-glibc2.39",
+  "pip_freeze": [
+    "coverage==7.16.2",
+    "iniconfig==2.3.0",
+    "numpy==2.4.6",
+    "packaging==26.3",
+    "pluggy==1.6.0",
+    "Pygments==2.21.0",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0"
+  ],
+  "pip_freeze_sha256": "7cf6d94bd62258a25b7d565f1044ef7b3f951dfef95d274c0af21f7665b77990",
+  "command": "TMPDIR=<isolated> HOME=<isolated> python -m pytest -q -p no:cacheprovider",
+  "tests": 321,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "wall_s": 0.772,
+  "documented_claim": "321/321 (docs/PROFILE_ROUTE_RECEIPT_PATTERN.md:53)",
+  "host_tmp_new_entries": 0,
+  "shared_default_paths_created": false,
+  "isolation_note": "Tests pass explicit memory paths; hardcoded /tmp/test_* paths in test_memory_qubo.py/test_receipt_chain.py do not honor TMPDIR but left no residue this run."
+}

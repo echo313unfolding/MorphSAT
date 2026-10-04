@@ -1,0 +1,119 @@
+MorphSAT Memory Stress Benchmark
+  Families: 9 (82 episodes)
+  Modes: A, B, C, D, H, J, K, L, M
+
+Mode      Acc  Correct  FalseSafe  FalseEsc  Abstain
+-------------------------------------------------------
+A       92.7%   76/82        0.0%      0.0%       19
+B       92.7%   76/82        0.0%      0.0%       19
+C       92.7%   76/82        0.0%      0.0%       19
+D       92.7%   76/82        0.0%      0.0%       19
+H       82.9%   68/82        0.0%      0.0%       19
+J       92.7%   76/82        0.0%      0.0%       19
+K       92.7%   76/82        0.0%      0.0%       19
+L       92.7%   76/82        0.0%      0.0%       19
+M       95.1%   78/82        0.0%      0.0%       19
+
+Per-family breakdown:
+  Family                              A      B      C      D      H      J      K      L      M  post_drift  post_poison
+  -----------------------------------------------------------------------------------------------------------------------
+  concept_drift                   80.0%  80.0%  80.0%  80.0%  90.0%  90.0%  80.0%  80.0% 100.0%         3/5            
+  cross_domain_structure         100.0% 100.0% 100.0% 100.0%  87.5% 100.0% 100.0% 100.0% 100.0%                        
+  hard_abstain_required          100.0% 100.0% 100.0% 100.0% 100.0% 100.0% 100.0% 100.0% 100.0%                        
+  long_delayed_correction        100.0% 100.0% 100.0% 100.0%  60.0% 100.0% 100.0% 100.0% 100.0%         3/3            
+  poisoned_memory                 90.0%  90.0%  90.0%  90.0%  80.0%  90.0%  90.0%  90.0%  90.0%                     5/6
+  same_phrase_diff_outcome       100.0% 100.0% 100.0% 100.0%  90.0% 100.0% 100.0% 100.0% 100.0%                        
+  sensor_graph_disagreement      100.0% 100.0% 100.0% 100.0%  75.0%  87.5% 100.0% 100.0% 100.0%                        
+  stale_memory_trap               87.5%  87.5%  87.5%  87.5%  87.5%  87.5%  87.5%  87.5% 100.0%         3/4            
+  wrong_correction                80.0%  80.0%  80.0%  80.0%  80.0%  80.0%  80.0%  80.0%  70.0%                     4/6
+
+GATES: 37/43
+  [PASS] G1: C==A (chain alone doesn't steer)
+         A=0.927 C=0.927 delta=0.0000
+  [FAIL] G2: D>B on 2+ memory families (graph steering needed)
+         D wins 0/4 families. concept_drift: B=0.800 D=0.800; poisoned_memory: B=0.900 D=0.900; stale_memory_trap: B=0.875 D=0.875; long_delayed_correction: B=1.000 D=1.000
+  [PASS] G3: D false_safe_rate <= A
+         A=0.000 D=0.000
+  [PASS] G4: SplitMemory shows concept drift weakness
+         post_drift_accuracy=0.600 (3/5)
+  [PASS] G5: Poisoned memory exposes SplitMemory weakness
+         post_poison false_safe=0 accuracy=0.833
+  [PASS] G6-A: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-B: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-D: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-H: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-J: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-K: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-L: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G6-M: hard_abstain handled (correct+adjacent >= 50%)
+         8/8 = 1.000
+  [PASS] G7: Deterministic replay
+         same inputs -> same graph state
+  [PASS] G8: H>D on 1+ family (QUBO gate improves over threshold)
+         H wins 1 families. long_delayed_correction: D=1.000 H=0.600; same_phrase_diff_outcome: D=1.000 H=0.900; concept_drift: D=0.800 H=0.900; sensor_graph_disagreement: D=1.000 H=0.750
+  [PASS] G9: H>B on 1+ family (QUBO improves over SplitMemory alone)
+         H wins 1 families. long_delayed_correction: B=1.000 H=0.600; same_phrase_diff_outcome: B=1.000 H=0.900; concept_drift: B=0.800 H=0.900; sensor_graph_disagreement: B=1.000 H=0.750
+  [PASS] G10: H false_safe_rate <= A
+         A=0.000 H=0.000
+  [PASS] G11: J >= D overall (two-stage no worse than threshold)
+         D=0.927 J=0.927
+  [PASS] G12: J > H overall (two-stage beats single-stage QUBO)
+         H=0.829 J=0.927
+  [PASS] G13: J concept_drift >= D (two-stage handles drift)
+         D=0.800 J=0.900
+  [PASS] G14: J false_safe_rate == 0 (safety preserved)
+         J false_safe=0.000
+  [PASS] G15: J hard_abstain >= D
+         D=1.000 J=1.000
+  [PASS] G16: K >= A overall (graph-only no worse than baseline)
+         A=0.927 K=0.927
+  [FAIL] G17: K > A on 1+ memory family (graph alone adds value)
+         K wins 0/4 families. concept_drift: A=0.800 K=0.800; poisoned_memory: A=0.900 K=0.900; stale_memory_trap: A=0.875 K=0.875; long_delayed_correction: A=1.000 K=1.000
+  [PASS] G18: K false_safe_rate == 0 (safety without SplitMemory)
+         K false_safe=0.000
+  [PASS] G19: K concept_drift >= A (graph handles drift without memory)
+         A=0.800 K=0.800
+  [PASS] G20: K within 10pp of J (SplitMemory removal cost bounded)
+         J=0.927 K=0.927 delta=0.000
+  [FAIL] G21: K > B on 1+ family (graph-only beats SplitMemory-only)
+         K wins 0 families. long_delayed_correction: B=1.000 K=1.000; same_phrase_diff_outcome: B=1.000 K=1.000; concept_drift: B=0.800 K=0.800; sensor_graph_disagreement: B=1.000 K=1.000
+  [FAIL] G22: L > K (graph-taught beats graph-only)
+         L_overall=0.927 K_overall=0.927 L_family_wins=0. concept_drift: K=0.800 L=0.800; poisoned_memory: K=0.900 L=0.900; stale_memory_trap: K=0.875 L=0.875; long_delayed_correction: K=1.000 L=1.000
+  [FAIL] G23: L > A on 1+ memory family (taught graph adds value)
+         L wins 0/4. concept_drift: A=0.800 L=0.800; poisoned_memory: A=0.900 L=0.900; stale_memory_trap: A=0.875 L=0.875; long_delayed_correction: A=1.000 L=1.000
+  [PASS] G24: L concept_drift >= K (taught graph handles drift)
+         K=0.800 L=0.800
+  [PASS] G25: L false_safe_rate == 0 (safety preserved)
+         L false_safe=0.000
+  [PASS] G26: L uses no SplitMemory (structural)
+         Mode L config: use_memory=False, use_graph_routing=True
+  [PASS] G27: M > L on concept_drift (echo fixes timing gap)
+         L=0.800 M=1.000
+  [PASS] G28: M > K on 1+ memory family (echo adds value over graph-only)
+         M wins 2/4. concept_drift: K=0.800 M=1.000; poisoned_memory: K=0.900 M=0.900; stale_memory_trap: K=0.875 M=1.000; long_delayed_correction: K=1.000 M=1.000
+  [PASS] G29: M false_safe_rate == 0 (safety preserved with echo)
+         M false_safe=0.000
+  [PASS] G30: M uses no SplitMemory (structural)
+         Mode M config: use_memory=False, use_correction_echo=True
+  [PASS] G31: M handles post-drift episodes (echo triggers routing)
+         post_drift correct=5/5
+  [PASS] G32: M deterministic (structural — same RNG seed)
+         Guaranteed by fixed rng=Random(42)
+  [PASS] G33: M no false_safe on wrong_correction (adversarial safety)
+         false_safe=0/4 episodes: wc_03=suspicious, wc_04=suspicious, wc_05=suspicious, wc_06=escalate
+  [FAIL] G34: M wrong_correction >= A (echo doesn't regress)
+         A=0.800 M=0.700
+  [PASS] G35: M recovers after wrong_correction echo expires
+         recovery=2/2
+  [PASS] G36: M wrong_correction false_safe <= A (echo no worse than baseline)
+         A_false_safe=0 M_false_safe=0
+
+Receipt: /tmp/claude-0/-home-user/5fbe54cf-bf58-5c80-a691-b2a9b47eeceb/scratchpad/run_home/receipts/morphsat_memory_stress/memory_stress_20261004T173924Z.json
+Wall time: 6.54s  CPU: 5.52s

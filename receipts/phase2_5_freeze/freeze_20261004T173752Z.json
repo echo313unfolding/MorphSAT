@@ -1,0 +1,54 @@
+{
+  "work_order": "PHASE_2_5_FREEZE",
+  "timestamp_utc": "2026-10-04T17:37:52Z",
+  "git_commit": "14689b7a36f263c81a1a9f41522d55546fd76992",
+  "git_dirty": false,
+  "files_to_touch_sha256": {
+    "morphsat/shadow_monitor.py": "5c400c08999d091ce5735adf022225642712a2e617bbd5d9e95a82b997ead910",
+    "morphsat/commit_gate.py": "2b6cd1efc1d7f5551d7c55168eb7a5efa016b668a7f5227c1dac8dcf4f428403",
+    "morphsat/receipt_graph.py": "ce3e44ad5a364aaf0b4d117699979b45f9ea236f5948d1b3e674364c09d52ad9",
+    "morphsat/correction_echo.py": "b259121881b488219afb3e065130ad362508189b783149612e5295c8d6b97002",
+    "morphsat/graph_routing_signal.py": "78c2f0aebd0d057ef710eb93daaca770c8220d81386c2c35358da09c1041e464",
+    "morphsat/two_stage_gate.py": "3505f0e03506d6ffd0494f102cad2d925f423b2493b37a7c866e2ab9ed9b432f",
+    "morphsat/gate_qubo.py": "5f8ee686afda75b974ebbaace663451a2504b84dcd39ba2afeacc89d2f7ac909",
+    "morphsat/receipt_chain.py": "c55cab6dc4889a506e108dd2ca8366e334f0e5b339db3db371c2087473b9349c",
+    "morphsat/__init__.py": "22ab5989dbebdfe1d19f2804e76538fc30ebdad10ec1ddfb318fc09cfa003dd1",
+    "tools/bench_memory_stress.py": "bb3d9b746dde220401e17fcb2566635e8f68766b8d0091b1dc1cfb1f0192ce7a",
+    "tools/bench_gate_authority.py": "b31eef1aac9df1706e44ec561f306734dd996e06d7ae13613913aa5e2c3a5a3b",
+    "tools/trace_splitmemory_cdr.py": "2521cf7910c556607510b2707f55c9c80f1bd4591ca9a13bd4aa30a162a88d37",
+    "tests/test_shadow_monitor.py": "0811ef07a3965bd4a52809cdb0a13ceb48d82cb03b3779f669165932239ce41b",
+    "tests/test_correction_echo.py": "5d67f5223b507e89561a998e938167cb58c97b5a426bf7acac9f07940201457e",
+    "tests/test_graph_routing_signal.py": "480465e3d3110738ee3a972349246f0a42fffe17e74cd5521c22d1d99537b315",
+    "tests/test_receipt_graph.py": "2eb5d5fdb881294d379568b43bf2a1481074d1c6c4bbbc09eaccf1593d0ac43a",
+    "tests/test_two_stage_gate.py": "e42f6e84a946767b7d9e1ef79467e2c814413ed8af80bb1dd88ce279c552a957",
+    "docs/PROFILE_ROUTE_RECEIPT_PATTERN.md": "1ca2b65812701753638acbad556c4a85dc05acb837c96b5984919b8bade69887",
+    "docs/TWO_STAGE_GATE_RESULTS.md": "1df599af5e0e4cecbffa2403cc85f0f93b1ed2cd5e603d9fedb2432146ed2ec8",
+    "docs/MORPHSAT_FOR_COGARCH_REVIEWERS.md": "c1c28a0cb30ebc6fd2ea7bb511809689568e5470947aebe785a9253d52d6f711",
+    "docs/PAPER_KIT.md": "07ee544a9c37243bfaa99713001d33f712b8688e3f227a68ee1002a43ce7458c",
+    "pyproject.toml": "dbcfd142989f088c703b99be02a4bd1237099f65fc269b704abb15d974ebc4e9"
+  },
+  "existing_receipts_sha256": {
+    "receipts/morphsat_v83_early_verdict_guard/experiment_output.log": "aed667b7a4e512337e13f49a9b65b274aabbae502b8b7d1d01780d4aa9f0c760",
+    "receipts/morphsat_v83_early_verdict_guard/morphsat_v83_gate_authority_20260508T125045Z.json": "570f4ec02ee62a0a4023be46c2628a5c09c684bfe480a4795877042e0c5635a3",
+    "receipts/v7_shadow_monitor/morphsat_shadow_monitor_v7_bench_20260507T133505Z.json": "a0cfde0bedb50949ca0dccb56eb0bfff126ba4d63ae1eaf46c54ed7718d7a0dc",
+    "receipts/v7_shadow_monitor/morphsat_v7_multiseed_3x_20260507T150316Z.json": "12a23a9c8e02b0c959593e1516530e68e780fbfaa871da0b87245f5f348f8a23"
+  },
+  "host_shared_state_before": {
+    "/tmp/shadow_monitor_memory.json": false,
+    "/tmp/commit_gate_memory.json": false
+  },
+  "architecture_failure_receipt": {
+    "id": "F4_COMMIT_SEMANTIC_CONTRADICTION",
+    "status": "OPEN",
+    "finding": "ShadowMonitor latches committed=True and emits COMMIT; bench harness may subsequently replace the emitted verdict via QUBO COMMIT (tools/bench_memory_stress.py:1098-1102) or CorrectionEcho tiebreaker (:1103-1115). SplitMemory records post-override verdict (shadow_monitor.py:892 via bench :1127) while ReceiptGraph records pre-override monitor direction (shadow_monitor.py:904,912,1067).",
+    "consequence": "System cannot answer 'what did I commit to?' consistently; H4 untestable until resolved.",
+    "negative_control_preregistered": [
+      "drift_like",
+      "stale_memory_like",
+      "poisoned_memory_like",
+      "sensor_graph_conflict",
+      "routing_triggered"
+    ],
+    "negative_control_basis": "No consumers outside receipts/trace tools at commit above (graph_routing_signal.py:118-190)."
+  }
+}
