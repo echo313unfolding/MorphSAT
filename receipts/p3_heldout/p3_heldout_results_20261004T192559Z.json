@@ -1,0 +1,7650 @@
+{
+ "dataset_sha256": "e05703486384c76ff1a60b5a80498f49322def10a683f3a194471bf0700a52bc",
+ "results": {
+  "A": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "B": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "C": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "D": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "H": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "J": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "K": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "L": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  },
+  "M": {
+   "B0": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B1": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B2M": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 20,
+     "correct": 0,
+     "wrong": 20,
+     "net": -20,
+     "selective_risk": 1.0,
+     "coverage": 0.3333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 20,
+      "ABSTAIN:None": 40
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 32,
+     "correct": 32,
+     "wrong": 0,
+     "net": 32,
+     "selective_risk": 0.0,
+     "coverage": 0.5333333333333333,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 32,
+      "ABSTAIN:None": 28
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 16,
+     "correct": 0,
+     "wrong": 16,
+     "net": -16,
+     "selective_risk": 1.0,
+     "coverage": 0.26666666666666666,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 16,
+      "ABSTAIN:None": 44
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 29,
+     "correct": 29,
+     "wrong": 0,
+     "net": 29,
+     "selective_risk": 0.0,
+     "coverage": 0.48333333333333334,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 31,
+      "COMMIT:escalate": 29
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   },
+   "B3": {
+    "AP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "AP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "AP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP1": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 60,
+     "correct": 60,
+     "wrong": 0,
+     "net": 60,
+     "selective_risk": 0.0,
+     "coverage": 1.0,
+     "false_safe": 0,
+     "outcomes": {
+      "COMMIT:escalate": 60
+     }
+    },
+    "BP2": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP3": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP4": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    },
+    "BP5": {
+     "n": 60,
+     "deferred": 60,
+     "commits": 0,
+     "correct": 0,
+     "wrong": 0,
+     "net": 0,
+     "selective_risk": null,
+     "coverage": 0.0,
+     "false_safe": 0,
+     "outcomes": {
+      "ABSTAIN:None": 60
+     }
+    }
+   }
+  }
+ },
+ "closure": {
+  "A": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "B": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "C": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "D": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "H": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "J": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "K": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "L": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  },
+  "M": {
+   "B0": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   },
+   "B1": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 60,
+     "wrong_direction": 0,
+     "ties": 0,
+     "discriminates": true
+    }
+   },
+   "B2M": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 24,
+     "wrong_direction": 12,
+     "ties": 24,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 23,
+     "wrong_direction": 10,
+     "ties": 27,
+     "discriminates": false
+    }
+   },
+   "B3": {
+    "A": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    },
+    "B": {
+     "pairs": 60,
+     "correct_direction": 0,
+     "wrong_direction": 0,
+     "ties": 60,
+     "discriminates": false
+    }
+   }
+  }
+ },
+ "u7": {
+  "A": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "B": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "C": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "D": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "H": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "J": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "K": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "L": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  },
+  "M": {
+   "B0": 0,
+   "B1": 0,
+   "B2": 0,
+   "B2M": 0,
+   "B3": 0
+  }
+ },
+ "observables": {
+  "B0": {
+   "A": {
+    "P3_example": {
+     "votes": {},
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "B0: no history available"
+    },
+    "P4_example": {
+     "votes": {},
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "B0: no history available"
+    },
+    "P3_vote_patterns": {
+     "[{}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{}, [], [\"ABSTAIN\", null]]": 60
+    }
+   },
+   "B": {
+    "P3_example": {
+     "votes": {},
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "B0: no history available"
+    },
+    "P4_example": {
+     "votes": {},
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "B0: no history available"
+    },
+    "P3_vote_patterns": {
+     "[{}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{}, [], [\"ABSTAIN\", null]]": 60
+    }
+   }
+  },
+  "B1": {
+   "A": {
+    "P3_example": {
+     "votes": {
+      "benign": 2,
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 2/4 < 0.75"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 3
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "3/4 votes for escalate"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2, \"escalate\": 2}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 3}, [], [\"COMMIT\", \"escalate\"]]": 60
+    }
+   },
+   "B": {
+    "P3_example": {
+     "votes": {
+      "benign": 2,
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 2/4 < 0.75"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 3
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "3/4 votes for escalate"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2, \"escalate\": 2}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 3}, [], [\"COMMIT\", \"escalate\"]]": 60
+    }
+   }
+  },
+  "B2": {
+   "A": {
+    "P3_example": {
+     "votes": {
+      "benign": 2,
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 2/4 < 0.75"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 3
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "3/4 votes for escalate"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2, \"escalate\": 2}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 3}, [], [\"COMMIT\", \"escalate\"]]": 60
+    }
+   },
+   "B": {
+    "P3_example": {
+     "votes": {
+      "benign": 2,
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 2/4 < 0.75"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 3
+     },
+     "n_uncertain": 0,
+     "excluded": [],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "3/4 votes for escalate"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2, \"escalate\": 2}, [], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 3}, [], [\"COMMIT\", \"escalate\"]]": 60
+    }
+   }
+  },
+  "B2M": {
+   "A": {
+    "P3_example": {
+     "votes": {
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "sham_mask",
+      "sham_mask"
+     ],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "2/2 votes for escalate"
+    },
+    "P4_example": {
+     "votes": {
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "sham_mask",
+      "sham_mask"
+     ],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "2/2 votes for escalate"
+    },
+    "P3_vote_patterns": {
+     "[{\"escalate\": 2}, [\"sham_mask\", \"sham_mask\"], [\"COMMIT\", \"escalate\"]]": 20,
+     "[{\"benign\": 2}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 6,
+     "[{\"benign\": 1, \"escalate\": 1}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 34
+    },
+    "P4_vote_patterns": {
+     "[{\"escalate\": 2}, [\"sham_mask\", \"sham_mask\"], [\"COMMIT\", \"escalate\"]]": 32,
+     "[{\"benign\": 1, \"escalate\": 1}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 28
+    }
+   },
+   "B": {
+    "P3_example": {
+     "votes": {
+      "escalate": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "sham_mask",
+      "sham_mask"
+     ],
+     "final": [
+      "COMMIT",
+      "escalate"
+     ],
+     "arb_reason": "2/2 votes for escalate"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 1
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "sham_mask",
+      "sham_mask"
+     ],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 1/2 < 0.75"
+    },
+    "P3_vote_patterns": {
+     "[{\"escalate\": 2}, [\"sham_mask\", \"sham_mask\"], [\"COMMIT\", \"escalate\"]]": 16,
+     "[{\"benign\": 1, \"escalate\": 1}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 36,
+     "[{\"benign\": 2}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 8
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 1}, [\"sham_mask\", \"sham_mask\"], [\"ABSTAIN\", null]]": 31,
+     "[{\"escalate\": 2}, [\"sham_mask\", \"sham_mask\"], [\"COMMIT\", \"escalate\"]]": 29
+    }
+   }
+  },
+  "B3": {
+   "A": {
+    "P3_example": {
+     "votes": {
+      "benign": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "superseded",
+      "superseded"
+     ],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "benign guard: balance 0.18700000000000003 > 0"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 1
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "superseded",
+      "superseded"
+     ],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 1/2 < 0.75"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2}, [\"superseded\", \"superseded\"], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 1}, [\"superseded\", \"superseded\"], [\"ABSTAIN\", null]]": 60
+    }
+   },
+   "B": {
+    "P3_example": {
+     "votes": {
+      "benign": 2
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "superseded",
+      "superseded"
+     ],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "benign guard: balance 0.15895000000000004 > 0"
+    },
+    "P4_example": {
+     "votes": {
+      "benign": 1,
+      "escalate": 1
+     },
+     "n_uncertain": 0,
+     "excluded": [
+      "superseded",
+      "superseded"
+     ],
+     "final": [
+      "ABSTAIN",
+      null
+     ],
+     "arb_reason": "share 1/2 < 0.75"
+    },
+    "P3_vote_patterns": {
+     "[{\"benign\": 2}, [\"superseded\", \"superseded\"], [\"ABSTAIN\", null]]": 60
+    },
+    "P4_vote_patterns": {
+     "[{\"benign\": 1, \"escalate\": 1}, [\"superseded\", \"superseded\"], [\"ABSTAIN\", null]]": 60
+    }
+   }
+  }
+ },
+ "wall_time_s": 707.4,
+ "verdict_primary_mode_A": {
+  "B3_discriminates": {
+   "A": false,
+   "B": false
+  },
+  "any_baseline_discriminates": {
+   "B0": {
+    "A": false,
+    "B": false
+   },
+   "B1": {
+    "A": true,
+    "B": true
+   },
+   "B2": {
+    "A": true,
+    "B": true
+   },
+   "B2M": {
+    "A": false,
+    "B": false
+   },
+   "B3": {
+    "A": false,
+    "B": false
+   }
+  },
+  "close_causal_history_line": true,
+  "modes_agree": true
+ }
+}
