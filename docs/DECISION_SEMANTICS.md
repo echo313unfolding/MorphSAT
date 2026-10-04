@@ -100,4 +100,33 @@ One event per episode (`morphsat/decision_event.py`), built after all decisions:
 * H3 (current-state self-model): unsupported.
 * H4a (history model): canonical self-history now exists, but cannot be tested
   until a legitimate **pre-terminal** path exists (planned: DEFER → ARBITRATION).
+  **Update (P3):** tested via DEFER → ARBITRATION; no benefit over generic
+  memory; causal-history line closed for this harness (see §7).
 * No strange-loop claim is made.
+
+## 7. Causal-history line: CLOSED FOR THIS HARNESS (P3)
+
+Status: **closed as preregistered.** Pilot `53c825b` and held-out closure
+`15d03fd` are the record and are not to be amended.
+
+* Pilot (P3 prereg v2 + v2.1): net resolution B0 0 · B1 0 · B2 0 · B2M 1 ·
+  B3 0. H0 supported, H1 unsupported, H2 failed; critical falsifier triggered.
+  B1 ≡ B2: in this benchmark the agent's prior canonical decisions carry no
+  information beyond generic evidence lean.
+* Held-out (frozen procedure `ca394ff`, dataset sha256 `e0570348…`): with
+  probe evidence held constant, B3 discriminated genuine (P3) from false (P4)
+  corrections in 0/60 matched pairs in both strata (HARNESS_END and
+  endogenous TOOL_BUDGET_EXHAUSTED), all modes. Per the pre-fixed rule, causal
+  provenance/supersession is insufficient for correction validity in this
+  architecture.
+* **Interpretation: lineage ≠ credibility.** Supersession records *what
+  replaced what*, not *whether the replacement deserved authority*; it removed
+  old evidence after genuine and false corrections alike.
+* B1/B2 discriminated (60/60) by a plain directional-record majority. This is
+  **confounded**: P3 and P4 differ both in post-correction direction and in
+  total threat-record count, so the held-out data do not show that
+  post-correction evidence specifically was the operative variable. Not
+  promoted.
+* Not pursued from this line: H2 rescue, H3, own-vs-foreign history,
+  self-model, strange-loop claims. Any work on correction authority or
+  grounded feedback starts under a **new preregistration lineage**.
