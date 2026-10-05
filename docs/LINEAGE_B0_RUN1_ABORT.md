@@ -10,7 +10,7 @@ run. No B1 arm (G1/G2/G3/G2-S) exists in code; no B1 outcome exists.
 * B0 §8 step 2 says to commit the implementation before running any gate.
   I ran the gate tests once before the first commit. That run: gates 1–5
   passed, then gate 6 failed (pytest `-x`).
-* The code as first exercised is committed as `a2b1d0a`, with that
+* The code as first exercised is committed as `5b8f965`, with that
   disclosure in its message.
 * **Fix 1 (gate 6), its own commit.** `SensorModel` initialized sensors
   lazily, so `theta_hash` changed on first use without any update. Fixed by
@@ -45,8 +45,8 @@ calibrated, which is consistent with this explanation.
 
 ## Why it matters for B1 (and why the range should not just be widened)
 
-G2's noise update is . If the latent predictive variance
- is overstated, G2 underestimates sensor noise and may clamp at
+G2's noise update is `σ² = v − s²_ref`. If the latent predictive variance
+`s²_ref` is overstated, G2 underestimates sensor noise and may clamp at
 σ_min. That is exactly the "compensating for a bad predictor" confound the
 gate exists to exclude. G1's reference variance has a different origin, so
 the bias would not be matched across arms.
