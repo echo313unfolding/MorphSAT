@@ -113,3 +113,16 @@ rewritten. Exact sequence of the Lineage A run:
    committed in `39766cc`.
 
 No threshold, rule, grid or policy changed between steps 1 and 5.
+
+## Addendum (2026-10-05) — sham limitation found in the A4V follow-up
+
+The S2 shuffle sham (frozen within-pattern permutation of
+`(source_id, upstream_id)` pairs) **does not reliably destroy dependence**.
+In A4V (`docs/LINEAGE_A4V_RESULTS.md`), all 22 sham vetoes were a strict
+subset of the true alias set. The permutation cannot break shared-upstream
+structure when few or no differently-sourced records exist to swap with.
+Criterion 4 above should be read with this limitation.
+
+**Lineage A is not re-run because of this.** The primary A5 claim already
+failed criterion 2 (0/24) independently of any sham. The verdict "not
+supported" stands.

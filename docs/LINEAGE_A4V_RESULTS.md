@@ -102,3 +102,15 @@ on V1 alone, which needs no sham.
   exactly U_c (T1), and its BCR stayed below the equal-cost reference.
 * A sham that actually destroys dependence (cross-pattern reassignment)
   would be needed before any future specificity claim.
+
+## Standing interpretation (user, 2026-10-05; final)
+
+* A4V is **CLOSED by V1 alone**: 0/20 non-null environments reached
+  `R ≥ 2`.
+* The B-corr subtype result is post hoc and partly induced by the
+  generator's adversary model (the adversary controls exactly U_c). It is a
+  future hypothesis only. It is not reopened here.
+* The frozen within-pattern shuffle sham did not reliably destroy
+  dependence. This limitation is preserved in the Lineage A and A4V records.
+* `upstream_id` enters Lineage B as **provenance metadata only**, not as
+  established authority information.
