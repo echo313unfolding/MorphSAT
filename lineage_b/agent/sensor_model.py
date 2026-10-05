@@ -21,6 +21,8 @@ class SensorModel:
         self.b: Dict[str, float] = {}
         self.sigma: Dict[str, float] = {}
         self.v: Dict[str, Optional[float]] = {}
+        for s in ("L1", "L2", "L3", "F", "P"):        # eager: theta_hash changes only on update
+            self._ensure(s)
 
     def _ensure(self, s):
         if s not in self.sigma:
