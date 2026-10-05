@@ -55,3 +55,15 @@ diffusion at 0.005 m is still about 50–80% of the true process noise
   execution were in that order.
 * The test criterion is not revised here. The grid is not changed.
 * Whether to proceed to the gates is the user's decision.
+
+## Disposition (addendum, 2026-10-05)
+
+The user closed B0 v1.2 as an implementation-stage failure.
+
+* The frozen ≥ 8 threshold is not lowered or reinterpreted.
+* No v1.2 validity gate or pilot ran.
+* Per the v1.2 contingency, the grid is not refined further.
+* The next step is a new representation-class amendment, B0 v1.3
+  (Gaussian per inflow/leak hypothesis). It starts as a candidate in
+  `docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md`.
+* The record above is unchanged.
