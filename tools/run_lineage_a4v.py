@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A4V runner (A4V prereg v1.1 §9). Validity checks in order; any failure
+"""A4V runner (A4V prereg v1.1 §9, v1.2 A1). Validity checks in order; any failure
 stops the run before the claim is printed or a results receipt is written."""
 import hashlib
 import json
@@ -68,10 +68,15 @@ if __name__ == "__main__":
     # 4. structural counts
     checks["4_structural_counts"] = {"got": res["structural_counts"],
                                      "match": {k: tuple(v) for k, v in res["structural_counts"].items()} == EXPECTED_COUNTS}
-    # 5. E2 null identity
+    # 5. E2 null identity (v1.2 A1): R(A4V) = 1 within each family; sham and pooled reported only
     nulls = [e for e in res["envs"].values() if e["stratum"] == "null"]
-    dev = max(abs(e["primary"]["veto"][k]["R"] - 1.0) for e in nulls for k in ("A4V", "A4V-S"))
-    checks["5_null_identity"] = {"n_null": len(nulls), "max_abs_R_minus_1": dev, "pass": len(nulls) == 4 and dev <= 1e-9}
+    fams = ("FAM-G", "FAM-T", "FAM-I")
+    dev = max(abs(e[f]["veto"]["A4V"]["R"] - 1.0) for e in nulls for f in fams)
+    checks["5_null_identity"] = {
+        "n_null": len(nulls), "max_abs_R_minus_1_within_family": dev,
+        "pass": len(nulls) == 4 and dev <= 1e-9,
+        "diagnostic_pooled_R_A4V": [e["primary"]["veto"]["A4V"]["R"] for e in nulls],
+        "diagnostic_sham_R": {f: [e[f]["veto"]["A4V-S"]["R"] for e in nulls] for f in fams + ("primary",)}}
     # 6. A4 reproduces Lineage A receipt
     worst = max(abs(e["primary"]["metrics"]["A4"][m] - la["envs"][k]["primary"]["A4"][m])
                 for k, e in res["envs"].items() for m in e["primary"]["metrics"]["A4"])

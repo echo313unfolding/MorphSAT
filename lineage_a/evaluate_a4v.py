@@ -135,7 +135,7 @@ def claim_v(envs) -> Dict[str, object]:
     mean = lambda k: sum(vt(e, "A4V")[k] for e in nb) / len(nb)
     macro_bcr = mean("dICA") / mean("dCCA") if mean("dCCA") > EPS else math.inf
     p1, p2, p3 = v1 >= NEED, v2 >= NEED, v3 >= NEED
-    withheld = band20_fail > 5 or macro_bcr < 1
+    withheld = band20_fail > 5          # v1.2 A2: coverage condition only; BCR has no cutoff
     if not p1:
         verdict = "CLOSED: detector, not authority information (V1 fails)"
     elif not p2:
@@ -149,7 +149,7 @@ def claim_v(envs) -> Dict[str, object]:
             "V2_R_gt_sham": {"envs": v2, "of": 20, "pass": p2},
             "V3_risk_lower": {"envs": v3, "of": 20, "pass": p3},
             "band_0.20_failures_in_nonnull": band20_fail,
-            "macro_BCR_nonnull": _num(macro_bcr),
+            "macro_BCR_nonnull": _num(macro_bcr), "BCR_equal_cost_reference": 1.0,
             "operationally_useful_withheld": withheld,
             "specific_signal_in_generator": p1 and p2,
             "verdict": verdict}
