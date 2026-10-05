@@ -91,3 +91,25 @@ to be a better basis for correction authority in risk–coverage terms.
   Pareto-incomparable to simpler rules.
 * Not tested: cross-episode trust accumulation (the C2 feedback loop); a
   coverage-preserving independence-aware rule; any MorphSAT integration.
+
+## Addendum (2026-10-05) — run history disclosure
+
+Added after the results commit `39766cc`, as a new commit; no history was
+rewritten. Exact sequence of the Lineage A run:
+
+1. The first invocation of `tools/run_lineage_a.py` (implementation
+   `9929b31`) completed Monte-Carlo posterior validation (passed) and wrote
+   the validation receipt to `receipts/lineage_a/` (uncommitted).
+2. The evaluation then crashed (`ZeroDivisionError` in `world.posterior`) on
+   zero-probability patterns (`Z = 0`, e.g. `ρ = 1` copies that disagree).
+   This happened **before any policy outcome was computed**; no results
+   receipt was written.
+3. The uncommitted validation receipt from the crashed run was **deleted**.
+4. The edge case was fixed (`Z = 0` → no posterior, weight 0) and the
+   preregistered unweighted diagnostic was added; committed as `38f29e3`
+   before re-running.
+5. The re-run repeated validation, which reproduced (1,245 checks, 0
+   failures, max diff 0.078; same seed and draws), then computed the results
+   committed in `39766cc`.
+
+No threshold, rule, grid or policy changed between steps 1 and 5.
