@@ -30,7 +30,10 @@ from lineage_b.sensors import true_quantity
 from lineage_b.world import CONDITIONS, STREAMS, FaultState, TransitionError, World, make_streams
 
 ROOT = Path(__file__).resolve().parent.parent
-B0_SEED, PILOT_SEED, B1_SEED = 20261005, 20261006, 20261007
+# v1.2 roots (prereg v1.2 Amendment 2). v1.1 used 20261005/6/7; gate 2's B0_SEED+1, +2
+# hit the v1.1 pilot and B1 roots. B0 offsets here span +0..+999.
+B0_SEED, PILOT_SEED, B1_SEED = 2026100512000, 2026100513000, 2026100514000
+assert not {B0_SEED + k for k in range(1000)} & {PILOT_SEED, B1_SEED}
 
 
 def streams(seed, dep=0, ep=0, n=1):

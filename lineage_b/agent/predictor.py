@@ -34,22 +34,49 @@ def q_stationary() -> np.ndarray:
     return p / p.sum()
 
 
-@lru_cache(maxsize=1)
-def h_kernels() -> np.ndarray:
-    """K[u, q, leak, from_h, to_h], within-bin uniform sub-sampling."""
-    K = np.zeros((len(U_LEVELS), NQ, len(LEAKS), NH, NH))
-    x = (np.arange(NH)[:, None] * W + (np.arange(SUB)[None, :] + 0.5) * W / SUB).ravel()
+BAND_SIGMAS = 10.0      # mass beyond ±10 sigma_w of every sub-point mean (< 1e-22) is not stored
+
+
+def build_band(nh: int):
+    """Banded form of the v1.1 h-transition kernel K[u, q, leak, from_h, to_h]
+    (within-bin uniform sub-sampling, clip tails into end bins), for an
+    nh-bin grid on [0, H_MAX]. Row i keeps to-bins start[..., i] + j,
+    j < width; P[..., i, j] is their probability (0 past the grid end)."""
+    w = H_MAX / nh
+    x = np.arange(nh)[:, None] * w + (np.arange(SUB)[None, :] + 0.5) * w / SUB      # (nh, SUB)
     sq = np.sqrt(np.maximum(x, 0.0))
-    inner = H_EDGES[1:-1]
+    shape = (len(U_LEVELS), NQ, len(LEAKS), nh)
+    means = np.empty(shape + (SUB,))
     for ui, u in enumerate(U_LEVELS):
         for qi, q in enumerate(QG):
             for li, lk in enumerate(LEAKS):
-                m = x + (DT / A) * (q - CV * u * sq - K_LEAK[lk] * sq)
-                c = ncdf((inner[None, :] - m[:, None]) / SIGMA_W)          # P(h' < edge)
-                c = np.concatenate([np.zeros((len(x), 1)), c, np.ones((len(x), 1))], axis=1)
-                p = np.diff(c, axis=1)                                     # clip: tails into end bins
-                K[ui, qi, li] = p.reshape(NH, SUB, NH).mean(axis=1)
-    return K
+                means[ui, qi, li] = x + (DT / A) * (q - CV * u * sq - K_LEAK[lk] * sq)
+    lo = np.floor((means.min(axis=-1) - BAND_SIGMAS * SIGMA_W) / w).astype(int)
+    hi = np.floor((means.max(axis=-1) + BAND_SIGMAS * SIGMA_W) / w).astype(int)
+    start = np.clip(lo, 0, nh - 1)
+    width = int((np.clip(hi, 0, nh - 1) - start).max()) + 1
+    k = start[..., None] + np.arange(width + 1)                                  # edge indices
+    e = np.where(k <= 0, -np.inf, np.where(k >= nh, np.inf, k * w))              # clip: tails into end bins
+    c = ncdf((e[..., None, :] - means[..., :, None]) / SIGMA_W)                  # P(h' < edge)
+    P = np.diff(c, axis=-1).mean(axis=-2)
+    return start, P
+
+
+@lru_cache(maxsize=1)
+def h_kernels():
+    """Banded kernel for the frozen grid plus flat scatter indices per u."""
+    start, P = build_band(NH)
+    width = P.shape[-1]
+    rows = (np.arange(NQ)[:, None, None] * len(LEAKS) + np.arange(len(LEAKS))[None, :, None]) * NH
+    idx = rows[None, ..., None] + np.minimum(start[..., None] + np.arange(width), NH - 1)
+    return idx, P
+
+
+def apply_band(B: np.ndarray, idx: np.ndarray, P: np.ndarray, nh: int) -> np.ndarray:
+    """sum_h B[h, q, l] K[q, l, h, k] -> [k, q, l] for one u, banded."""
+    contrib = B.transpose(1, 2, 0)[..., None] * P
+    out = np.bincount(idx.ravel(), weights=contrib.ravel(), minlength=NQ * len(LEAKS) * nh)
+    return out.reshape(NQ, len(LEAKS), nh).transpose(2, 0, 1)
 
 
 def g_and_var(sensor: str, u: float):
@@ -71,7 +98,8 @@ def initial_belief() -> np.ndarray:
 
 def predict(B: np.ndarray, u_new: float, repair_now: bool) -> np.ndarray:
     ui = U_LEVELS.index(u_new)
-    Bp = np.einsum("hql,qlhk->kql", B, h_kernels()[ui])
+    idx, P = h_kernels()
+    Bp = apply_band(B, idx[ui], P[ui], NH)
     Bp = np.einsum("hql,qr->hrl", Bp, q_matrix())
     none, slow, fast = Bp[..., 0], Bp[..., 1], Bp[..., 2]
     if repair_now:
