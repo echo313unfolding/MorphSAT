@@ -1,7 +1,8 @@
-# Lineage A follow-up — A4V Upstream-Alias Veto: Preregistration v1.0 (CANDIDATE FOR FREEZE)
+# Lineage A follow-up — A4V Upstream-Alias Veto: Preregistration v1.1 (FROZEN FOR IMPLEMENTATION)
 
-Status: **candidate; not frozen until the user approves §13.** No A4V code
-exists and no A4V outcome has been computed. Scope: public GitHub lineage of
+Status: **frozen.** v1.0 candidate `5010996` amended per the user's §13
+decisions (see §14). No A4V code existed and no A4V outcome had been
+computed when this was frozen. Scope: public GitHub lineage of
 `14689b7`. Branch `claude/lineage-a4v`, forked from `claude/lineage-a-impl`
 at `39766cc`. The Lineage A branch and its commits (`0c7847a`, `9929b31`,
 `38f29e3`, `39766cc`) are not modified.
@@ -13,10 +14,16 @@ not supported). This document tests the one positive Lineage A finding.
 **Carried-forward disclosure (verbatim from the Lineage A report):** "I
 deleted the uncommitted validation receipt from the crashed run before
 re-running. The re-run gave identical validation output." This happened after
-posterior validation and before any policy outcome existed. It is not
-recorded in `docs/LINEAGE_A_RESULTS.md`; it is recorded here (see §13 Q4).
+posterior validation and before any policy outcome existed. It is now
+also recorded permanently in `docs/LINEAGE_A_RESULTS.md` (addendum,
+`cd09314`).
 
 ## 1. Hypothesis
+
+**Ceiling of any result:** A4V is a generator-internal mechanism test and
+cost characterization, **not** evidence that `upstream_id` represents
+real-world epistemic independence. Only Lineage B or real observations can
+test that.
 
 > **H-V:** Can upstream-aware provenance work as a targeted veto without
 > becoming the decision rule?
@@ -136,6 +143,11 @@ All quantities use the existing `aggregate()` outputs for A4 and A4V:
 * `Δcoverage = coverage(A4) − coverage(A4V) = ΔICA + ΔCCA`.
 * **Veto precision** `= ΔICA / (ΔICA + ΔCCA)`, compared against the A4
   accept error base rate `ICA(A4) / (ICA(A4) + CCA(A4))`.
+* **Benefit–cost ratio** `BCR = ΔICA / ΔCCA` (weighted incorrect accepts
+  prevented per weighted correct accept sacrificed). `ΔCCA = 0 < ΔICA` →
+  `+∞`; veto never fires → undefined (reported as such). Macro BCR over a
+  stratum = (mean ΔICA) / (mean ΔCCA) over its environments. **No pass
+  threshold.** BCR is read together with the frozen coverage bands.
 * **Discrimination ratio** `R = (ΔICA / ICA(A4)) / (ΔCCA / CCA(A4))`. This
   is the rate wrong acceptances are blocked divided by the rate correct ones
   are blocked; `R = 1` means a random veto of the same mass. Edge cases:
@@ -146,9 +158,15 @@ All quantities use the existing `aggregate()` outputs for A4 and A4V:
 
 ## 7. Primary decision rule (frozen)
 
+Two separate questions, answered separately:
+
+1. **Is the provenance signal specific?** (V1, V2 — the claim.)
+2. **Is using it worth the decisions sacrificed?** (V3, BCR, coverage bands
+   — a characterization under this pattern distribution only.)
+
 Non-null stratum **N̄** = the 20 environments with `ρ > 0` or `α > 0`. The
-null stratum (4 envs) is excluded from criteria per E2. The threshold
-convention reuses Lineage A's 75%: **15 of 20**.
+null stratum (4 envs) is excluded from criteria per E2. The count convention
+reuses Lineage A's 75%: **15 of 20**.
 
 | | Criterion | Pass |
 |---|---|---|
@@ -156,21 +174,32 @@ convention reuses Lineage A's 75%: **15 of 20**.
 | V2 | Specificity: `R(A4V) > R(A4V-S)` (strict, EPS = 1e-12) | ≥ 15/20 envs in N̄ |
 | V3 | Risk: `selective_risk(A4V) < selective_risk(A4) − EPS` | ≥ 15/20 envs in N̄ |
 
+**`R ≥ 2` is a minimum practical discrimination threshold**: a deliberately
+strict bar for whether the effect is large enough to carry forward. It is
+**not** evidence that upstream identity matters (E3 makes `R ≥ 1`
+directionally expected). It will not be tuned.
+
+**V2 is the most informative criterion.** It asks whether the true upstream
+assignment carries information beyond a structure-preserving but causally
+wrong assignment (`R_real > R_shuffled`), which the generator does not
+settle in advance.
+
 Outcome mapping (fixed now):
 
-* **V1 ∧ V2 ∧ V3 → Supported.** The alias veto removes disproportionately
-  wrong A4 acceptances, specifically because of upstream assignment, and
-  lowers A4's selective risk while leaving non-alias decisions unchanged
-  (I3).
 * **¬V1 → Closed: detector, not authority information.** Blocks right and
   wrong at comparable rates.
-* **V1 ∧ ¬V2 → Closed: not upstream-specific.** Shuffled ids discriminate
-  as well, so the effect is pattern composition, not provenance.
-* **V1 ∧ V2 ∧ ¬V3 → Not supported as an authority guard.** It discriminates
-  but does not lower risk at A4's operating point. Reported as such, with no
-  rescue analysis.
-
-`R ≥ 2` is a design choice, not derived. See §13 Q1.
+* **V1 ∧ ¬V2 → Closed: not specific to true upstream structure.**
+* **V1 ∧ V2 → "Upstream alias structure carries specific discriminatory
+  information in this generator."**
+* **V1 ∧ V2 ∧ V3 → Candidate guard**, with usefulness always stated together
+  with BCR and coverage loss.
+* **"Operationally useful" is withheld**, even if risk falls, when the
+  sacrifice is large: the 0.20 coverage band (§8) fails in more than 5 of the
+  20 N̄ environments, **or** macro BCR over N̄ is below 1 (the veto removes
+  more correct acceptances than incorrect ones by weighted mass). BCR = 1 is
+  the break-even point, not a tuned threshold.
+* **V1 ∧ V2 ∧ ¬V3 → Specific but not risk-lowering** at A4's operating
+  point. Reported as such, with no rescue analysis.
 
 ## 8. Diagnostics (reported; not part of the claim)
 
@@ -184,7 +213,9 @@ Outcome mapping (fixed now):
   (12, split `ρ = 0` / `ρ > 0`).
 * Per family (FAM-G, FAM-T, FAM-I); unweighted-over-possible-patterns
   secondary weighting.
-* A4V-W: same metrics, plus the share of A4 acceptances with `n_up < K` that
+* A4V-W (**diagnostic only; never enters §7**; it answers whether ordinary
+  duplicate-source deduplication should also be filtered, which is a
+  separate engineering question from alias detection): same metrics, plus the share of A4 acceptances with `n_up < K` that
   A4V leaves un-vetoed (residual dependence).
 * Macro table of A4V and A4V-S beside the Lineage A policies, for context
   only.
@@ -217,7 +248,8 @@ Outcome mapping (fixed now):
   test. A positive result is hypothesis-supporting, not confirmatory.
   Per-pattern Lineage A outcomes were never written to receipts, so A4V's
   numbers cannot be read off them.
-* **T3 Threshold arbitrariness.** `R ≥ 2` and 15/20 are conventions. All
+* **T3 Threshold arbitrariness.** `R ≥ 2` (minimum practical
+  discrimination) and 15/20 are conventions. All
   per-env `R` values are reported so readers can apply their own.
 * **T4 Pattern-mix dependence.** Veto mass and R depend on how many B-type
   structures the families contain. This is carried forward from Lineage A.
@@ -243,21 +275,31 @@ Outcome mapping (fixed now):
 
 ## 12. Downstream decision (fixed now)
 
-* **Supported** → carry the upstream-alias guard into Lineage B as a
-  **tested hypothesis**: B must measure whether its grounded dependence shows
+* **V1 ∧ V2 with tolerable cost** (candidate guard, "operationally useful"
+  not withheld) → carry the upstream-alias guard into Lineage B as a
+  **hypothesis under test**: B must measure whether its grounded dependence shows
   up under `upstream_id` labels (because of T1). It is not an assumed-good
   control.
-* **Any closed or not-supported outcome** → close this path. Lineage B
+* **Fails the sham comparison (or V1)** → close this path. Any other
+  outcome is reported as characterized and the user decides. Lineage B
   proceeds with `upstream_id` as metadata only.
 * Lineage B implementation stays on hold until the A4V results are written.
   Cross-episode trust stays deferred as a separate lineage.
 
-## 13. Decisions needed before freeze
+## 13. Freeze decisions (user, 2026-10-05)
 
-* **Q1** `R ≥ 2` for V1: keep, or set another value (e.g. 1.5)?
-* **Q2** Keep V2 (shuffle sham) as primary? Recommended: yes. It is the only
-  criterion not settled in direction by E3.
-* **Q3** Keep A4V-W as a diagnostic, or drop it for strict
-  one-variable scope?
-* **Q4** Also append an addendum to `docs/LINEAGE_A_RESULTS.md` (on this
-  branch, as a new commit) recording the deleted crashed-run receipt?
+* Q1 `R ≥ 2`: approved, as a minimum practical discrimination threshold.
+* Q2 Shuffle sham primary: approved.
+* Q3 A4V-W: diagnostic only.
+* Q4 Permanent crashed-run disclosure: added (`cd09314`).
+
+## 14. Changes from candidate v1.0 (`5010996`)
+
+* §0: crashed-run disclosure now also in `LINEAGE_A_RESULTS.md`.
+* §1: result ceiling stated.
+* §6: BCR added (no threshold).
+* §7: V3 no longer decides supported/unsupported by itself; specificity
+  (V1, V2) and cost (V3, BCR, bands) are separate questions; conclusion
+  language changed; "operationally useful" withholding rule added; `R ≥ 2`
+  relabelled as a minimum practical threshold.
+* §8, §10, §12: wording aligned with the above.
