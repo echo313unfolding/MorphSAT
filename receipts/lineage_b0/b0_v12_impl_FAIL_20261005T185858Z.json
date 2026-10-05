@@ -1,0 +1,71 @@
+{
+ "prereg": "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_2.md @ 72e8925 (Amendment 3 step 2)",
+ "runtime": {
+  "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+  "numpy": "2.2.6",
+  "platform": "Windows-10-10.0.26200-SP0"
+ },
+ "equivalence": [
+  {
+   "nh": 100,
+   "band_width": 4,
+   "max_abs_diff": 0.0,
+   "pass": true
+  },
+  {
+   "nh": 400,
+   "band_width": 10,
+   "max_abs_diff": 0.0,
+   "pass": true
+  }
+ ],
+ "diffusion": {
+  "pass": false,
+  "min_ratio": 8.0,
+  "n_steps": 20,
+  "n_mc": 2000000,
+  "mc_seed": 120512,
+  "scenarios": {
+   "equilibrium": {
+    "u": 0.5,
+    "q": 0.05,
+    "mc_dvar": -0.0015441595424583248,
+    "excess_per_step_0.02": 2.0339908347450035e-05,
+    "excess_per_step_0.005": 2.7791933023683154e-06,
+    "ratio": 7.318637508991258,
+    "w2_over_12": {
+     "0.02": 3.3333333333333335e-05,
+     "0.005": 2.0833333333333334e-06
+    },
+    "pass": false
+   },
+   "rising": {
+    "u": 0.25,
+    "q": 0.05,
+    "mc_dvar": -0.0008516194605011219,
+    "excess_per_step_0.02": 3.40824637823056e-05,
+    "excess_per_step_0.005": 3.3218965524980504e-06,
+    "ratio": 10.25994134485487,
+    "w2_over_12": {
+     "0.02": 3.3333333333333335e-05,
+     "0.005": 2.0833333333333334e-06
+    },
+    "pass": true
+   },
+   "draining": {
+    "u": 0.75,
+    "q": 0.05,
+    "mc_dvar": -0.0020099862867116224,
+    "excess_per_step_0.02": 3.240641114406519e-05,
+    "excess_per_step_0.005": 1.9061972416029114e-06,
+    "ratio": 17.00055505106849,
+    "w2_over_12": {
+     "0.02": 3.3333333333333335e-05,
+     "0.005": 2.0833333333333334e-06
+    },
+    "pass": true
+   }
+  }
+ },
+ "pass": false
+}
