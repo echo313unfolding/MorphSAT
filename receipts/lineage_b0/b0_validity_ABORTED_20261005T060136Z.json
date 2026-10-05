@@ -1,0 +1,316 @@
+{
+ "prereg": "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md @ 642d3fd",
+ "seeds": {
+  "B0": 20261005,
+  "pilot": 20261006,
+  "B1": 20261007
+ },
+ "config_sha256": "7d0d9cc395abff0ecc1ebf2d37140f0d9edd5d541aeeb50f1cbd6a910b84a85e",
+ "source_sha256": {
+  "lineage_b/__init__.py": "4923f0fa96883c262a520b6281491ccfa75dcdfa4edd55b1a8532a18378ca329",
+  "lineage_b/agent/__init__.py": "b222fd584762340b55a8324a8a307e256f9890714484f902122aa3ef9a15e2a9",
+  "lineage_b/agent/authority.py": "189be16c0af6f288de1185fe4c4c144296fe3067be48a1a96e02bec19bedd0d4",
+  "lineage_b/agent/core.py": "44ff8d0282c6d4c4bd381e55eb5d22c678e14afe2581c1adda26cf43474daeaf",
+  "lineage_b/agent/numerics.py": "d98839cd0b202bef7564695ad7f3cc86afd596a006d9caf0b38f2e13e3467e66",
+  "lineage_b/agent/predictor.py": "78a58ecc03339ad7d1b065d524f35941c96bcad740d16ab14f0ad0fbc4db30cd",
+  "lineage_b/agent/sensor_model.py": "3882ab127a1ad036615522cb90c58e95a12b8f5379cae2e33de2bda8b92abdb3",
+  "lineage_b/channel.py": "19cd31c50e905c005c038aa9e6dfc7c6c3e3967e42916fb8cbb45be054bcea7e",
+  "lineage_b/evaluate.py": "1b70a8cf952e0756e8be91a20c2422f0386150210a8ccd8a79c9c8f94b3ad5b7",
+  "lineage_b/events.py": "abb11824213c745ea3907b31fe103cc7164208ac66e3e1091040e5c14f65515f",
+  "lineage_b/gates.py": "91e150ed0087ecc7a6014b71c4f26b79e6a469ca2296f9b5212655dd5ebd7cc0",
+  "lineage_b/harness.py": "9663a96292306a1f5d73f058d54fbf41f9762f32d4eee4144bebc154a021c3e3",
+  "lineage_b/logging_policy.py": "6e16a8f3b9d2c02d72173f9355aaa609853ab63831f3b2bd42403a622a0102ab",
+  "lineage_b/obs.py": "ee84981f92b98ed9f57adfa512ec04ae1a632712a45227b4db5cc0c3e9b78bba",
+  "lineage_b/params.py": "73e8096985ccf2e3e8bf5494826990c305d1bf44991c39807e6a2a5530cd7917",
+  "lineage_b/receipts.py": "40ed5fd1aaffb3740482990058bbf86b67d972f8fb6075beb988695115f7391c",
+  "lineage_b/ref.py": "ccf8153f2aaa9950314a707b6cd779c956419c86e447d80f56de6f6c36cc4b54",
+  "lineage_b/sensors.py": "f6507d9fc069d4343a095c391de8eec23e8ad6de113f68a75fda9cc1378397c6",
+  "lineage_b/world.py": "7d2a1dcddf4570a2efa40c090471b552fb70c857eb85405fb0b692cfaf8d32e7"
+ },
+ "gates": {
+  "1": {
+   "pass": true,
+   "max_err": 2.220446049250313e-16,
+   "cases": [
+    {
+     "fixture": "closed_inflow",
+     "spill": 8.881784197001252e-16,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "drain",
+     "spill": 0.0,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "leak",
+     "spill": 0.0,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "overflow",
+     "spill": 0.2299999999999991,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "underflow",
+     "spill": 0.0,
+     "shortfall": 0.004221921916437787
+    }
+   ],
+   "seconds": 0.0
+  },
+  "2": {
+   "pass": true,
+   "runs": 18,
+   "seconds": 0.6
+  },
+  "2b": {
+   "pass": true,
+   "detail": {
+    "C0": {
+     "q_in_identical": true,
+     "sensor_errors_identical": true,
+     "channel_identical": true
+    },
+    "C5": {
+     "q_in_identical": true,
+     "sensor_errors_identical": true,
+     "channel_identical": true
+    }
+   },
+   "seconds": 0.0
+  },
+  "3": {
+   "pass": true,
+   "h_open": 0.639091823651608,
+   "h_close": 1.5114185956948691,
+   "seconds": 0.0
+  },
+  "4": {
+   "pass": true,
+   "n": 22000,
+   "corr": 0.5019279860717459,
+   "target": 0.5,
+   "se": 0.005056498968474316,
+   "c2_shift_exact": true,
+   "seconds": 1.0
+  },
+  "5": {
+   "pass": true,
+   "limit": 0.020225995873897264,
+   "corr": {
+    "L1-L3": -0.007885211510146482,
+    "L1-F": -0.019677170653574168,
+    "L1-P": -0.002038908072376984,
+    "L2-L3": -0.0009642542198936915,
+    "L2-F": -0.010169266167421791,
+    "L2-P": 0.009206775039183551,
+    "L3-F": 0.00574105976772686,
+    "L3-P": -1.6636098675174813e-05,
+    "F-P": -0.0031249385849959265
+   },
+   "L4_copies_L1": true,
+   "seconds": 0.8
+  },
+  "6": {
+   "pass": true,
+   "statuses": [
+    "MISSING",
+    "PENDING",
+    "VALUE"
+   ],
+   "consistent": true,
+   "empty_stream_theta_versions": 1,
+   "empty_stream_paths": [
+    "terminal_abstain"
+   ],
+   "records": 949,
+   "feedback": 922,
+   "logged_skips": 27,
+   "seconds": 2.2
+  },
+  "7": {
+   "pass": true,
+   "import_violations": {},
+   "record_fields_ok": true,
+   "replay_identical": true,
+   "poison_identical": true,
+   "hidden_worlds_differ": true,
+   "seconds": 3.1
+  },
+  "8": {
+   "pass": true,
+   "rejections": [
+    true,
+    true,
+    true
+   ],
+   "chain_verifies": true,
+   "commit_before_transition": true,
+   "seconds": 1.0
+  },
+  "9": {
+   "pass": true,
+   "mutation_blocked": true,
+   "append_only": true,
+   "events": 200,
+   "seconds": 1.1
+  },
+  "10": {
+   "pass": true,
+   "classes": {
+    "open": {
+     "sum": 1.0,
+     "chi2": 5.728149999999996,
+     "p": 0.1256119480354777,
+     "recorded_ok": true
+    },
+    "hold": {
+     "sum": 1.0,
+     "chi2": 0.4049499999999929,
+     "p": 0.9392179348381491,
+     "recorded_ok": true
+    },
+    "close": {
+     "sum": 1.0,
+     "chi2": 2.381462499999995,
+     "p": 0.4970947346897936,
+     "recorded_ok": true
+    },
+    "inspect": {
+     "sum": 1.0,
+     "chi2": 0.3228625000000046,
+     "p": 0.955672777147093,
+     "recorded_ok": true
+    }
+   },
+   "non_randomized_ok": true,
+   "seconds": 1.2
+  },
+  "11": {
+   "pass": true,
+   "past_identical": true,
+   "future_differs": true,
+   "monitor_identical_under_random_theta": true,
+   "paths_exercised": [
+    "arbitration",
+    "interlock",
+    "terminal_abstain"
+   ],
+   "monitor_theta_blind_ast": true,
+   "seconds": 4.9
+  },
+  "12": {
+   "pass": true,
+   "file_unchanged_vs_eb3f6d3": true,
+   "events_consistent": true,
+   "proposal_ignored_on_terminal": true,
+   "forced_arbitration_raises": true,
+   "adapter_calls": 3,
+   "seconds": 0.9
+  },
+  "13": {
+   "pass": true,
+   "kl_nats": {
+    "h=0.5|L3": 0.2241783921153197,
+    "h=0.5|F": 138.0771729653968,
+    "h=1.0|L3": 0.44377705601079503,
+    "h=1.0|F": 688.6978047197949,
+    "h=1.5|L3": 0.6637980204862431,
+    "h=1.5|F": 689.2061812399392
+   },
+   "seconds": 0.0
+  },
+  "14": {
+   "pass": true,
+   "redeliveries": 25,
+   "logged": 25,
+   "feedback_unique": true,
+   "seconds": 1.0
+  },
+  "15": {
+   "pass": true,
+   "conditions": {
+    "C1": true,
+    "C2": true,
+    "C3": true,
+    "C4": true,
+    "C5": true
+   },
+   "C5_mean_delay": 2.0064088397790054,
+   "C5_drop": {
+    "L1": 0.10091954022988506,
+    "L2": 0.10114942528735632,
+    "P": 0.2967816091954023
+   },
+   "seconds": 0.5
+  },
+  "16": {
+   "pass": true,
+   "metrics": {
+    "J": 141.125,
+    "unsafe_steps": 1.0,
+    "unsafe_transitions": 1.0,
+    "unsafe_transition_rate": 0.25,
+    "false_safe": 1.0,
+    "false_safe_rate": 0.25,
+    "inspect_rate": 0.25,
+    "steps": 4
+   },
+   "expected_J": 141.125,
+   "seconds": 0.0
+  },
+  "18": {
+   "pass": false,
+   "sensors": {
+    "L1": {
+     "n": 3980,
+     "cov90": 0.9520100502512563,
+     "cov50": 0.5861809045226131,
+     "mean_pit": 0.4982283966141231
+    },
+    "L2": {
+     "n": 3980,
+     "cov90": 0.9585427135678392,
+     "cov50": 0.5866834170854272,
+     "mean_pit": 0.49546994679324624
+    },
+    "L3": {
+     "n": 3980,
+     "cov90": 0.9587939698492463,
+     "cov50": 0.5899497487437186,
+     "mean_pit": 0.4998873802729867
+    },
+    "F": {
+     "n": 3980,
+     "cov90": 0.9316582914572864,
+     "cov50": 0.5479899497487437,
+     "mean_pit": 0.5054825193656554
+    },
+    "P": {
+     "n": 3980,
+     "cov90": 0.9437185929648241,
+     "cov50": 0.5655778894472362,
+     "mean_pit": 0.49935592240467075
+    }
+   },
+   "deployments": 20,
+   "seconds": 22.5
+  },
+  "19": {
+   "pass": true,
+   "records": 1144,
+   "agent_cannot_write": true,
+   "seconds": 1.5
+  },
+  "17": {
+   "pass": null,
+   "note": "not run: earlier gate(s) failed"
+  }
+ },
+ "status": "ABORTED",
+ "failed_gates": [
+  "18"
+ ]
+}
