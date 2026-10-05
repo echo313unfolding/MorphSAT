@@ -1,21 +1,32 @@
-# Lineage B1 — Grounded Causal Feedback: Preregistration v1.0 (CANDIDATE)
+# Lineage B1 — Grounded Causal Feedback: Preregistration v1.1 (CANDIDATE)
 
 Status: **candidate; not frozen.** B1 may not be frozen or run until B0
-(`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md`) is implemented and its
-validity receipts are committed. Scope: public GitHub lineage of `14689b7`.
+(`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md`, frozen at `642d3fd`) is
+implemented and its validity receipts are committed. B1 will be frozen
+without looking at any G1/G2/G3/G2-S outcome. v1.1 applies the user's
+2026-10-05 edits (§12). Scope: public GitHub lineage of `14689b7`.
 
 ## 0. Question and ceiling
 
-**Primary question.** Does action-conditioned external feedback improve
-future decision/control quality beyond internal history alone?
+**Primary question.** Does action-conditioned temporal feedback add value
+beyond same-time observational consistency?
+
+* G1 learns: "sensor A tends to disagree with the other sensors."
+* G2 learns: "after I took action X, sensor A reported something different
+  from what should have happened."
+
+G1 already learns from external observations. B1 therefore does **not**
+test "external feedback vs internal history".
 
 **Primary contrast:** G2 vs G1. Required secondary contrasts: G2 vs G0, and
 G2 vs the action-scrambled sham G2-S.
 
 **Ceiling.** A positive result may support only:
 
-> "Action-conditioned external observations improved future control relative
-> to an otherwise matched internally closed agent in this simulator."
+> "In a controlled simulated physical system, remembering an action, the
+> prediction made before it, the later observations and their provenance
+> allowed an agent to make better future control decisions than relying on
+> contemporaneous sensor agreement alone."
 
 It does not establish embodiment, consciousness, a self-model, or
 real-world sensor grounding. A G3 advantage may support only:
@@ -78,14 +89,29 @@ v_i ← (1 − η_σ) · v_i + η_σ · (r_i − b_i)²
 | Arm | Reference `(m_ref, s²_ref)` | Role |
 |---|---|---|
 | **G0** | none (θ fixed at θ0) | fixed policy, no adaptive outcome feedback |
-| **G1** | same-time leave-one-out consensus: precision-weighted static fusion of the *other* sensors' readings at the same step, mapped through the static measurement equations (no dynamics, no action) | internally closed; never uses a post-action prediction |
+| **G1** | same-time leave-one-out consensus: precision-weighted static fusion of the *other* sensors' readings at the same step, mapped through the static measurement equations (no dynamics, no action) | same-time observational consistency; never uses a post-action prediction |
 | **G2** | latent mean/variance from the frozen pre-action receipt `R_{t+1}` | externally grounded, action-conditioned |
 | **G3** (diagnostic) | as G2, plus a dependency-aware likelihood: sensors with the same `declared_upstream` share a variance component (learned τ²) and a group bias; relay copies are collapsed onto their declared source | sensor-dependency representation |
-| **G2-S** (sham) | as G2, but against a receipt computed for a scrambled action `Ã_t ~ μ(·|x_t)`, drawn from a dedicated RNG stream independent of the executed `A_t`; committed in the same receipt | destroys action-conditioning while keeping the action marginal; must pass B0 gate 13 |
+| **G2-S** (sham) | as G2, but against a receipt computed for a sham action `Ã_t` committed in the same receipt. `Ã` is a **deterministic derangement** of the logged DEFER-step actions within each deployment's learning phase (rank by sha256(deployment\|t), cyclic shift by one within each action-preserving rank order), so exact action counts are preserved and the action→outcome pairing is broken | must pass the sham validity checks SV1–SV4 below before any outcome |
 | **REF-S** (evaluator only) | true sensor parameters and true dependency structure, no learning | upper bound on what sensor learning can achieve; normalizes closure |
 | **REF-Z** (evaluator only) | full hidden state Z_t, myopic optimal action under the cost | reference action and regret |
 
-REF-S and REF-Z live in `lineage_b/evaluate_ref.py`. They share no state
+**Sham validity (preregistered; computed from the logs and predictions
+only, before any control outcome):**
+* SV1: exact marginal action frequencies preserved;
+* SV2: the pairing changed;
+* SV3: at least 80% of sham actions differ from the logged action;
+* SV4: mean KL between the genuine and sham predictions ≥ 0.05 nats on the
+  steps where B0 gate 13 shows actions matter.
+
+If any check fails, F3 is not evaluated and is reported as invalid.
+
+**Predictor invariant.** All arms use the B0 §7 frozen nominal predictor
+unchanged. Only `(b, σ)` differ.
+
+**REF-S** (B0 §10): the same observations, timing, action space, authority
+layer and controller, plus true sensor-fault parameters. It never sees
+hidden h. REF-S and REF-Z live in `lineage_b/ref.py`. They share no state
 with G0–G3 or G2-S and never affect agent behaviour (B0 gate 7).
 
 ## 4. Authority layer (frozen, arm-independent)
@@ -180,8 +206,9 @@ primary endpoint is mean J per evaluation episode.
   ≤ `δ_safe`, both pooled and within C5 (absent/delayed feedback).
 * **F5 (no harm when nothing is wrong).** In C0, the upper CI bound of
   `J_G2 − J_G0` is ≤ `δ_null`.
-* **F6 (no condition-level harm).** In no single fault condition does the
-  CI of `J_G1 − J_G2` lie entirely below 0.
+* **F6 (no condition-level harm).** In no single fault condition is G2
+  significantly worse than G1. One-sided paired tests across C1–C5 use Holm
+  correction at family-wise α = 0.05.
 
 Outcome mapping:
 
@@ -196,6 +223,15 @@ Outcome mapping:
 G3 is diagnostic: `J_G2 − J_G3` and dependency-group prediction scores per
 condition, with no criterion. A G3 advantage may only be stated at its
 ceiling.
+
+**Margins frozen now, before the pilot and before any outcome. They are not
+revisable from pilot or B1 results.**
+* closure ≥ 0.10;
+* δ_safe: unsafe-transition rate +0.0005/step and false-safe rate
+  +0.005/step (absolute);
+* δ_null = 2% of the C0 mean `J_G0` measured within B1 (formula fixed).
+
+The G0 pilot sets N only.
 
 **Sample size (B-U7).** N deployments per condition comes from the B0
 G0-only pilot (gate 17). N is the smallest value for which the projected
@@ -242,6 +278,20 @@ design property is not reported as a discovery.
   adaptation.
 * **T5 Matched-rule assumption.** G1 is one specific internal-consistency
   rule, not every possible closed learner.
+
+## 12. Changes from v1.0 (`c57185c`)
+
+* Headline question: action-conditioned temporal feedback vs same-time
+  observational consistency.
+* Ceiling sentence updated.
+* G2-S switched to a deterministic derangement, with SV1–SV4.
+* Predictor invariant made explicit.
+* REF-S constrained.
+* F6 uses Holm correction.
+* Margins frozen before the pilot.
+* Planned follow-on B2 (not part of B1): learning which reason + action +
+  evidence-path types hold up, using FeedbackRecords, with a fixed path
+  vocabulary and verdicts drawn from evidence outside each path.
 
 ## 11. Literature
 
