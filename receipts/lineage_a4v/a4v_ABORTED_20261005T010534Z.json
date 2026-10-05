@@ -1,0 +1,60 @@
+{
+ "1_posterior_validation": {
+  "checks": 1245,
+  "max_abs_diff": 0.07826086956521738,
+  "passed": true,
+  "n_failures": 0,
+  "matches_lineage_a": true
+ },
+ "2_frozen_files": {
+  "ref": "39766cc",
+  "diff_empty": true,
+  "sha256": {
+   "lineage_a/records.py": "94768bacf0eee4c2a00e9d4793298d9f1a1c0bc9d1435e76b55d730938d72011",
+   "lineage_a/generator.py": "4e404fad6365653c422cf01d262abc97772ce53163a521e8f213d77799a2e9b9",
+   "lineage_a/world.py": "10a0f0086887e1274e9048306ac29d1e1415d348c89e3016af54f297a896b258",
+   "lineage_a/policies.py": "8155cd4daa55fa6c7dd04b3186bcc20af8e6b4921f3506426be838bcc385a6e9",
+   "lineage_a/corollary.py": "dbe2c5e5bf5e5e414001d0a6aa29e87cd93fc66a131150b02e3fd755195b9d51",
+   "lineage_a/evaluate.py": "dac7719d07435dbdf1271291c8fa33925c0907087b0a379234b2e6d34d1c6b72"
+  }
+ },
+ "3_tests": {
+  "returncode": 0,
+  "tail": [
+   "39 passed in 0.09s"
+  ]
+ },
+ "2b_pattern_set_sha256_match": true,
+ "4_structural_counts": {
+  "got": {
+   "FAM-G": [
+    80,
+    32,
+    64,
+    20
+   ],
+   "FAM-T": [
+    18,
+    6,
+    12,
+    2
+   ],
+   "FAM-I": [
+    20,
+    8,
+    16,
+    4
+   ]
+  },
+  "match": true
+ },
+ "5_null_identity": {
+  "n_null": 4,
+  "max_abs_R_minus_1": 0.06141288864032135,
+  "pass": false
+ },
+ "6_a4_reproduces": {
+  "max_abs_diff": 0.0,
+  "pass": true
+ }
+}
