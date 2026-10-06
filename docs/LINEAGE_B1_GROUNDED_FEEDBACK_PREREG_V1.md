@@ -1,4 +1,4 @@
-# Lineage B1 — Grounded Causal Feedback: Preregistration v1.3 (CANDIDATE)
+# Lineage B1 — Grounded Causal Feedback: Preregistration v1.4 (CANDIDATE)
 
 Status: **candidate; not frozen.**
 * B0 is **CLOSED / PASSED**: v1.3 `701c4c2` + T6 amendment v1.3.1 `ebdb0f1`,
@@ -10,8 +10,9 @@ Status: **candidate; not frozen.**
   2. a **confirmatory freeze**, which may only fill those two in and record
      the sizing receipt.
 * No G1/G2/G3/G2-S code exists.
-* v1.3 applies the user's 2026-10-06 pre-freeze corrections (§14). Scope:
-  public GitHub lineage of `14689b7`.
+* v1.3 applies the user's 2026-10-06 pre-freeze corrections (§14). v1.4
+  applies the user's final pre-freeze corrections (§17). Scope: public
+  GitHub lineage of `14689b7`.
 
 ## 0. Question and ceiling
 
@@ -261,15 +262,15 @@ a priori. None is computed from B1 or from the sizing run.
 * **F5 (no harm when nothing is wrong).** In C0, the CI upper bound of
   `J_G2 − J_G0` is ≤ δ_null.
 * **F6 (condition-level non-inferiority).**
-  * For each c ∈ C1–C5, test H0_c: E[J_G2 − J_G1] ≥ δ_cond against H1_c:
-    E[J_G2 − J_G1] < δ_cond.
-  * The one-sided bootstrap p-value is p_c = (1 + #{b : θ*_{c,b} ≥ δ_cond})
-    / (1 + 10,000), where θ*_{c,b} is the bootstrap mean of
-    `J_G2 − J_G1` in condition c.
-  * F6 holds iff **Holm's step-down procedure at family-wise α = 0.05
-    rejects all five H0_c**.
-  * Bonferroni-adjusted one-sided 99% upper bounds are reported
-    descriptively.
+  * For each c ∈ C1–C5, compute the frozen 95% two-sided stratified paired
+    percentile-bootstrap CI (the same machinery as every other criterion)
+    for `J_G2 − J_G1` within condition c.
+  * Condition c passes iff that CI's upper bound is ≤ δ_cond = 1.737 J.
+  * **F6 holds iff all five conditions pass.**
+  * This is an intersection–union test: the claim is "all five conditions
+    are non-inferior". Requiring every individual test to pass already
+    controls the global Type-I error, conservatively. No multiplicity
+    adjustment is applied.
 
 **Descriptive only (no criterion):** the realized closure
 `Δ12 / (J_G0 − J_REF-S)`, using the B1-measured denominator. It never
@@ -329,28 +330,43 @@ memory only. It writes **only** these to its receipt:
 * V0 / SV results;
 * engine metadata.
 
-It does not compute, store, print or log any per-arm mean, paired-difference
-mean or sign, winner, closure, or P0/F1–F6 quantity. No per-deployment
-difference is persisted.
+The sizing implementation may maintain a mean only as a transient numerical
+intermediate required for variance computation. No per-arm mean,
+paired-difference mean, sign, winner, effect estimate or per-deployment
+difference may be emitted, printed, logged, persisted, exposed to the
+experimenter, or used in any sizing or design decision. No closure or
+P0/F1–F6 quantity is computed.
 
-**Variance upper confidence bounds** (computed by the frozen chi-square rule
-below; no multiplier is hard-coded):
+**Variance upper confidence bounds** (using the two frozen chi-square
+constants below):
 * **Family (pooled C1–C5 quantities, and F6's five conditions):** Bonferroni
   at family-wise 95%, α_c = 0.01 per condition:
-  `s²_UCL,c = (n_s − 1)·s_c² / χ²_{0.01; n_s−1}`.
+  `s²_UCL,c = 49·s_c² / 28.940645973381493` (multiplier 1.6931204661).
 * **Single-condition quantities (C0 for F5; C5 for F4-C5):** one-sided 95%:
-  `s²_UCL = (n_s − 1)·s² / χ²_{0.05; n_s−1}`.
+  `s²_UCL = 49·s² / 33.93030561852784` (multiplier 1.4441367122).
 
-Here χ²_{p; k} is the lower p-quantile.
+**Frozen chi-square constants.** n_s = 50 is frozen, so the degrees of
+freedom are fixed at 49 and only two lower-tail quantiles are ever needed:
 
-**Chi-square quantile rule.**
-* Bisection on the regularized lower incomplete gamma P(k/2, x/2), with
-  bracket [0, k + 20√(2k)], to \|Δx\| ≤ 1e-12.
-* P is computed by its power series, to a relative term size ≤ 1e-16, using
-  `math.lgamma`.
-* **Engine check, before use:** χ²_{0.05; 49} and χ²_{0.01; 49} must match
-  the published table values 33.930 and 28.941 to within 1e-3. If not,
-  stop.
+| Constant | Value | Use |
+|---|---|---|
+| χ²_{0.01; 49} | **28.940645973381493** | family UCL |
+| χ²_{0.05; 49} | **33.93030561852784** | single-condition UCL |
+
+* **Provenance.** Supplied by the user (2026-10-06). Independently
+  reproduced bit for bit with `scipy.stats.chi2.ppf(p, 49)`, scipy 1.17.1,
+  installed outside the repository. Round-trip: `chi2.cdf` returns 0.01
+  and 0.05. Consistent with the published table values 28.941 and 33.930.
+  scipy is not a project dependency and is not used by B1 code.
+* **No numerical special-function engine is implemented.** There is no
+  incomplete-gamma function and no inverse chi-square solver.
+* **Constant-integrity check, before use:**
+  * the code's two constants equal the literals above exactly;
+  * each rounds to its table value (28.941, 33.930) at 3 decimals;
+  * `49/χ²` reproduces the multipliers 1.6931204661 and 1.4441367122 to
+    1e-10.
+
+  If any check fails, stop.
 
 **Sizing projections.** For a quantity q, let S be its condition set and z_q
 its normal quantile. Each projection uses the target half-width h_q:
@@ -363,10 +379,10 @@ its normal quantile. Each projection uses the target half-width h_q:
 | F1 | J_G1 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
 | F2 | J_G0 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
 | F3 | J_G2-S − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
-| F4 (4 quantities) | rate_G2 − rate_G1 and rate_G2 − rate_G0, for unsafe-transition and false-safe rates | C1–C5 | family | 1.96 | ½δ_safe of that metric |
+| F4 (4 quantities) | rate_G2 − rate_G1 and rate_G2 − rate_G0, for unsafe-transition and false-safe rates (per-deployment paired difference in rates) | C1–C5 | family | 1.96 | ½δ_safe of that metric |
 | F4-C5 (4 quantities) | same | C5 | single | 1.96 | ½δ_safe of that metric |
 | F5 | J_G2 − J_G0 | C0 | single | 1.96 | ½δ_null |
-| F6 (5 quantities) | J_G2 − J_G1 | each of C1–C5 alone | family | 2.326 (Bonferroni one-sided 0.01; conservative for Holm) | ½δ_cond |
+| F6 (5 quantities) | J_G2 − J_G1 | each of C1–C5 alone | family (conservative) | 1.96 | ½δ_cond |
 
 **N rule (frozen).**
 * N_required = max_q N_q.
@@ -376,9 +392,17 @@ its normal quantile. Each projection uses the target half-width h_q:
   experiment. Stop before confirmatory execution.** Neither Δ* nor any
   safety or non-inferiority margin is raised to fit.
 
-**Approximation.** Normal-approximation sizing is a planning approximation
-only. Confirmatory decisions use the frozen paired percentile bootstrap
-(§7).
+**Approximation.**
+* Normal-approximation sizing is a planning approximation only.
+  Confirmatory decisions use the frozen paired percentile bootstrap (§7).
+* The chi-square variance UCL is exact under normally distributed paired
+  differences. In B1 it is used as a conservative planning approximation;
+  confirmatory inference does not use the chi-square assumption and remains
+  the frozen paired percentile bootstrap.
+* **F4 sizing unit.** The sizing variable for F4 is the per-deployment
+  paired difference in rates: a bounded, continuous deployment-level
+  statistic. The same across-deployment variance and half-width framework
+  applies. No step-level binomial formula is used.
 
 ## 8. Expectations stated before outcomes (design-induced; not evidence)
 
@@ -466,7 +490,8 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
 * G2-S switched to a deterministic derangement, with SV1–SV4.
 * Predictor invariant made explicit.
 * REF-S constrained.
-* F6 uses Holm correction.
+* F6 uses Holm correction (superseded in v1.4: per-condition CI,
+  intersection–union, §17).
 * Margins frozen before the pilot.
 * Planned follow-on B2 (not part of B1): learning which reason + action +
   evidence-path types hold up, using FeedbackRecords, with a fixed path
@@ -487,15 +512,15 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
    no G3 or REF-Z.
 3. Variance UCLs: Bonferroni family-wise 95% (α_c = 0.01) for pooled and
    F6 quantities, and one-sided 95% for single-condition quantities, both
-   by a frozen chi-square rule with an engine check. The 80% rule is
-   removed.
+   by a frozen chi-square rule with an engine check (engine replaced by two
+   frozen constants in v1.4, §17). The 80% rule is removed.
 4. Δ* = 1.737 J, an absolute effect from the B0 pilot, used for sizing and
    for F1's point threshold and negative boundary. Closure is descriptive
    only.
 5. δ_null = 0.8876 J, fixed from the B0 pilot's C0 (no longer a B1-measured
    formula).
 6. F6 becomes condition-level non-inferiority with margin Δ*, using Holm at
-   family-wise 0.05.
+   family-wise 0.05 (superseded in v1.4, §17).
 7. N_required is the maximum over P0, F1–F6, rather than Δ12 alone.
 8. N_min = 50, N_max = 3000; above N_max, stop.
 9. "Internal history" wording removed. G1 is described only as same-time
@@ -514,7 +539,7 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
    Left open: **only** N and the confirmatory seed-list hash.
 2. Implement the arms. Commit the implementation **before** any sizing
    execution.
-3. Run the sizing stage once (§7a): chi-square engine check, then V0 and
+3. Run the sizing stage once (§7a): chi-square constant-integrity check, then V0 and
    SV1–SV4, then blinded variances, then N.
 4. **Confirmatory freeze.** The only permitted changes are:
    * fill in N from the frozen formula;
@@ -537,14 +562,39 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
      with each new arm substituted, on sizing seeds.
 
    Any failure means stop.
-2. **F6 family UCL.** F6's five per-condition variances use the family
-   (Bonferroni 0.01) UCL rather than the single-condition 95% rule, because
-   all five must hold simultaneously. Confirm.
+2. ~~F6 family UCL.~~ Resolved in v1.4: the family UCL is kept as a
+   conservative choice.
 3. **P0's projection** uses h = ½Δ*, the same as F1–F3. This is
    conservative for a precondition. Confirm or specify another target.
-4. **F6 multiplicity.** "All five must reject" is an intersection–union
-   claim, for which unadjusted level-0.05 tests would already control the
-   error. Holm is kept as specified, which is more conservative.
+4. ~~F6 multiplicity.~~ Resolved in v1.4: an intersection–union test of
+   five ordinary 95% CIs; no Holm (§7, §17).
+
+## 17. Changes from v1.3 (`de88044`) to v1.4
+
+1. **Chi-square engine removed** (it existed only as specified text; no code
+   had been written). Replaced by two frozen constants with provenance and a
+   constant-integrity check (§7a). df = 49 is fixed by n_s = 50.
+2. **F6 replaced.** The raw-replicate bootstrap p-value and Holm are
+   removed. Each of C1–C5 needs the upper bound of the frozen 95% paired
+   percentile-bootstrap CI for `J_G2 − J_G1` to be ≤ 1.737 J. F6 holds iff
+   all five pass (intersection–union; no adjustment). F6 sizing uses
+   z = 1.96 with h = ½δ_cond and keeps the conservative family UCL.
+3. **Blinding wording.** Transient numerical means are allowed only inside
+   the variance computation; nothing effect-revealing is ever emitted,
+   persisted, exposed or used.
+4. **Approximation disclosure** extended to the chi-square variance UCL.
+5. **F4 sizing unit** made explicit: the per-deployment paired difference in
+   rates; no step-level binomial formula.
+
+Unchanged:
+* n_s = 50 (C0–C5);
+* the sizing arms G0/G1/G2/G2-S/REF-S;
+* Δ* = 1.737 J;
+* δ_null = 0.8876 J;
+* the max-of-endpoints rule;
+* N_min = 50 and N_max = 3000, with stop above 3000;
+* T6 as a documented threat;
+* the same-time consensus wording.
 
 ## Appendix: structural compute estimate (not a criterion; no arm outcome used)
 
