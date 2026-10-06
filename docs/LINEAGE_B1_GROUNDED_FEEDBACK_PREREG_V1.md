@@ -1,6 +1,6 @@
-# Lineage B1 — Grounded Causal Feedback: Preregistration v1.5 (CANDIDATE)
+# Lineage B1 — Grounded Causal Feedback: Preregistration v1.5 (SIZING-DESIGN FROZEN)
 
-Status: **candidate; not frozen.**
+Status: **sizing-design frozen** (§15 step a; user approval 2026-10-06; content identical to candidate `7dd3231`). The confirmatory freeze is pending: only N, the confirmatory seed-list hash and the sizing receipt remain open.
 * B0 is **CLOSED / PASSED**: v1.3 `701c4c2` + T6 amendment v1.3.1 `ebdb0f1`,
   implementation `94f4f11`, results `06d5d24`
   (`docs/LINEAGE_B0_V13_RESULTS.md`). B0 is not modified or rerun.
