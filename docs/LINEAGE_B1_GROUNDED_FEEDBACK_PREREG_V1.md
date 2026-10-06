@@ -1,26 +1,30 @@
-# Lineage B1 — Grounded Causal Feedback: Preregistration v1.2 (CANDIDATE)
+# Lineage B1 — Grounded Causal Feedback: Preregistration v1.3 (CANDIDATE)
 
 Status: **candidate; not frozen.**
 * B0 is **CLOSED / PASSED**: v1.3 `701c4c2` + T6 amendment v1.3.1 `ebdb0f1`,
   implementation `94f4f11`, results `06d5d24`
   (`docs/LINEAGE_B0_V13_RESULTS.md`). B0 is not modified or rerun.
-* B1 is frozen without looking at any G1/G2/G3/G2-S outcome, including the
-  sizing stage (§7a), whose only output is a variance.
+* B1 uses **two freezes** (§15):
+  1. a **sizing-design freeze**, which fixes everything except the
+     confirmatory N and the confirmatory seed-list hash;
+  2. a **confirmatory freeze**, which may only fill those two in and record
+     the sizing receipt.
 * No G1/G2/G3/G2-S code exists.
-* v1.2 applies the user's 2026-10-06 corrections (§13). Scope: public GitHub
-  lineage of `14689b7`.
+* v1.3 applies the user's 2026-10-06 pre-freeze corrections (§14). Scope:
+  public GitHub lineage of `14689b7`.
 
 ## 0. Question and ceiling
 
 **Primary question.** Does action-conditioned temporal feedback add value
 beyond same-time observational consistency?
 
-* G1 learns: "sensor A tends to disagree with the other sensors."
+* G1 learns: "sensor A tends to disagree with the other sensors at the same
+  time step" (same-time consensus).
 * G2 learns: "after I took action X, sensor A reported something different
   from what should have happened."
 
-G1 already learns from external observations. B1 therefore does **not**
-test "external feedback vs internal history".
+Both G1 and G2 learn from external observations. B1 therefore does not
+compare learning with external observations against learning without them.
 
 **Primary contrast:** G2 vs G1. Required secondary contrasts: G2 vs G0, and
 G2 vs the action-scrambled sham G2-S.
@@ -112,7 +116,7 @@ v_i ← (1 − η_σ) · v_i + η_σ · (r_i − b_i)²
 | **G2** | latent mean/variance from the frozen pre-action receipt `R_{t+1}` | externally grounded, action-conditioned |
 | **G3** (diagnostic) | as G2, plus a dependency-aware likelihood: sensors with the same `declared_upstream` share a variance component (learned τ²) and a group bias; relay copies are collapsed onto their declared source | sensor-dependency representation |
 | **G2-S** (sham) | as G2, but against a receipt computed for a sham action `Ã_t` committed in the same receipt (derangement defined below) | must pass the sham validity checks SV1–SV4 below before any outcome |
-| **REF-S** (evaluator only) | true sensor parameters and true dependency structure, no learning | upper bound on what sensor learning can achieve; normalizes closure |
+| **REF-S** (evaluator only) | true sensor parameters and true dependency structure, no learning | upper bound on what sensor learning can achieve; normalizes descriptive closure |
 | **REF-Z** (evaluator only) | full hidden state Z_t, myopic optimal action under the cost | reference action and regret |
 
 **G2-S derangement.** `Ã` is a **deterministic derangement** of the logged
@@ -173,8 +177,7 @@ visible_digest and canonical_hash.
   (propensity 1) and are excluded from OPE.
 * **θ updates are unweighted.** Sensor errors are independent of action and
   history given state, and missingness is MCAR (B0). Selection on `A_t`
-  therefore does not bias conditional sensor-error estimates. If a B0 gate
-  contradicts this, B1 is re-assessed before freezing.
+  therefore does not bias conditional sensor-error estimates.
 * **OPE (secondary; established methodology, not a contribution).**
   * Setting: one-step contextual bandit on learning-phase DEFER steps, with
     reward `r_t = −c(Z_{t+1}, A_t)` (one-step cost, evaluator-computed).
@@ -198,12 +201,13 @@ visible_digest and canonical_hash.
 * all of these by sensor and by dependency group (ADC_A pair, L3, P, F,
   alias L4).
 
-**Control** (evaluator truth):
+**Control** (evaluator truth). Per deployment, each metric is the mean over
+its `E_E` evaluation episodes.
 * Task cost per episode:
   `J = Σ_t [c_U 1[h ∈ U] + c_D (h − h*)² + c_I 1[inspect] + c_M 1[Δu ≠ 0] + c_L q_leak dt + c_S spill dt]`.
-* Unsafe transitions: steps going from safe to unsafe.
-* False-safe: a hazard is present and `A_t` is not in the union of its
-  corrective sets:
+* Unsafe-transition rate: steps going from safe to unsafe, per step.
+* False-safe rate, per step: a hazard is present and `A_t` is not in the
+  union of its corrective sets:
   * high band → {open};
   * low band → {close};
   * leak → {inspect}.
@@ -213,118 +217,168 @@ visible_digest and canonical_hash.
 * Inspect rate (all steps).
 * Regret: `J − J_REF-Z`.
 
-## 7. Falsification criteria (primary rule, frozen at B1 freeze)
+## 7. Falsification criteria (frozen at the sizing-design freeze)
 
-**Unit and pairing.** The unit is the deployment. Arms are paired by common
-random numbers. The pooled fault set {C1..C5} weights conditions equally.
-CIs are 95% stratified paired bootstrap (10,000 resamples, frozen seed). The
-primary endpoint is mean J per evaluation episode.
+### Frozen constants (the single definition of each)
+
+All are derived from the independent B0 pilot (`06d5d24`, gate 17) or fixed
+a priori. None is computed from B1 or from the sizing run.
+
+| Name | Value | Source |
+|---|---|---|
+| Δ* (primary minimum effect) | **1.737 J** | 0.10 × 17.37, where 17.37 is the B0 pilot's pooled C1–C5 `J_G0 − J_REF-S` |
+| δ_null (F5 margin) | **0.8876 J** | 0.02 × 44.38, where 44.38 is the B0 pilot's C0 mean `J_G0` |
+| δ_cond (F6 margin) | **= Δ* = 1.737 J** | — |
+| δ_safe,unsafe (F4) | **0.0005 per step** (absolute) | fixed a priori (v1.1) |
+| δ_safe,fs (F4) | **0.005 per step** (absolute) | fixed a priori (v1.1) |
+
+### Analysis rules
+
+* The unit is the deployment. Arms are paired by common random numbers.
+* "Pooled" means the equal-weight mean of per-condition means over C1–C5.
+* The primary endpoint is mean J per evaluation episode.
+* Every CI is a stratified paired **percentile bootstrap**: 10,000
+  resamples with a frozen seed, resampling deployments within condition.
+* "CI" means the 95% two-sided interval. Its lower/upper bound is the
+  2.5% / 97.5% bootstrap percentile.
+
+### Criteria
 
 * **P0 (precondition: a learnable gap exists).** The pooled
   `J_G0 − J_REF-S` has a CI lower bound > 0. If not, B1 is
-  **uninformative**: there is nothing for sensor learning to fix.
-* **F1 (primary: beyond internal history).** Pooled `Δ12 = J_G1 − J_G2`
-  has a CI lower bound > 0, **and** closure `Δ12 / (J_G0 − J_REF-S) ≥ 0.10`
-  (point estimate; minimum effect of interest).
+  **uninformative**.
+* **F1 (primary: beyond same-time consensus).** For the pooled
+  `Δ12 = J_G1 − J_G2`, both:
+  * its CI lower bound > 0; **and**
+  * its point estimate ≥ Δ*.
 * **F2 (beyond fixed policy).** Pooled `J_G0 − J_G2` has a CI lower
   bound > 0.
 * **F3 (action-conditioning).** Pooled `J_G2-S − J_G2` has a CI lower
-  bound > 0.
-* **F4 (safety non-inferiority).** For unsafe-transition rate and
-  false-safe rate, the upper CI bound of `(G2 − G1)` and of `(G2 − G0)` is
-  ≤ `δ_safe`, both pooled and within C5 (absent/delayed feedback).
-* **F5 (no harm when nothing is wrong).** In C0, the upper CI bound of
-  `J_G2 − J_G0` is ≤ `δ_null`.
-* **F6 (no condition-level harm).** In no single fault condition is G2
-  significantly worse than G1. One-sided paired tests across C1–C5 use Holm
-  correction at family-wise α = 0.05.
+  bound > 0. It is not evaluated if SV1–SV4 fail.
+* **F4 (safety non-inferiority).** The CI upper bound is ≤ δ_safe,unsafe
+  (unsafe-transition rate) and ≤ δ_safe,fs (false-safe rate). This holds
+  for each of `(G2 − G1)` and `(G2 − G0)`, both pooled and within C5.
+* **F5 (no harm when nothing is wrong).** In C0, the CI upper bound of
+  `J_G2 − J_G0` is ≤ δ_null.
+* **F6 (condition-level non-inferiority).**
+  * For each c ∈ C1–C5, test H0_c: E[J_G2 − J_G1] ≥ δ_cond against H1_c:
+    E[J_G2 − J_G1] < δ_cond.
+  * The one-sided bootstrap p-value is p_c = (1 + #{b : θ*_{c,b} ≥ δ_cond})
+    / (1 + 10,000), where θ*_{c,b} is the bootstrap mean of
+    `J_G2 − J_G1` in condition c.
+  * F6 holds iff **Holm's step-down procedure at family-wise α = 0.05
+    rejects all five H0_c**.
+  * Bonferroni-adjusted one-sided 99% upper bounds are reported
+    descriptively.
 
-**Outcome mapping.** A negative primary result is a falsification **only if
-the design was powered for the frozen minimum effect** (§7a outcome A) **and**
-the CI excludes that effect.
+**Descriptive only (no criterion):** the realized closure
+`Δ12 / (J_G0 − J_REF-S)`, using the B1-measured denominator. It never
+redefines Δ* or the negative decision boundary.
+
+### Outcome mapping
+
+A confirmatory run only happens at N ≥ N_required (§7a), so every
+confirmatory result is planned to be powered for Δ*. Because sizing uses a
+normal approximation, a negative is still stated only when the CI excludes
+Δ*.
 
 | Result | Conclusion |
 |---|---|
 | ¬P0 | Uninformative; report and stop |
-| ¬F1, powered (outcome A), and the CI upper bound of Δ12 < 0.10 × (J_G0 − J_REF-S) | **Not supported in this simulator at the frozen minimum effect:** a ≥ 10% closure by grounded feedback beyond internal history is excluded |
-| ¬F1, otherwise | **Inconclusive:** the data neither show nor exclude a ≥ 10% closure. Never called falsified |
-| F1 ∧ F2 ∧ ¬F3 | "Observation-based learning helped; action-conditioned grounding not isolated" |
+| ¬F1 and the CI upper bound of Δ12 < Δ* | **"The preregistered pilot-derived minimum effect of 1.737 J was not supported"** (G2 vs same-time consensus, in this simulator) |
+| ¬F1, otherwise | **Inconclusive:** the data neither show nor exclude an effect of Δ*. Never called falsified |
+| F1 ∧ F2 ∧ ¬F3 (F3 valid) | "Observation-based learning helped; action-conditioned grounding not isolated" |
+| F1 with F3 invalid (SV failed) | No ceiling claim; report the F1/F2 results with the sham invalid |
 | F1 ∧ (¬F4 ∨ ¬F5 ∨ ¬F6) | No positive claim; report as an improvement with safety or condition-level harm |
 | P0 ∧ F1–F6 | Claim at the §0 ceiling |
-
-If B1 runs under §7a outcome B (exploratory), no row may use "not
-supported" or "falsified". Every F1 failure is then "inconclusive at the
-10% target".
 
 G3 is diagnostic: `J_G2 − J_G3` and dependency-group prediction scores per
 condition, with no criterion. A G3 advantage may only be stated at its
 ceiling.
 
-**Margins frozen now, before the pilot and before any outcome. They are not
-revisable from pilot, sizing or B1 results.**
-* closure ≥ 0.10;
-* δ_safe: unsafe-transition rate +0.0005/step and false-safe rate
-  +0.005/step (absolute);
-* δ_null = 2% of the C0 mean `J_G0` measured within B1 (formula fixed).
+## 7a. Sample size: blinded paired-variance sizing stage
 
-## 7a. Sample size: blinded paired-variance sizing stage (replaces the v1.1 cap-at-200 rule)
+**Why.** The B0 pilot's conservative bound, Var(Δ12) ≤ 2·Var(J_G0), gave
+N_required = 1659. That bound ignores the CRN pairing. This stage replaces
+it with empirical paired-difference variances for **every** quantity the
+positive claim needs, without using any observed mean effect.
 
-**Why.** The B0 pilot (`06d5d24`, gate 17) gave N_required = 1659 under the
-conservative bound Var(Δ12) ≤ 2·Var(J_G0). The v1.1 cap N_max = 200 would
-make the planned CI about √(1659/200) ≈ 2.9× wider than its target. That
-design would be sensitive to closures of roughly 29%, not 10%. The bound
-ignores the paired common-random-number design, under which J_G1 and J_G2
-may be strongly correlated. This stage replaces the bound with an empirical
-paired-difference variance. It does not use the observed mean effect.
+**Sizing set.**
+* Root **2026100516000**. It is new, and disjoint from the B0
+  (…15000–…15999), pilot (…13000) and B1 confirmatory (…14000) roots and
+  from all earlier roots.
+* Spawn keys (condition, deployment).
+* **n_s = 50 deployments per condition, C0–C5.**
+* Sizing deployments are permanently excluded from confirmatory B1.
 
-**Frozen target (already fixed by B0).** The half-width target is
-w* = ½ × 0.10 × 17.37 = **0.8685** J-units. Here 17.37 is the B0 pilot's
-pooled `J_G0 − J_REF-S` over C1–C5. The 10% minimum effect is unchanged.
+**Arms run for sizing:** G0, G1, G2, G2-S and REF-S, through the full §1
+protocol. G3 and REF-Z are not run.
 
-**Sizing procedure (runs after B1 is frozen and the arms are implemented,
-and after V0 and SV1–SV4; before any confirmatory run).**
-1. **Seeds.** Sizing root **2026100516000**. It is new and disjoint from the
-   B0 (…15000–…15999), pilot (…13000) and B1 (…14000) roots and from all
-   earlier roots. Sizing deployments are **permanently excluded** from
-   confirmatory B1.
-2. **Size.** **n_s = 20 deployments per condition**, C1–C5 only (fixed
-   before execution).
-3. **Arms run:** G1 and G2 only, through the full learning and evaluation
-   protocol (§1). μ uses G0's θ0 controller as in §5. No G0, G3, G2-S,
-   REF-S or REF-Z evaluation outcome is computed.
-4. **Output (blinded).** Per condition c, the sample variance s_c² of the
-   per-deployment paired difference d = J_G1 − J_G2, and n_s.
-   * The sizing script computes s_c² internally.
-   * It writes **only** s_c², n_s and engine metadata to its receipt.
-   * It does not compute, store, print or log any per-deployment d, any
-     mean, any sign, any per-arm J or any F1–F6 quantity.
-   * Per-deployment arm data are held in memory only and discarded.
-5. **Variance used.** The per-condition one-sided **upper confidence
-   bound** s²_UCL,c = (n_s − 1)·s_c² / χ²_{1−γ, n_s−1}, with γ as decided
-   in §14.
-6. **Formula.** The pooled Δ12 is the mean over C1–C5 of per-condition
-   means, so Var = Σ_c s²_UCL,c / (25·N). Then:
+**Validity before any variance is used.**
+* V0 and SV1–SV4 are evaluated on the sizing set and recorded.
+* If V0 fails, stop.
+* If SV fails, stop and report as a design defect. Nothing is tuned.
 
-   N_required = ⌈ (1.96 / w*)² · Σ_c s²_UCL,c / 25 ⌉, with
-   N = max(N_required, N_min).
-7. **Freeze.** N, the confirmatory seed list (root 2026100514000, spawn
-   keys (condition, deployment) for deployments 0..N−1, all of C0–C5) and
-   its sha256 are committed **before** any confirmatory run.
+**Effect blinding.** The sizing script holds per-deployment arm metrics in
+memory only. It writes **only** these to its receipt:
+* the sample variances (ddof = 1) of the preregistered per-deployment
+  paired differences, by condition;
+* their UCLs;
+* n_s;
+* N_q per quantity and N_required;
+* V0 / SV results;
+* engine metadata.
 
-**Outcomes of the sizing stage (decided now, applied mechanically):**
-* **A: N ≤ N_max.** Confirmatory B1 runs at N with the full §7 mapping,
-  including "not supported" when the CI excludes 10%.
-* **B: N_required > N_max.** B1 is **infeasible for the 10% target at
-  N_max.** Before any confirmatory run, the user chooses one of:
-  * raise N_max (a recorded amendment);
-  * declare B1 exploratory at N_max (no "not supported" or "falsified"
-    wording permitted);
-  * stop.
+It does not compute, store, print or log any per-arm mean, paired-difference
+mean or sign, winner, closure, or P0/F1–F6 quantity. No per-deployment
+difference is persisted.
 
-  The 10% minimum effect is not raised to make N fit.
+**Variance upper confidence bounds** (computed by the frozen chi-square rule
+below; no multiplier is hard-coded):
+* **Family (pooled C1–C5 quantities, and F6's five conditions):** Bonferroni
+  at family-wise 95%, α_c = 0.01 per condition:
+  `s²_UCL,c = (n_s − 1)·s_c² / χ²_{0.01; n_s−1}`.
+* **Single-condition quantities (C0 for F5; C5 for F4-C5):** one-sided 95%:
+  `s²_UCL = (n_s − 1)·s² / χ²_{0.05; n_s−1}`.
 
-**Not computed from the sizing set:** the mean or sign of G1 − G2, any
-closure, F1–F6, P0, or anything about G3, G2-S or REF.
+Here χ²_{p; k} is the lower p-quantile.
+
+**Chi-square quantile rule.**
+* Bisection on the regularized lower incomplete gamma P(k/2, x/2), with
+  bracket [0, k + 20√(2k)], to \|Δx\| ≤ 1e-12.
+* P is computed by its power series, to a relative term size ≤ 1e-16, using
+  `math.lgamma`.
+* **Engine check, before use:** χ²_{0.05; 49} and χ²_{0.01; 49} must match
+  the published table values 33.930 and 28.941 to within 1e-3. If not,
+  stop.
+
+**Sizing projections.** For a quantity q, let S be its condition set and z_q
+its normal quantile. Each projection uses the target half-width h_q:
+
+  N_q = ⌈ z_q² · Σ_{c∈S} s²_UCL,c / (\|S\|² · h_q²) ⌉.
+
+| q | Per-deployment paired difference | S | UCL | z_q | h_q |
+|---|---|---|---|---|---|
+| P0 | J_G0 − J_REF-S | C1–C5 | family | 1.96 | ½Δ* |
+| F1 | J_G1 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
+| F2 | J_G0 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
+| F3 | J_G2-S − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
+| F4 (4 quantities) | rate_G2 − rate_G1 and rate_G2 − rate_G0, for unsafe-transition and false-safe rates | C1–C5 | family | 1.96 | ½δ_safe of that metric |
+| F4-C5 (4 quantities) | same | C5 | single | 1.96 | ½δ_safe of that metric |
+| F5 | J_G2 − J_G0 | C0 | single | 1.96 | ½δ_null |
+| F6 (5 quantities) | J_G2 − J_G1 | each of C1–C5 alone | family | 2.326 (Bonferroni one-sided 0.01; conservative for Holm) | ½δ_cond |
+
+**N rule (frozen).**
+* N_required = max_q N_q.
+* **N_min = 50; N_max = 3000.**
+* If N_required ≤ 3000: N = max(N_required, N_min).
+* **If N_required > 3000: B1 is infeasible as the planned confirmatory
+  experiment. Stop before confirmatory execution.** Neither Δ* nor any
+  safety or non-inferiority margin is raised to fit.
+
+**Approximation.** Normal-approximation sizing is a planning approximation
+only. Confirmatory decisions use the frozen paired percentile bootstrap
+(§7).
 
 ## 8. Expectations stated before outcomes (design-induced; not evidence)
 
@@ -345,15 +399,14 @@ design property is not reported as a discovery.
 
 * Per-condition tables of every metric and arm.
 * θ trajectories during learning; time to detection after `t_f`.
-* G1 vs G0, the internal-history effect alone.
+* G1 vs G0: the effect of same-time consensus learning alone.
 * OPE validity (§5).
 * Missing/PENDING counts.
 * Interlock activations per arm. These are arm-independent by
   construction, so a difference indicates a bug.
-* **C0 learned-noise bias (new in v1.2).** In C0 every sensor's true
-  (b, σ) is nominal. Each arm's learned σ̂_i/σ_nom,i and b̂_i in C0 therefore
-  directly measures how much its reference variance distorts noise
-  learning (T6).
+* **C0 learned-noise diagnostic.** In C0 every sensor's true (b, σ) is
+  nominal. Each arm's learned b̂_i and σ̂_i/σ_nom,i in C0 measure how much
+  its reference distorts noise learning (T6).
 
 ## 10. Threats
 
@@ -366,32 +419,42 @@ design property is not reported as a discovery.
   lineage.
 * **T4 Frozen θ in evaluation** measures what was learned, not online
   adaptation.
-* **T5 Matched-rule assumption.** G1 is one specific internal-consistency
-  rule, not every possible closed learner.
-* **T6 Residual predictor conservatism (new in v1.2).** B0 gate 18 passed,
-  but coverage stays above nominal: cov90 0.92–0.93 and cov50 0.53–0.55.
-  * This implies some overstatement of predictive variance. If the latent
-    part carries it, G2's `σ² = v − s²_ref` is biased low, and G1's static
-    reference does not share that bias.
-  * The magnitude is not established. A rough Gaussian reading of the
-    coverage suggests on the order of 10–20% in σ², under assumptions.
-  * B0 and P1–P7 are deliberately not modified. The §9 C0 diagnostic
-    measures the bias, and F5 bounds its control cost in C0.
-* **T7 Retained predictor mismatches** P1–P7 (B0 v1.3 §0.3). P1 and P4 are
-  the candidate sources of T6. They are not investigated in B1.
+* **T5 Matched-rule assumption.** G1 is one specific same-time consensus
+  rule, not every possible consistency-based learner.
+* **T6 Residual predictor conservatism.** B0 gate 18 passed with coverage
+  above nominal: residual conservative calibration. Its source is not
+  decomposed.
+  * If predictive variance is overstated, G2's learned sensor variance
+    (`σ² = v − s²_ref`) may be biased downward. G1's static reference does
+    not share that bias.
+  * No magnitude is assigned before B1 measures it.
+  * B0 and P1–P7 are not modified.
+  * The §9 C0 learned-(b, σ) diagnostic measures it, and F5 guards its
+    control cost.
+* **T7 Retained predictor mismatches** P1–P7 (B0 v1.3 §0.3). They are not
+  investigated in B1.
 
 ## 11. Literature
 
-Methods are established and cited only as verified in scoping v1:
+Methods are established and cited only as verified:
 * Gneiting & Raftery 2007 (proper scoring rules);
 * Dawid & Skene 1979 (agreement-based reliability, the spirit of G1);
 * Dudík, Langford & Li 2011 (doubly robust).
 
-**To verify before freeze; not cited until verified.** Innovation-based
-adaptive Kalman filtering (Mehra 1970, 1972; Myers & Tapley 1976). G2's
-noise update `σ² = v − s²_ref` belongs to this family, so it is prior art
-for the estimator, which is therefore not a contribution. Recent leads from
-model-assisted search are unverified and are not cited.
+Adaptive estimation of noise statistics is prior art. Bibliographic records
+verified 2026-10-06:
+* R. K. Mehra, "On the Identification of Variances and Adaptive Kalman
+  Filtering," IEEE TAC 15(2):175–184, 1970. doi:10.1109/TAC.1970.1099422.
+* R. K. Mehra, "Approaches to Adaptive Filtering," IEEE TAC 17(5):693–698,
+  1972. doi:10.1109/TAC.1972.1100100.
+* K. A. Myers & B. D. Tapley, "Adaptive Sequential Estimation with Unknown
+  Noise Statistics," IEEE TAC 21(4):520–523, 1976.
+  doi:10.1109/TAC.1976.1101260.
+
+G2's noise update belongs to the innovation/covariance-adaptation family
+these works establish. No claim of exact algorithmic identity is made; the
+papers' methods have not been inspected for that. Other recent leads are
+unverified and not cited.
 
 No novelty claim. Sequential OPE estimators are not used and not cited.
 
@@ -409,59 +472,102 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
   evidence-path types hold up, using FeedbackRecords, with a fixed path
   vocabulary and verdicts drawn from evidence outside each path.
 
-## 13. Changes from v1.1 (`6ea1628`)
+## 13. Changes from v1.1 (`6ea1628`) to v1.2 (`909d8ae`)
 
-* B0 status updated: CLOSED / PASSED (`06d5d24`).
-* §2: the stale "grid Bayes filter" description replaced by the frozen B0
-  v1.3 Gaussian moment-closure predictor (`701c4c2` + `ebdb0f1`,
-  implementation `94f4f11`), with validity check V0. P1–P7 retained.
-* §7a replaces the cap-at-200 sizing rule with a blinded paired-variance
-  sizing stage. The 10% minimum effect is unchanged.
-* §7 outcome mapping: "¬F1 = falsified" removed. A negative result is "not
-  supported" only when powered and the CI excludes 10%; otherwise it is
-  "inconclusive".
-* T6, T7 and the C0 learned-noise diagnostic added.
-* Literature: adaptive-KF prior art flagged for verification.
+* B0 status: CLOSED / PASSED (`06d5d24`).
+* §2 uses the frozen B0 v1.3 predictor, with V0.
+* A blinded sizing stage replaces the cap-at-200 rule.
+* "¬F1 = falsified" removed.
+* T6, T7 and the C0 diagnostic added.
 
-## 14. Unresolved statistical choices (decide before freeze)
+## 14. Changes from v1.2 (`909d8ae`)
 
-1. **γ, the confidence of the variance upper bound.** Proposed one-sided
-   80%. With n_s = 20, χ²_{0.20,19} ≈ 14.44, inflating s² by ≈ 1.32. The
-   alternatives are 90% (χ²_{0.10,19} ≈ 11.65, ≈ 1.63×) or the point estimate (1.0×, no
-   protection against underestimating).
-2. **n_s** (proposed 20 per condition, C1–C5) and whether C0 is included.
-   C0 would add information for F5's precision; it is not needed for Δ12.
-3. **N_min** (proposed 20) and **N_max.** N_max must be set by compute
-   budget and where B1 runs (Appendix). The v1.1 value 200 is retained
-   only as a placeholder.
-4. **Sizing on Δ12 only, or on max(Δ12, F3's `J_G2-S − J_G2`).** Sizing
-   F3 needs G2-S in the sizing run. Proposed: Δ12 only, with F3's projected
-   half-width reported from its variance, without a mean.
-5. **Normal-approximation sizing vs the bootstrap analysis.** Sizing uses
-   1.96 and a normal approximation; the analysis uses a stratified paired
-   bootstrap. Proposed: accept the mismatch and report it.
-6. **The "not supported" row.** It uses the B1-measured denominator
-   (J_G0 − J_REF-S), not the pilot's 17.37. Proposed as written.
+1. Two explicit freezes (§15).
+2. Sizing: n_s = 50 per condition, C0–C5. Arms G0, G1, G2, G2-S, REF-S;
+   no G3 or REF-Z.
+3. Variance UCLs: Bonferroni family-wise 95% (α_c = 0.01) for pooled and
+   F6 quantities, and one-sided 95% for single-condition quantities, both
+   by a frozen chi-square rule with an engine check. The 80% rule is
+   removed.
+4. Δ* = 1.737 J, an absolute effect from the B0 pilot, used for sizing and
+   for F1's point threshold and negative boundary. Closure is descriptive
+   only.
+5. δ_null = 0.8876 J, fixed from the B0 pilot's C0 (no longer a B1-measured
+   formula).
+6. F6 becomes condition-level non-inferiority with margin Δ*, using Holm at
+   family-wise 0.05.
+7. N_required is the maximum over P0, F1–F6, rather than Δ12 alone.
+8. N_min = 50, N_max = 3000; above N_max, stop.
+9. "Internal history" wording removed. G1 is described only as same-time
+   consensus / observational consistency.
+10. T6 is qualitative only; the numeric estimate is removed.
+11. Verified Mehra 1970/1972 and Myers & Tapley 1976 records added, with no
+    identity claim.
+
+## 15. Freezes and procedure
+
+1. **Sizing-design freeze** (this document, on user authorization). Frozen:
+   * every scientific rule, arm definition, outcome, frozen constant (§7)
+     and analysis rule;
+   * the sizing algorithm, sizing seeds and sizing validity rules (§7a).
+
+   Left open: **only** N and the confirmatory seed-list hash.
+2. Implement the arms. Commit the implementation **before** any sizing
+   execution.
+3. Run the sizing stage once (§7a): chi-square engine check, then V0 and
+   SV1–SV4, then blinded variances, then N.
+4. **Confirmatory freeze.** The only permitted changes are:
+   * fill in N from the frozen formula;
+   * generate the confirmatory seed list (root 2026100514000, spawn keys
+     (condition, deployment), deployments 0..N−1, C0–C5) and freeze its
+     sha256;
+   * record the sizing receipt.
+
+   No hypothesis, margin, arm, endpoint, update rule or analysis rule may
+   change after sizing. Any other change starts a new amendment or lineage.
+5. Run confirmatory B1 once. Then report and stop.
+
+## 16. Remaining items for review (decide before the sizing-design freeze)
+
+1. **B1 implementation checks before sizing variances.** Proposed:
+   * V0;
+   * SV1–SV4;
+   * re-running B0 gates 7 (hidden-state separation), 11 (future-only
+     updates; θ-blind authority) and 12 (terminal authority untouched)
+     with each new arm substituted, on sizing seeds.
+
+   Any failure means stop.
+2. **F6 family UCL.** F6's five per-condition variances use the family
+   (Bonferroni 0.01) UCL rather than the single-condition 95% rule, because
+   all five must hold simultaneously. Confirm.
+3. **P0's projection** uses h = ½Δ*, the same as F1–F3. This is
+   conservative for a precondition. Confirm or specify another target.
+4. **F6 multiplicity.** "All five must reject" is an intersection–union
+   claim, for which unadjusted level-0.05 tests would already control the
+   error. Holm is kept as specified, which is more conservative.
 
 ## Appendix: structural compute estimate (not a criterion; no arm outcome used)
 
 The estimate is anchored on B0's measured cost: gate 18 ran 4,000
-agent-steps in 18.9 s, ≈ 4.7 ms per full agent-step on this machine.
+agent-steps in 18.9 s, ≈ 4.7 ms per full agent-step on this machine. G3,
+OPE replays and the G2-S sham receipt add an estimated 10–30%; the ranges
+below include that.
 
-* **One deployment-condition:**
-  * learning phase: 1,000 world steps with ≈ 6 arms committing receipts
-    and updating (≈ 6,000 agent-step equivalents);
-  * evaluation: 7 controllers (G0, G1, G2, G3, G2-S, REF-S, REF-Z) ×
-    1,000 steps.
-  * Total ≈ 13,000 agent-steps ≈ **60 s** single-core, excluding OPE
-    replays and G3's heavier likelihood (an estimated +10–30%).
+**Sizing.** 6 conditions × 50 = 300 deployment-conditions.
+* Learning ≈ 1,000 steps × 4 receipt-committing arms; evaluation ≈ 5
+  controllers × 1,000 steps.
+* ≈ 9,000–10,000 agent-steps ≈ 42–48 s each.
+* Total ≈ **3.5–4 h single-core**, ≈ **30–50 min on 8 cores**.
 
-| Run | Deployment-conditions | Single-core | 8 physical cores (ideal) |
+**Confirmatory.** All 7 arms, ≈ 13,000 agent-steps ≈ 60–75 s per
+deployment-condition, × 6 conditions × N.
+
+| N | Deployment-conditions | Single-core | 8 physical cores (ideal–realistic) |
 |---|---|---|---|
-| Sizing (n_s = 20, C1–C5, G1+G2 only, ≈ 24 s each) | 100 | ≈ 40 min | ≈ 5 min |
-| Confirmatory N = 200 (C0–C5) | 1,200 | ≈ 20 h | ≈ 2.5–3.5 h |
-| Confirmatory N = 1,659 (C0–C5) | 9,954 | ≈ 7 days | ≈ 21–30 h |
+| 50 (N_min) | 300 | ≈ 5–6 h | ≈ 40 min–1 h |
+| 200 | 1,200 | ≈ 20–25 h | ≈ 2.5–4 h |
+| 1,659 | 9,954 | ≈ 7–8.5 days | ≈ 21–35 h |
+| 3,000 (N_max) | 18,000 | ≈ 12.5–15.5 days | ≈ 1.6–3 days |
 
-The work box (Ryzen 7 7735U, 8 cores / 16 threads, 15 GB) is a managed
-laptop, so multi-day runs belong on the home box or RunPod. Bootstrap
-(10,000 resamples) cost is negligible.
+The work box is a Ryzen 7 7735U (8 cores / 16 threads, 15 GB), a managed
+laptop. Runs beyond about a day belong on the home box or RunPod.
