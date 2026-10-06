@@ -1,4 +1,4 @@
-# Lineage B1 — Grounded Causal Feedback: Preregistration v1.4 (CANDIDATE)
+# Lineage B1 — Grounded Causal Feedback: Preregistration v1.5 (CANDIDATE)
 
 Status: **candidate; not frozen.**
 * B0 is **CLOSED / PASSED**: v1.3 `701c4c2` + T6 amendment v1.3.1 `ebdb0f1`,
@@ -11,7 +11,8 @@ Status: **candidate; not frozen.**
      the sizing receipt.
 * No G1/G2/G3/G2-S code exists.
 * v1.3 applies the user's 2026-10-06 pre-freeze corrections (§14). v1.4
-  applies the user's final pre-freeze corrections (§17). Scope: public
+  applies the user's final pre-freeze corrections (§17). v1.5 applies the
+  user's procedural resolutions after design approval (§18). Scope: public
   GitHub lineage of `14689b7`.
 
 ## 0. Question and ceiling
@@ -306,8 +307,11 @@ positive claim needs, without using any observed mean effect.
 
 **Sizing set.**
 * Root **2026100516000**. It is new, and disjoint from the B0
-  (…15000–…15999), pilot (…13000) and B1 confirmatory (…14000) roots and
-  from all earlier roots.
+  (…15000–…15999), pilot (…13000), B1 confirmatory (…14000) and B1
+  implementation-validation (…17000) roots and from all earlier roots.
+* The sizing root is **first touched by the one official sizing
+  execution**. No development, debugging or implementation-validation run
+  may use it.
 * Spawn keys (condition, deployment).
 * **n_s = 50 deployments per condition, C0–C5.**
 * Sizing deployments are permanently excluded from confirmatory B1.
@@ -315,10 +319,17 @@ positive claim needs, without using any observed mean effect.
 **Arms run for sizing:** G0, G1, G2, G2-S and REF-S, through the full §1
 protocol. G3 and REF-Z are not run.
 
-**Validity before any variance is used.**
-* V0 and SV1–SV4 are evaluated on the sizing set and recorded.
+**Validity before any variance is used** (within the one official sizing
+execution):
+* Re-assert V0's static part (`predictor.py` byte-identical to `94f4f11`).
+  It uses no seeds. The full V0 already ran in implementation validation
+  (§7b).
+* **SV1–SV4 are evaluated on the sizing set** before its variances are
+  accepted, because they depend on the actual frozen sham construction and
+  the logged stream.
 * If V0 fails, stop.
-* If SV fails, stop and report as a design defect. Nothing is tuned.
+* If any SV fails, stop and report a sham-design failure. Do not tune, and
+  do not reuse the sizing set.
 
 **Effect blinding.** The sizing script holds per-deployment arm metrics in
 memory only. It writes **only** these to its receipt:
@@ -375,7 +386,7 @@ its normal quantile. Each projection uses the target half-width h_q:
 
 | q | Per-deployment paired difference | S | UCL | z_q | h_q |
 |---|---|---|---|---|---|
-| P0 | J_G0 − J_REF-S | C1–C5 | family | 1.96 | ½Δ* |
+| P0 | J_G0 − J_REF-S | C1–C5 | family | 1.96 | ½Δ* = 0.8685 J |
 | F1 | J_G1 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
 | F2 | J_G0 − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
 | F3 | J_G2-S − J_G2 | C1–C5 | family | 1.96 | ½Δ* |
@@ -383,6 +394,15 @@ its normal quantile. Each projection uses the target half-width h_q:
 | F4-C5 (4 quantities) | same | C5 | single | 1.96 | ½δ_safe of that metric |
 | F5 | J_G2 − J_G0 | C0 | single | 1.96 | ½δ_null |
 | F6 (5 quantities) | J_G2 − J_G1 | each of C1–C5 alone | family (conservative) | 1.96 | ½δ_cond |
+
+**P0's half-width is a precision target, not a power guarantee.**
+h_P0 = ½Δ* = 0.8685 J is a deliberately conservative precision target for
+the P0 contrast; the B0 pilot gap was 17.37 J. Because P0's true gap is not
+assumed, variance-only sizing cannot guarantee that P0 will pass. The
+0.8685-J target controls planned precision. If the confirmatory bootstrap
+lower bound for G0 − REF-S is not > 0, P0 fails and B1 is uninformative
+regardless of achieved precision. That outcome is reported as
+"uninformative; stop", not as a sizing failure.
 
 **N rule (frozen).**
 * N_required = max_q N_q.
@@ -403,6 +423,39 @@ its normal quantile. Each projection uses the target half-width h_q:
   paired difference in rates: a bounded, continuous deployment-level
   statistic. The same across-deployment variance and half-width framework
   applies. No step-level binomial formula is used.
+
+## 7b. Pre-sizing implementation validation (dedicated root)
+
+**Root 2026100517000** is reserved permanently and exclusively for
+pre-sizing implementation checks. It is disjoint from the B0 roots, the B0
+pilot root, and the B1 sizing and confirmatory roots (§7a, §15). Nothing
+derived from it may enter any sizing or confirmatory analysis.
+
+These checks run after the B1 implementation is committed and before the
+sizing root is touched. They are **implementation-validity checks, not
+scientific outcomes**.
+
+| Check | Applied to | Semantics (adapted from B0) |
+|---|---|---|
+| V0 | all arms | `predictor.py` byte-identical to `94f4f11`; every arm's receipts produced by its `categorical` / `predict` |
+| Gate 7 (hidden-state separation) | G1, G2, G3, G2-S | the AST import rule holds for each arm's modules; replaying a recorded stream while the harness holds a different hidden world, and under NaN-poisoned evaluator state, gives identical decisions, receipts and θ hashes for each arm |
+| Gate 11 (future-only influence) | G1, G2, G3, G2-S | perturbing records delivered after t leaves every decision ≤ t identical; randomized θ leaves interlock and terminal-ABSTAIN outputs identical; the monitor stays θ-blind |
+| Gate 12 (terminal authority) | G1, G2, G3, G2-S | `terminal_authority.py` unchanged versus `eb3f6d3`; every final action comes from `resolve_terminal_authority`; no learned or sham mechanism can rewrite or bypass a terminal decision; G2-S's sham action enters only its receipt reference, never the executed action |
+
+G3 is checked even though it is not a sizing arm, because it exists in the
+implementation and runs in confirmatory B1.
+
+**Not done on this root:** no G1/G2/G3/G2-S outcome comparison, no cost or
+safety metric contrast, and no variance.
+
+**On failure:**
+* stop;
+* preserve the failing implementation and its receipt;
+* do not touch the sizing or confirmatory seeds.
+
+Any later code correction is a new implementation commit with its
+validation lineage disclosed. Validation is then re-run on root
+2026100517000.
 
 ## 8. Expectations stated before outcomes (design-induced; not evidence)
 
@@ -531,17 +584,31 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
 
 ## 15. Freezes and procedure
 
-1. **Sizing-design freeze** (this document, on user authorization). Frozen:
+a. **Sizing-design freeze** (this document, on user authorization). Frozen:
    * every scientific rule, arm definition, outcome, frozen constant (§7)
      and analysis rule;
+   * the implementation-validation checks and root (§7b);
    * the sizing algorithm, sizing seeds and sizing validity rules (§7a).
 
-   Left open: **only** N and the confirmatory seed-list hash.
-2. Implement the arms. Commit the implementation **before** any sizing
-   execution.
-3. Run the sizing stage once (§7a): chi-square constant-integrity check, then V0 and
-   SV1–SV4, then blinded variances, then N.
-4. **Confirmatory freeze.** The only permitted changes are:
+   Left open: **only** N, the confirmatory seed-list hash and the sizing
+   receipt.
+
+b. Implement all B1 arms (G1, G2, G3, G2-S; G0, REF-S and REF-Z as
+   specified).
+
+c. Commit the implementation, with no execution of validation or sizing in
+   the same commit.
+
+d. Run the dedicated implementation-validation checks (§7b) on root
+   2026100517000. If any fails, stop.
+
+e. Only if they pass: run the sizing set **once** on root 2026100516000.
+   In order: the chi-square constant-integrity check, V0 static
+   re-assertion, SV1–SV4, then blinded variance sizing (§7a).
+
+f. If N_required > 3000, stop: B1 is infeasible as planned.
+
+g. Otherwise, the **confirmatory freeze**. The only permitted changes are:
    * fill in N from the frozen formula;
    * generate the confirmatory seed list (root 2026100514000, spawn keys
      (condition, deployment), deployments 0..N−1, C0–C5) and freeze its
@@ -550,24 +617,22 @@ No novelty claim. Sequential OPE estimators are not used and not cited.
 
    No hypothesis, margin, arm, endpoint, update rule or analysis rule may
    change after sizing. Any other change starts a new amendment or lineage.
-5. Run confirmatory B1 once. Then report and stop.
 
-## 16. Remaining items for review (decide before the sizing-design freeze)
+h. Run confirmatory B1 once.
 
-1. **B1 implementation checks before sizing variances.** Proposed:
-   * V0;
-   * SV1–SV4;
-   * re-running B0 gates 7 (hidden-state separation), 11 (future-only
-     updates; θ-blind authority) and 12 (terminal authority untouched)
-     with each new arm substituted, on sizing seeds.
+i. Report and stop.
 
-   Any failure means stop.
-2. ~~F6 family UCL.~~ Resolved in v1.4: the family UCL is kept as a
-   conservative choice.
-3. **P0's projection** uses h = ½Δ*, the same as F1–F3. This is
-   conservative for a precondition. Confirm or specify another target.
-4. ~~F6 multiplicity.~~ Resolved in v1.4: an intersection–union test of
-   five ordinary 95% CIs; no Holm (§7, §17).
+## 16. Review items (all resolved; none open at the sizing-design freeze)
+
+1. **Resolved (v1.5).** Implementation checks before sizing: V0 and
+   adapted B0 gates 7, 11 and 12 for G1, G2, G3 and G2-S, on the dedicated
+   validation root 2026100517000 (§7b), never on the sizing root. SV1–SV4
+   stay in the official sizing execution (§7a).
+2. **Resolved (v1.4).** F6 uses the conservative family UCL.
+3. **Resolved (v1.5).** h_P0 = ½Δ* = 0.8685 J, a precision target and not a
+   power guarantee (§7a).
+4. **Resolved (v1.4).** F6 is an intersection–union test of five ordinary
+   95% CIs; no Holm.
 
 ## 17. Changes from v1.3 (`de88044`) to v1.4
 
@@ -595,6 +660,20 @@ Unchanged:
 * N_min = 50 and N_max = 3000, with stop above 3000;
 * T6 as a documented threat;
 * the same-time consensus wording.
+
+## 18. Changes from v1.4 (`36af9f9`) to v1.5 (procedural only)
+
+1. Dedicated implementation-validation root 2026100517000 and §7b
+   (V0 plus gates 7/11/12 adapted, for G1/G2/G3/G2-S). The sizing root is
+   first touched by the official sizing execution.
+2. SV1–SV4 explicitly remain sizing-stage checks. On failure: stop, with no
+   tuning and no reuse of the sizing set.
+3. h_P0 = 0.8685 J, worded as a precision target with the no-guarantee
+   statement.
+4. Every §16 item is resolved.
+5. Procedure order a–i (§15).
+
+No hypothesis, margin, arm, sizing formula or analysis rule changed.
 
 ## Appendix: structural compute estimate (not a criterion; no arm outcome used)
 
