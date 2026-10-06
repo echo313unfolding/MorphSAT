@@ -1,4 +1,4 @@
-# Lineage B0 — Preregistration v1.3.1: T6 amendment (CANDIDATE r2 — not frozen)
+# Lineage B0 — Preregistration v1.3.1: T6 amendment (CANDIDATE r3 — not frozen)
 
 Status: **candidate; pre-implementation amendment to v1.3.**
 * Applies to v1.3 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md`),
@@ -11,7 +11,7 @@ Status: **candidate; pre-implementation amendment to v1.3.**
 * No v1.3 code exists, and T1–T8 have not been implemented or executed.
 * No quadrature or integration value was computed in preparing this
   amendment.
-* Candidate r1 (`dca71bc`) is superseded by this r2.
+* Candidates r1 (`dca71bc`) and r2 (`f393591`) are superseded by this r3.
 
 ## Why T6 is superseded
 
@@ -25,6 +25,9 @@ complete deterministic transition moments.
 
 A second GH rule (GH100) is not an adequate reference at the kink: it is
 the same quadrature family applied across the same non-analytic point.
+**No GH rule other than the predictor's GH20 appears anywhere in T6**, not
+even as a diagnostic. T6's pass/fail authority is solely the independent
+adaptive integral below.
 
 ## Roles
 
@@ -106,6 +109,45 @@ The reference uses the exact φ and needs no Φ.
 
 So reference error cannot decide a borderline case.
 
+### Reference-engine sanity checks (R1–R4; must pass before the reference may judge GH20)
+
+These check that the numpy-only reference engine is correct: the
+hard-coded QK15 constants, the bisection and the kink split.
+* They are **not** scientific outcome criteria.
+* They are not tunable from T6 results.
+* Run them first. If any fails, T6 fails as a reference failure, GH20 is not
+  evaluated, and we stop and report.
+
+**Fixtures.** (m, σ) ∈ {(0.3, 0.05), (1.0, 0.05), (1.9, 1e-4), (0.3, 1e-4)}.
+* (0.3, 0.05) is the corner that exposed frozen T6's defect. Its z₀ = −6,
+  so the kink split is exercised.
+* Each integral uses the full reference procedure: [−12, 12], split at
+  z₀ = −m/σ when inside, and adaptive QK15.
+
+| # | Integral | Exact value (closed form; exact Φ via `math.erf`) |
+|---|---|---|
+| R1 | E[Z] | 0 |
+| R2 | E[Z²] | 1 |
+| R3 | E[max(H, 0)] | m·Φ(m/σ) + σ·φ(m/σ) |
+| R4 | E[max(H, 0)²] | (m² + σ²)·Φ(m/σ) + m·σ·φ(m/σ) |
+
+R1 and R2 are integrated with the split point of each fixture's z₀, so the
+split path is exercised on smooth integrands too.
+
+**Engine setting and criterion, derived before execution.** These
+quantities are uncentred and of order 1–4, unlike T6's centred variances,
+which are ≤ 2.5e-3 m². τ = 1e-16 absolute is therefore below double
+precision for them: the representable spacing near 1 is ≈ 2.2e-16. So:
+* The checks run the engine at **τ_R = 1e-15·max(1, \|exact\|)**.
+* They pass if **\|ref − exact\| ≤ 1e-14·max(1, \|exact\|)**.
+
+The 10× margin covers the closed-form evaluation in double precision (a
+few ε·\|exact\|, at most 4 in magnitude) plus the engine's summation
+rounding.
+
+These checks set nothing in T6. T6 keeps τ_E = 1e-14 m and
+τ_V = 1e-16 m² unchanged.
+
 ### Acceptance tolerance, derived in level units before execution
 
 Let ρ = **1e-3**: the largest fraction of the frozen process-noise scale that
@@ -148,8 +190,11 @@ floating-point error:
 
 ### Pass
 
-Both criteria hold at every grid point (33 × 9 × 15 × 11 = 49,005), and the
-reference meets its tolerance everywhere. Any failure means stop and
+All of the following hold:
+* R1–R4 pass on all four fixtures;
+* the reference meets τ_E / τ_V everywhere;
+* both criteria hold at every grid point (33 × 9 × 15 × 11 = 49,005,
+  unfiltered). Any failure means stop and
 report. No criterion, grid value or reference setting is changed after
 execution.
 
