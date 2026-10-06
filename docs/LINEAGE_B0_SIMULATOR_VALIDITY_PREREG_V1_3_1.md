@@ -1,13 +1,13 @@
-# Lineage B0 — Preregistration v1.3.1: T6 amendment (CANDIDATE r4 — not frozen)
+# Lineage B0 — Preregistration v1.3.1: T6 amendment (FROZEN)
 
-Status: **candidate; pre-implementation amendment to v1.3.**
+Status: **FROZEN** (user authorization 2026-10-06; candidates r1–r4: `dca71bc`, `f393591`, `4726ad8`, `ccd1147`). Pre-implementation amendment to v1.3.
 * Applies to v1.3 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md`),
   FROZEN @ `701c4c2`. That commit stays permanently frozen and is not
   edited. Its T6 text remains the historical record.
 * This amendment **supersedes only T6** in v1.3 Amendment 3. Everything
   else in v1.3 stays in force, including D1–D3, seeds, §0–§1, T1–T5, T7,
   T8, gate 18 and the procedure.
-* **Implementation is on HOLD** until this amendment is frozen.
+* Implementation was on HOLD until this freeze. It now proceeds only on the user's authorization.
 * No v1.3 code exists, and T1–T8 have not been implemented or executed.
 * No quadrature or integration value was computed in preparing this
   amendment.
@@ -208,7 +208,7 @@ execution.
 
 ## Procedure
 
-1. The user freezes this amendment.
+1. Frozen at the commit that introduces this line (user authorization, 2026-10-06).
 2. The v1.3 procedure (Amendment 4) then resumes from its step 2, with T6
    as defined here. The implementation-only receipt reports T1–T5, T6 (this
    definition), T7 and T8.
