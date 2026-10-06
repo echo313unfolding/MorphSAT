@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lineage B0 validity run (B0 prereg v1.1 §8, §10; v1.2 amendments). Runs
+"""Lineage B0 validity run (B0 prereg v1.1 §8, §10; v1.3 + v1.3.1 amendments). Runs
 gates 1–16, 18, 19; only if all pass, runs the gate-17 G0/REF-S variance
 pilot. Writes a receipt either way; a failing run is recorded as ABORTED."""
 import hashlib
@@ -31,8 +31,9 @@ def clean(x):
 
 if __name__ == "__main__":
     ts = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    out = {"prereg": "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_2.md @ 72e8925 "
-                     "(amends docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md @ 642d3fd)",
+    out = {"prereg": "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md @ 701c4c2 + "
+                     "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3_1.md @ ebdb0f1 "
+                     "(amend docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md @ 642d3fd)",
            "seeds": {"B0": gates.B0_SEED, "pilot": gates.PILOT_SEED, "B1": gates.B1_SEED},
            "runtime": {"python": sys.version, "numpy": np.__version__, "platform": platform.platform()},
            "config_sha256": hashlib.sha256(json.dumps(

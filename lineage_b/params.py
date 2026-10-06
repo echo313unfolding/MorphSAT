@@ -76,6 +76,5 @@ ETA_B = 0.02
 ETA_S = 0.02
 SIGMA_MIN_FRAC = 0.25
 
-# Agent grid (v1.2: h at 0.005 m, was 100 bins of 0.02 m in v1.1)
-NH = 400
+# Agent inflow grid (v1.3: the level is a Gaussian per (inflow, leak) hypothesis; no level grid)
 NQ = 11

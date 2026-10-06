@@ -6,13 +6,10 @@ from __future__ import annotations
 import hashlib
 from typing import Dict, List, Optional
 
-import numpy as np
-
 from lineage_b.agent import predictor as pr
 from lineage_b.agent.authority import monitor
 from lineage_b.obs import Record
-from lineage_b.params import (COSTS, DU, H_SET, KIND, R_COOL, R_REP, TAU_I, UNSAFE_HI,
-                              UNSAFE_LO)
+from lineage_b.params import COSTS, DU, H_SET, R_COOL, R_REP, TAU_I
 from lineage_b.receipts import ReceiptStore, canonical
 
 CANDIDATES = ("hold", "open", "close")          # tie-break order
@@ -28,6 +25,7 @@ class Agent:
         self.updater = updater          # None (G0) or "receipt" (G2-style reference; infrastructure)
         self.arm = arm
         self.log: List[dict] = []       # skipped / no-op updates (gate 6)
+        self.assim_log: List[dict] = []  # belief left unchanged: all component likelihoods underflowed (v1.3 §1.4)
 
     # -- episode ----------------------------------------------------------
     def begin_episode(self, episode: int, g0: int, store: ReceiptStore, u0: float = 0.5):
@@ -61,7 +59,9 @@ class Agent:
             if r.measured_at == t:
                 fresh[r.sensor_id] = r.value
         if fresh:
-            self.B = pr.assimilate(self.B, self.model.loglik(fresh, self.u, self.g0 + t))
+            self.B, underflow = self.model.assimilate(self.B, fresh, self.u, self.g0 + t)
+            if underflow:
+                self.assim_log.append({"t": t, "underflow": underflow})
         return infos
 
     def _feedback(self, r: Record) -> Optional[dict]:
@@ -85,20 +85,16 @@ class Agent:
 
     # -- decision -------------------------------------------------------------
     def belief_summary(self) -> Dict[str, float]:
-        ph = self.B.sum(axis=(1, 2))
-        m = float(ph @ pr.H)
-        return {"mean_h": m, "sd_h": float(np.sqrt(ph @ (pr.H - m) ** 2)),
-                "p_leak": float(self.B[..., 1:].sum()),
-                "digest": hashlib.sha256(self.B.tobytes()).hexdigest()}
+        m, sd, p_leak = pr.summary(self.B)
+        return {"mean_h": m, "sd_h": sd, "p_leak": p_leak, "digest": self.B.digest()}
 
     def decide(self, t: int) -> dict:
         mon = monitor(self.records, t)
-        p_leak = float(self.B[..., 1:].sum())
+        p_leak = float(self.B.pi[:, 1:].sum())
         costs = {}
         for a in CANDIDATES:
-            ph = pr.predict(self.B, _u_after(self.u, a), False).sum(axis=(1, 2))
-            unsafe = (pr.H > UNSAFE_HI) | (pr.H < UNSAFE_LO)
-            costs[a] = float(ph @ (COSTS["D"] * (pr.H - H_SET) ** 2 + COSTS["U"] * unsafe)) \
+            Bp = pr.predict(self.B, _u_after(self.u, a), False)
+            costs[a] = COSTS["D"] * pr.expected_sq_dev(Bp, H_SET) + COSTS["U"] * pr.p_unsafe(Bp) \
                 + (COSTS["M"] if a != "hold" else 0.0)
         cool = self.last_inspect is None or t - self.last_inspect >= R_COOL
         if p_leak >= TAU_I and cool:
@@ -118,18 +114,17 @@ class Agent:
     def commit_prediction(self, t: int, final_action: str) -> str:
         u_new = _u_after(self.u, final_action)
         Bp = pr.predict(self.B, u_new, (t + 1) in self.repairs)
-        ph = Bp.sum(axis=(1, 2))
         sensors = {}
         for s in sorted(self.sensors_seen | {"L1", "L2", "L3", "F", "P"}):
             p = self.model.params(s, self.g0 + t + 1)
             if p is None:
                 continue
-            probs, m, s2 = pr.categorical(s, ph, u_new, *p)
+            probs, m, s2 = pr.categorical(s, Bp, u_new, *p)
             sensors[s] = {"probs": probs.tolist(), "b": p[0], "sigma": p[1],
                           "latent_mean": m, "latent_var": s2}
         payload = {"arm": self.arm, "action": final_action, "u_next": u_new, "t_target": t + 1,
                    "theta_hash": self.model.theta_hash(), "decision_key": [self.episode, t],
-                   "belief_digest": hashlib.sha256(Bp.tobytes()).hexdigest(), "sensors": sensors}
+                   "belief_digest": Bp.digest(), "sensors": sensors}
         h = self.store.commit((self.episode, t + 1), payload)
         self.B, self.u = Bp, u_new
         if final_action == "inspect":

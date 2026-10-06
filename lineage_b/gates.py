@@ -30,10 +30,13 @@ from lineage_b.sensors import true_quantity
 from lineage_b.world import CONDITIONS, STREAMS, FaultState, TransitionError, World, make_streams
 
 ROOT = Path(__file__).resolve().parent.parent
-# v1.2 roots (prereg v1.2 Amendment 2). v1.1 used 20261005/6/7; gate 2's B0_SEED+1, +2
-# hit the v1.1 pilot and B1 roots. B0 offsets here span +0..+999.
-B0_SEED, PILOT_SEED, B1_SEED = 2026100512000, 2026100513000, 2026100514000
-assert not {B0_SEED + k for k in range(1000)} & {PILOT_SEED, B1_SEED}
+# v1.3 roots (prereg v1.3 Amendment 2). v1.1 used 20261005/6/7 (gate 2's B0_SEED+1, +2
+# hit the v1.1 pilot and B1 roots); v1.2's B0 root 2026100512000 was never used for gates.
+# B0 offsets here span +0..+999; pilot and B1 roots are unchanged from v1.2 (never consumed).
+B0_SEED, PILOT_SEED, B1_SEED = 2026100515000, 2026100513000, 2026100514000
+_B0_RANGE = {B0_SEED + k for k in range(1000)}
+assert not _B0_RANGE & {PILOT_SEED, B1_SEED}
+assert not _B0_RANGE & ({20261005 + k for k in range(1000)} | {2026100512000 + k for k in range(1000)})
 
 
 def streams(seed, dep=0, ep=0, n=1):
@@ -423,17 +426,22 @@ def g12_terminal_authority():
 
 
 # ---------------------------------------------------------------- gate 13
+def gate13_belief(h0: float) -> "pr.Belief":
+    """v1.3 §1.6: pi = q_stationary on leak none, m = h0, v = 0.05^2 (placeholders elsewhere)."""
+    pi = pr.q_stationary()[:, None] * np.array([1.0, 0.0, 0.0])[None, :]
+    on = pi > 0
+    return pr.Belief(pi, np.where(on, h0, 0.0), np.where(on, 0.05 ** 2, 0.0))
+
+
 def g13_action_sensitivity():
     out, ok = {}, True
     m = SensorModel()
     for h0 in (0.5, 1.0, 1.5):
-        ph = np.exp(-0.5 * ((pr.H - h0) / 0.05) ** 2)
-        B = ph[:, None, None] * pr.q_stationary()[None, :, None] * np.array([1.0, 0, 0])[None, None, :]
-        B /= B.sum()
+        B = gate13_belief(h0)
         for s in ("L3", "F"):
             dist = {}
             for a, u in (("open", 0.75), ("close", 0.25)):
-                p = pr.predict(B, u, False).sum(axis=(1, 2))
+                p = pr.predict(B, u, False)
                 dist[a] = pr.categorical(s, p, u, *m.params(s, 0))[0]
             po, pc = np.maximum(dist["open"], 1e-300), np.maximum(dist["close"], 1e-300)
             kl = float((po * np.log(po / pc)).sum())

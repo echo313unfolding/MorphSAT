@@ -7,8 +7,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from lineage_b.agent.predictor import W, g_and_var
+from lineage_b.agent import predictor
 from lineage_b.params import NOMINAL_SIGMA, SIGMA_A, SIGMA_L12, T_F
+
+JOINT_L12 = np.array([[SIGMA_A ** 2 + SIGMA_L12 ** 2, SIGMA_A ** 2],
+                      [SIGMA_A ** 2, SIGMA_A ** 2 + SIGMA_L12 ** 2]])
 
 
 class RefSensorModel:
@@ -33,29 +36,10 @@ class RefSensorModel:
                 b = 0.02
         return b, sig
 
-    def loglik(self, fresh, u, g):
-        ll = np.zeros(len(g_and_var("L1", u)[0]))
-        joint = {"L1", "L2"} <= set(fresh)
-        for s, y in fresh.items():
-            if joint and s in ("L1", "L2"):
-                continue
-            p = self.params(s, g)
-            if p is None:
-                continue
-            gq, wv = g_and_var(s, u)
-            var = p[1] ** 2 + wv
-            ll += -0.5 * (y - gq - p[0]) ** 2 / var - 0.5 * np.log(var)
-        if joint:
-            h, _ = g_and_var("L1", u)
-            v = W * W / 12
-            S = np.array([[SIGMA_A ** 2 + SIGMA_L12 ** 2 + v, SIGMA_A ** 2 + v],
-                          [SIGMA_A ** 2 + v, SIGMA_A ** 2 + SIGMA_L12 ** 2 + v]])
-            Si = np.linalg.inv(S)
-            r1 = fresh["L1"] - h - self.params("L1", g)[0]
-            r2 = fresh["L2"] - h - self.params("L2", g)[0]
-            ll += -0.5 * (Si[0, 0] * r1 * r1 + 2 * Si[0, 1] * r1 * r2 + Si[1, 1] * r2 * r2) \
-                - 0.5 * np.log(np.linalg.det(S))
-        return ll
+    def assimilate(self, B, fresh, u, g):
+        """Same machinery as the arms (v1.3 §1.4); joint L1/L2 update with the true
+        ADC_A covariance when both are fresh; stuck sensors and L4 skipped via params."""
+        return predictor.assimilate(B, fresh, u, lambda s: self.params(s, g), joint_l12=JOINT_L12)
 
     def update(self, *a, **k):
         raise RuntimeError("REF-S does not learn")

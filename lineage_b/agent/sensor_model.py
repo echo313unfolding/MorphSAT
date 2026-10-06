@@ -7,9 +7,7 @@ import hashlib
 import math
 from typing import Dict, Optional
 
-import numpy as np
-
-from lineage_b.agent.predictor import g_and_var
+from lineage_b.agent import predictor
 from lineage_b.params import ETA_B, ETA_S, NOMINAL_SIGMA, SIGMA_MIN_FRAC
 from lineage_b.receipts import canonical
 
@@ -32,17 +30,9 @@ class SensorModel:
         self._ensure(s)
         return self.b[s], self.sigma[s]
 
-    def loglik(self, fresh: Dict[str, float], u: float, g: int) -> np.ndarray:
-        ll = 0.0
-        for s, y in fresh.items():
-            p = self.params(s, g)
-            if p is None:
-                continue
-            b, sig = p
-            gq, wv = g_and_var(s, u)
-            var = sig ** 2 + wv
-            ll = ll - 0.5 * (y - gq - b) ** 2 / var - 0.5 * np.log(var)
-        return np.asarray(ll) * np.ones(len(g_and_var("L1", u)[0]))
+    def assimilate(self, B, fresh: Dict[str, float], u: float, g: int):
+        """Sequential conditionally independent updates (v1.3 §1.4)."""
+        return predictor.assimilate(B, fresh, u, lambda s: self.params(s, g))
 
     def update(self, s: str, residual: float, ref_var: float) -> None:
         self._ensure(s)
