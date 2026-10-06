@@ -1,6 +1,6 @@
-# Lineage B0 — Simulator Validity: Preregistration v1.3 (CANDIDATE r4 — not frozen)
+# Lineage B0 — Simulator Validity: Preregistration v1.3 (FROZEN)
 
-Status: **candidate for review; decisions D1–D3 recorded.**
+Status: **FROZEN** (user authorization 2026-10-06; candidate r1–r4 history in the audit trail and commits `9ac875a`, `7257501`, `f6dc265`, `4fdc3bf`). Decisions D1–D3 recorded.
 * Amends v1.1 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md` @ `642d3fd`).
 * Supersedes v1.2 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_2.md` @ `72e8925`)
   for Amendment 1 and the B0 root only.
@@ -302,24 +302,24 @@ Q̄ is exactly `QG[5]`. Single-component tests pass q directly.
 | T3 | **No artificial variance growth at zero noise.** σ_w = 0, Q = identity, λ = 0. (i) Full `predict` from point masses in all 33 components, 200 steps. (ii) Single component, v0 = 0.05², T1(i) fixtures | (i) max v_c ≤ 1e-26. (ii) v_{n+1} ≤ v_n for all n | (i) Zero node spread plus the stable collapse leaves rounding² ≈ 2e-29. (ii) f′(h) = 1 − c/(2√h) ∈ (0, 1) on the fixtures, so the exact map contracts |
 | T4 | **Update normalization and validity.** 1000 random beliefs (fixture seed), random fresh subsets of {L1, L2, L3, F, P}, random u ∈ U_LEVELS. Values are drawn from the predictive, plus extremes y ∈ {−100, 100} and F at u = 0 | \|Σπ − 1\| ≤ 1e-12. Every m and v finite, v ≥ 0. Level/P: v_post ≤ v_prior(1 + 1e-12). Total underflow leaves the belief unchanged and is logged | 33 terms, one division: ≤ ~1e-14. Kalman (1 − K) ∈ [0, 1] exactly; 1e-12 covers rounding |
 | T5 | **Action sensitivity.** Gate-13 fixture beliefs (h0 ∈ {0.5, 1.0, 1.5}) | mean(open) − mean(close) equals −(dt/A)·Cv·0.5·Σπ_c Ê[√h] within 1e-12 relative, where Ê is the §1.2 GH20 expectation. It is ≠ 0. Predicted L3 and F categoricals differ | Single-step arithmetic, as in T1 |
-| T6 | **Closure adequacy.** E[√h] and Var[√h] by GH20 against GH100, for m ∈ [0.3, 1.9] and sd ∈ [1e-4, 0.05] | \|Δ\| ≤ 1e-10 (E[√h] in m^½, Var[√h] in m) | The integrand is analytic where weight > 1e-12. In level units, with c_max = Cv·1 + k(fast) = 0.13 and dt/A = 1 (interior, §1.3(a)): **mean** δm′ ≤ (dt/A)·c_max·\|ΔE[√h]\| ≤ 1.3e-11 m, which is 6.5e-9 of σ_w = 2e-3 m. **Variance** v′ − σ_w² = Var[h] − 2(dt/A)c·Cov(h, √h) + (dt/A)²c²·Var[√h]. Var[h] is exact under GH20 (degree 2). The last term's error is ≤ c_max²·\|ΔVar[√h]\| ≤ 1.7e-12 m², which is 4.2e-7 of σ_w² = 4e-6 m². The Cov(h, √h) term is **not** measured by T6 (see the r4 note below). The reference is GH100 because NumPy documents `hermgauss` as tested only up to degree 100; a higher-degree reference could fail on its own (pre-execution reference correction, r3) |
+| T6 | **Closure adequacy.** E[√h] and Var[√h] by GH20 against GH100, for m ∈ [0.3, 1.9] and sd ∈ [1e-4, 0.05] | \|Δ\| ≤ 1e-10 (E[√h] in m^½, Var[√h] in m) | The integrand is analytic where weight > 1e-12. In level units, with c_max = Cv·1 + k(fast) = 0.13 and dt/A = 1 (interior, §1.3(a)): **mean** δm′ ≤ (dt/A)·c_max·\|ΔE[√h]\| ≤ 1.3e-11 m, which is 6.5e-9 of σ_w = 2e-3 m. **Variance** v′ − σ_w² = Var[h] − 2(dt/A)c·Cov(h, √h) + (dt/A)²c²·Var[√h]. Var[h] is exact under GH20 (degree 2). The last term's error is ≤ c_max²·\|ΔVar[√h]\| ≤ 1.7e-12 m², which is 4.2e-7 of σ_w² = 4e-6 m². The Cov(h, √h) term is **not** measured by T6 (see the known limitation below). The reference is GH100 because NumPy documents `hermgauss` as tested only up to degree 100; a higher-degree reference could fail on its own (pre-execution reference correction, r3) |
 | T7 | **Collapse preserves moments.** Random 2- and 11-component mixtures | Mixture mean and variance unchanged within 1e-12 relative | An identity; rounding only |
 | T8 | **Censored-normal moments.** μ ∈ {−0.004, 0, 0.001, 1.0, 1.999, 2.0, 2.003}, s = σ_w. The implementation (frozen Φ) against a reference using `math.erf` | \|ΔE\| ≤ 1e-9 m, \|ΔV\| ≤ 1e-11 m². μ = 1.0 gives exactly (μ, s²) through the interior shortcut | Frozen Φ error ≤ 7.5e-8. In the near-bound fixtures \|bound − μ\| ≤ 0.004 m: E error ≲ 2·0.004·7.5e-8 ≈ 6e-10; M2 error ≲ (0.004)²·7.5e-8 + s·0.004·7.5e-8 ≈ 2e-12 |
 
-**r4 note: T6 coverage gap (open; resolve before freeze).** The unit-correct
-derivation shows that the one-step variance depends on Cov(h, √h) (that is,
-E[h·√h]). T6 does not measure this term. It is checked end-to-end only in
-the T2 equilibrium regime.
+**Known limitation of T6 (disclosed at freeze; test unchanged).** The
+unit-correct derivation shows that the one-step variance depends on
+Cov(h, √h) (that is, E[h·√h]). T6 does not measure this term. It is checked
+end-to-end only in the T2 equilibrium regime.
 
-Proposed fix, a test-content change that needs user approval: add
-Cov(h, √h) to T6's quantities at the same 1e-10 (m^{3/2}) over the same
-domain. The induced variance error would then be ≤ 2·c_max·1e-10 =
+Not adopted at freeze: adding Cov(h, √h) to T6's quantities at the same
+1e-10 (m^{3/2}) over the same domain. That would need a separate
+pre-implementation amendment. The induced variance error would then be ≤ 2·c_max·1e-10 =
 2.6e-11 m², which is 6.5e-6 of σ_w². The 1e-10 criterion itself is
 consistent and stays unchanged.
 
 ## Amendment 4 — Procedure
 
-1. The user freezes this document.
+1. Frozen at the commit that introduces this line (user authorization, 2026-10-06).
 2. Implement and run T1–T8. If any test fails, stop and report.
 3. If all pass: commit the implementation **and** the T1–T8 receipt before
    any validity gate runs.
