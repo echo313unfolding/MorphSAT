@@ -1,4 +1,4 @@
-# Lineage B0 — Simulator Validity: Preregistration v1.3 (CANDIDATE — not frozen)
+# Lineage B0 — Simulator Validity: Preregistration v1.3 (CANDIDATE r2 — not frozen)
 
 Status: **candidate for review.**
 * Amends v1.1 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md` @ `642d3fd`).
@@ -6,6 +6,28 @@ Status: **candidate for review.**
   for Amendment 1 and the B0 root only.
 * Everything in v1.1 not amended here stays in force.
 * No v1.3 code exists. B1 stays unfrozen and unimplemented.
+
+r2 changes from r1 (`9ac875a`):
+* Added §0, the world semantics extracted from code.
+* Clipping now follows the world order: noise first, then clip. In r1 it
+  clipped before adding noise.
+* The √h moment closure is now an explicit choice between two fully
+  specified options.
+* "Exact" wording removed wherever it overstated.
+* Added test T8.
+
+## Framing
+
+v1.3 does not claim that a Gaussian predictor is better or exact. It
+removes grid diffusion but introduces a **moment-closure approximation**:
+a Gaussian per hypothesis, a two-moment collapse, and an approximation for
+√h. B0 exists to test whether a predictor is numerically adequate before
+B1. The question v1.3 answers is:
+
+> Can we construct a predictor whose numerical approximation error is small
+> enough that feedback learning is not dominated by the predictor itself?
+
+Gate 18, unchanged, is the operational test of that question.
 
 ## Audit trail
 
@@ -17,6 +39,7 @@ Status: **candidate for review.**
 | `72e8925` | B0 v1.2 FROZEN (400 × 0.005 m grid; fresh disjoint roots; implementation-only test) |
 | `8b23ce5` | v1.2 implementation, committed before any execution |
 | `4a8767f` | v1.2 **STOPPED** at its implementation-only diffusion test |
+| `9ac875a` | v1.2 closed (addendum to its stop note); v1.3 candidate r1 |
 
 v1.2 diffusion ratios: equilibrium **7.32** (frozen rule ≥ 8), rising
 10.26, draining 17.00.
@@ -25,172 +48,247 @@ v1.2 diffusion ratios: equilibrium **7.32** (frozen rule ≥ 8), rising
 implementation-stage failure.
 * No v1.2 validity gate or pilot ran.
 * The ≥ 8 threshold is not lowered or reinterpreted.
-* The 0.005 m grid still added numerical diffusion of about 70% of σ_w² in
-  the equilibrium case (2.78e-6 against 4e-6). Grid discretization is
-  therefore still materially contaminating the predictor.
-* Per the v1.2 contingency, the grid is not refined further. The
-  representation class changes instead, under this new preregistration.
+* Residual grid diffusion was about 70% of σ_w² at equilibrium
+  (2.78e-6 against 4e-6).
+* The grid is not refined further. The representation class changes
+  instead.
+
+## §0 — Existing semantics, extracted from code (the target v1.3 must reproduce)
+
+`world.py`, `sensors.py` and `channel.py` are unchanged since `5b8f965`.
+Agent-side references are at `4a8767f`. Time t is the step index; Z_t is the
+state at the start of step t.
+
+### 0.1 World (evaluator)
+
+| Item | Semantics | Code |
+|---|---|---|
+| Valve | Incremental. `open` +0.25, `close` −0.25, clipped to [0, 1]; `hold`/`inspect` unchanged. Applied before the flow computation: u_{t+1} drives the t → t+1 flow | `world.py:82-84` |
+| Level | h_raw = h_t + (dt/A)(q_t − Cv·u_{t+1}·√max(h_t,0) − k(ℓ_t)·√max(h_t,0)) + σ_w·w_t; h_{t+1} = clip(h_raw, 0, H_max). **Noise first, then clip** | `world.py:83-87` |
+| Spill / shortfall | A·max(h_raw − H_max, 0)/dt and A·max(−h_raw, 0)/dt. Recorded; spill enters cost J. They do not feed back into the state | `world.py:88-89` |
+| Leak flow | k(ℓ)·√max(h,0) with k = 0 / 0.01 / 0.03 (none / slow / fast). Affects outflow only. **No sensor observes leak flow** (F measures valve flow only) | `world.py:85`, `sensors.py:15-16` |
+| Leak onset | In transition t → t+1, if ℓ_t = none and no repair fires this step: with probability λ = 0.002, ℓ_{t+1} = slow (p 0.7) or fast (p 0.3). The new leak first drains in transition t+1 → t+2 | `world.py:103-107` |
+| Inspection / repair | `inspect` at t: if ℓ_t ≠ none, the report is LEAK_FOUND with p 0.9, and a found leak with no pending repair sets repair_at = t + 5. If ℓ_t = none, the report is LEAK_FOUND with p 0.05, which schedules nothing. The leak is cleared in transition t+4 → t+5 (ℓ_{t+5} = none). Leak flow still acts in transitions t … t+4. No onset is drawn in the step where a repair fires | `world.py:94-105` |
+| Inflow | Continuous AR(1), updated every step: q_{t+1} = max(0, Q̄ + φ(q_t − Q̄) + σ_η·η_t). The level step uses q_t (pre-update). Each episode starts at q_0 = Q̄ exactly | `world.py:50, 58, 86, 90` |
+| Process noise | Two sources only: w (level, added before the clip) and η (inflow, before its clip at 0). The valve, sensors' true quantities and inspection have no process noise. One draw per source per step, regardless of action (CRN) | `world.py:77-80` |
+| Initial level | h_0 = 1 + 0.05·N(0, 1) | `world.py:56-57` |
+
+### 0.2 Observation and prediction timing
+
+| Item | Semantics | Code |
+|---|---|---|
+| Observation | Readings of Z_t are taken at the start of step t, before the action at t. L* read h_t; P reads 9.81·h_t; F reads Cv·u_t·√h_t. Plus the fault overlay and channel | `harness.py:46-49`, `sensors.py:22-47` |
+| Inspection record | About ℓ_t, `measured_at` = t, delivered at t+1 | `channel.py:54-56` |
+| Prediction target | Receipt keyed (episode, t+1). It is committed after the action at t is final and before `world.step`. For each sensor it holds the distribution of that sensor's reading of Z_{t+1} under the arm's (b, σ). F uses u_{t+1} | `core.py:118-134`, `harness.py:64-72` |
+| Gate 18 | PIT of the first-delivered VALUE for (sensor, `measured_at`) against the receipt for `measured_at`, including late values. Run under C0, μ behaviour, θ0, no updater | `gates.py` `g18_calibration` |
+
+### 0.3 Agent-side v1.1 §7 semantics
+
+These are preserved in v1.3, including where they knowingly differ from the
+world. Changing them would change the experiment, not just the
+representation.
+
+| # | Predictor semantics (v1.1) | Code |
+|---|---|---|
+| P1 | The prior on inflow is the stationary distribution over the 11-point grid. The world starts each episode at q_0 = Q̄ | `predictor.py` `initial_belief` |
+| P2 | Inflow is an 11-point Markov-chain approximation of the AR(1). This is the remaining discretization, outside this amendment's scope | `predictor.py` `q_matrix` |
+| P3 | An inspection report (about ℓ_t) multiplies the belief already predicted to t+1 | `core.py:52-56` |
+| P4 | Every LEAK_FOUND schedules a modelled repair at `measured_at` + 5, including false alarms and reports during a pending repair, which the world ignores | `core.py:54-55` |
+| P5 | Predictions at t′ with t′+1 a scheduled repair: the level step uses the pre-repair leak, then all leak mass moves to none, with no onset. This matches world timing | `core.py:120`, `predictor.py` `predict` |
+| P6 | Only fresh records (`measured_at` = t) are assimilated. Late records are scored only | `core.py:61-64` |
+| P7 | C3's relay L4 is assimilated as an independent sensor. This is by design: the alias confound is a B1 object | `core.py:57-62` |
 
 ## Amendment 1 — Level-state representation (replaces v1.1 §7 grid; replaces v1.2 Amendment 1)
-
-**Rationale.** B0 v1.1 and v1.2 showed that a level grid adds numerical
-diffusion that contaminates the predictor. That is the confound gate 18
-exists to exclude, and the one B1's G2 noise update would absorb. v1.3
-replaces the level grid with a Gaussian per (inflow, leak) hypothesis. The
-goal is to remove grid-induced diffusion while keeping the same nominal
-transition model, the same information boundary and the same validity
-criteria.
 
 ### 1.1 Belief
 
 The hypotheses are c = (j, ℓ):
-* j ∈ {0..10} indexes the v1.1 inflow grid `QG`. The 11 points, the AR(1)
-  transition matrix `q_matrix()` and the stationary weights are unchanged.
+* j ∈ {0..10} indexes the v1.1 inflow grid `QG`, unchanged (P1, P2);
 * ℓ ∈ {none, slow, fast}.
 
 The belief is B = {(π_c, m_c, v_c)}:
 * π_c ≥ 0 with Σ π_c = 1;
-* the level given c is approximately N(m_c, v_c), with v_c ≥ 0.
+* the level given c is approximated as N(m_c, v_c), with v_c ≥ 0.
 
-Components with π_c = 0 carry placeholder moments (m = 0, v = 0). Every
-expectation weights by π_c, so placeholders never contribute.
+Components with π_c = 0 carry placeholder moments (m = 0, v = 0), and
+every expectation weights by π_c.
 
-**Initial belief** (same distribution as v1.1, without a grid):
-* π_(j,none) = q_stationary[j]; π_(j,slow) = π_(j,fast) = 0;
-* m = 1.0, v = 0.05².
+**Initial belief.** π_(j,none) = q_stationary[j], and every other π = 0.
+Every component has m = 1.0, v = 0.05². This is the v1.1 distribution
+without a grid.
 
-### 1.2 Gauss–Hermite moments (the only nonlinear approximation)
+### 1.2 The √h moment closure — **choose one at freeze**
 
-For a function φ of h, E_N(m,v)[φ] ≈ Σ_k ω_k φ(m + √(2v)·x_k):
-* x_k, ω_k are the **n = 20** probabilists'-normalized Gauss–Hermite nodes
-  and weights (ω normalized to sum to 1);
-* `numpy.polynomial.hermite.hermgauss(20)`, with ω_k = w_k/√π.
+Both options below are fully specified and nothing is left to the
+implementation. Either one makes the prediction step an approximation.
 
-The same rule computes every expectation of √h. No other approximation of
-√h is used. When v = 0, all nodes coincide at m and the rule is exact.
+**Option G (recommended): 20-node Gauss–Hermite.**
+* E_N(m,v)[φ] ≈ Σ_k ω_k φ(h_k), with h_k = m + √(2v)·x_k, the n = 20
+  Gauss–Hermite nodes x_k and normalized weights ω_k
+  (`numpy.polynomial.hermite.hermgauss(20)`, ω_k = w_k/√π).
+* √ is always evaluated as √max(h, 0). No derivative is used, so no
+  derivative bound is needed near h = 0.
+* Reduces to the deterministic map when v = 0.
 
-### 1.3 Prediction (same §3 dynamics; same order as v1.1)
+**Option E: first-order (EKF-style) linearization about m.**
+* E[φ] ≈ φ(m) and Var[φ] ≈ φ′(m)²·v.
+* Every derivative of √h is evaluated as 1/(2√max(m, h_ε)), with
+  **h_ε = 0.01 m.**
+* Why h_ε = 0.01 m: it is 20× below the unsafe lower band (0.2 m) and 30×
+  below the interlock (0.3 m). The bound binds only in states the authority
+  layer already treats as emergencies.
+* The bounded derivative is the bounded Jacobian in every use below: the
+  prediction f′ and the flow sensor g′.
 
-Given the committed next valve position u′ and a flag for whether a repair
-occurs now:
+**Why G is recommended.**
+* It needs no derivative bound.
+* It handles √max(h, 0) at the boundary without special-casing.
+* It captures the curvature bias that E drops. At equilibrium that bias is
+  ½f″v ≈ 5e-7 m per step, which is small either way.
+* Its quadrature error is directly testable (T6).
 
-**(a) Level step, per component.** Let c_ℓ = Cv·u′ + k(ℓ) and
-f_c(h) = clip(h + (dt/A)(q_j − c_ℓ·√max(h, 0)), 0, H_max). Then:
-* m′_c = Σ_k ω_k f_c(h_k);
-* v′_c = Σ_k ω_k (f_c(h_k) − m′_c)² + σ_w²;
+E is simpler to audit. Either is acceptable. The tests below apply to both,
+with the option-specific notes shown.
+
+### 1.3 Prediction (§0.1 dynamics; same order as v1.1)
+
+Given the committed next valve position u′ and the flag repair_now (P5):
+
+**(a) Level step per component.** Clipping follows the world: noise first,
+then clip. Let c_ℓ = Cv·u′ + k(ℓ) and
+μ(h) = h + (dt/A)(q_j − c_ℓ·√max(h, 0)), the unclipped deterministic part.
+Then h′ = clip(μ(h) + σ_w·w, 0, H_max).
+
+* **Option G.** For each node h_k, Y_k = clip(N(μ(h_k), σ_w²), 0, H_max) is
+  a censored normal. Its moments (E_k, V_k) come from §1.3(d). Combine by
+  the law of total variance:
+  * m′ = Σ ω_k E_k;
+  * v′ = Σ ω_k [V_k + (E_k − m′)²].
+* **Option E.** Y = clip(N(μ(m), f′(m)²·v + σ_w²), 0, H_max), where
+  f′(m) = 1 − (dt/A)·c_ℓ/(2√max(m, h_ε)). Then (m′, v′) are its censored
+  moments from §1.3(d).
 * π is unchanged by this step.
 
-**Clipping.** This step clips the deterministic part, then adds σ_w². The
-world clips *after* adding w. The residual mismatch is predictive mass
-outside [0, H_max] of order σ_w = 0.002 m, at the boundary only. See open
-question Q1.
-
-**(b) Inflow transition** (v1.1 `q_matrix` Q). For each (r, ℓ), collapse
-by moment matching the mixture with weights α_j = π_(j,ℓ)·Q[j, r]:
+**(b) Inflow transition.** Use the v1.1 `q_matrix` Q. For each (r, ℓ),
+moment-match the mixture with weights α_j = π_(j,ℓ)·Q[j, r]:
 * π′ = Σ α_j;
 * m′ = Σ α_j m_j / π′;
-* v′ = Σ α_j (v_j + (m_j − m′)²) / π′.
+* v′ = Σ α_j [v_j + (m_j − m′)²] / π′.
 
-This is the algebraically identical, nonnegative form of
-Σα(v + m²)/π′ − m′². The subtractive form cancels catastrophically, giving
-errors of about 1e-15 that can be negative, so it is not used. The collapse
-preserves the first two moments of each (r, ℓ) mixture exactly. It adds no
-variance beyond the exact mixture second moment.
+This nonnegative form is used. The algebraically equal subtractive form
+Σα(v + m²)/π′ − m′² cancels catastrophically and is not used. The collapse
+keeps each (r, ℓ) mixture's mean and variance and discards higher-order
+shape.
 
-**(c) Leak transition** (v1.1 §7 semantics). Without a repair:
-* none ← none·(1 − λ);
-* slow ← collapse(slow, none·λ·p_slow);
-* fast ← collapse(fast, none·λ·(1 − p_slow)).
+**(c) Leak transition** (v1.1 semantics).
+* No repair: none ← none·(1 − λ); slow ← collapse(slow, none·λ·0.7);
+  fast ← collapse(fast, none·λ·0.3).
+* Repair: none ← collapse(none, slow, fast); slow = fast = 0.
+* Then renormalize π.
 
-With a repair: none ← collapse(none, slow, fast), and slow = fast = 0. The
-collapse is the 1.3(b) formula. Finally, renormalize π.
+**(d) Censored-normal moments.** Y = clip(X, a, b) with X ~ N(μ, s²),
+a = 0, b = H_max.
+* z_a = (a − μ)/s, z_b = (b − μ)/s, using the frozen `ncdf` Φ (A&S 7.1.26,
+  as in v1.1) and the exact φ.
+* E = μ + (a − μ)Φ(z_a) + (b − μ)(1 − Φ(z_b)) + s(φ(z_a) − φ(z_b)).
+* M2 = (a − μ)²Φ(z_a) + (b − μ)²(1 − Φ(z_b)) + s²(Φ(z_b) − Φ(z_a))
+  + s[(a − μ)φ(z_a) − (b − μ)φ(z_b)].
+* V = max(M2 − (E − μ)², 0). The max only absorbs rounding on a quantity
+  that is centred about μ.
 
-### 1.4 Assimilation (agent-visible fresh records only; v1.1 §7 unchanged)
+Interior shortcut: if Φ(z_a) = 0 and Φ(z_b) = 1 in floating point, then
+E = μ and V = s² exactly. Under the frozen Φ this holds beyond about 8.5 s,
+roughly 0.017 m, from both bounds.
 
-Fresh values at t are processed **sequentially in fixed order**
-L1, L2, L3, F, P (and L4 if present). This is the G0–G2 conditional
-independence assumption, unchanged. Per sensor s with arm-supplied (b, σ),
-per component c:
+If s = 0 (tests only), Y = clip(μ) and V = 0.
 
-**Level (L*).** y = h + b + ε. Exact Kalman update:
+### 1.4 Assimilation (agent-visible fresh records only; P6)
+
+Fresh values at t are processed **sequentially in the fixed order
+L1, L2, L3, L4, F, P.** This is the v1.1 G0–G2 conditional-independence
+assumption. Each sensor s uses its arm-supplied (b, σ), applied per
+component.
+
+**Level sensors.** y = h + b + ε. Use the closed-form Kalman update for this
+component's Gaussian prior (exact given that prior; the belief overall
+remains an approximation):
 * S = v + σ²; K = v/S;
-* m ← m + K(y − m − b); v ← (1 − K)v;
-* log π ← log π + log N(y; m + b, S), using the prior m.
+* log π += log N(y; m + b, S), using the prior m;
+* m ← m + K(y − m − b); v ← (1 − K)v.
 
-**Pressure (P).** Same, with g = P_gain·h:
-* S = P_gain²·v + σ²; K = P_gain·v/S;
-* m ← m + K(y − P_gain·m − b); v ← (1 − K·P_gain)v.
+**P.** The same update with gain G = P_gain:
+* S = G²v + σ²; K = Gv/S;
+* m ← m + K(y − Gm − b); v ← (1 − KG)v.
 
-**Flow (F).** y = Cv·u·√max(h, 0) + b + ε. Gauss–Hermite reweighting:
-* λ_k = ω_k·N(y; Cv·u·√max(h_k, 0) + b, σ²);
-* log π ← log π + log Σλ_k;
-* m ← Σλ_k h_k / Σλ_k;
-* v ← Σλ_k (h_k − m)² / Σλ_k, which is ≥ 0 by construction.
+**F.** y = Cv·u·√max(h, 0) + b + ε, where u is the current u_t.
+* **Option G:** reweight the nodes.
+  * λ_k = ω_k·N(y; Cv·u·√max(h_k, 0) + b, σ²);
+  * log π += log Σλ;
+  * m ← Σλ_k h_k / Σλ;
+  * v ← Σλ_k (h_k − m)² / Σλ.
+* **Option E:** linearize with g′ = Cv·u/(2√max(m, h_ε)).
+  * S = g′²v + σ²; K = g′v/S;
+  * log π += log N(y; g(m) + b, S);
+  * m ← m + K(y − g(m) − b); v ← (1 − Kg′)v.
 
 **Normalization.**
 * π is renormalized with log-sum-exp.
-* If every component likelihood underflows, the belief is left unchanged.
-  This is the v1.1 `assimilate` rule, and the skip is logged.
-* There is **no variance floor and no inflation.**
+* If every component likelihood underflows, the belief is left unchanged
+  and the skip is logged (the v1.1 `assimilate` rule).
+* No variance floor and no inflation.
 
-**Inspection.** Unchanged: the v1.1 likelihood on ℓ multiplies π.
+**Inspection.** Unchanged (P3): the v1.1 likelihood on ℓ multiplies π.
 
-**REF-S.** It uses the same machinery with its true fault parameters. Its
-joint (L1, L2) update is the exact 2-D Kalman update with covariance
-[[σ_A² + σ_12², σ_A²], [σ_A², σ_A² + σ_12²]]. v1.1's W²/12 terms are
-removed because there are no bins. Stuck sensors are skipped and L4 is
-ignored, as in v1.1.
+**REF-S.** It uses the same machinery with its true fault parameters. When
+L1 and L2 are both fresh, they get a joint 2-D Kalman update with
+covariance [[σ_A² + σ_12², σ_A²], [σ_A², σ_A² + σ_12²]]. The v1.1 W²/12
+terms disappear because there are no bins. Stuck sensors are skipped and
+L4 is ignored, as in v1.1.
 
 ### 1.5 Outputs that read the belief
 
-**PredictionReceipt.** The scoring bins `BIN_EDGES` are unchanged (level
-0.02 m, pressure 0.1962 kPa, flow 0.003).
-* Level/pressure: the categorical is the exact mixture integral,
-  Σ_c π_c [Φ((e − g_c − b)/√(G²v_c + σ²))] over edges, with under- and
-  overflow bins.
-* Flow: Σ_c π_c Σ_k ω_k Φ((e − Cv·u·√max(h_ck, 0) − b)/σ).
+**PredictionReceipt** (target as in §0.2). `BIN_EDGES` are unchanged.
+* Level / P: the categorical is the closed-form integral of the
+  Gaussian-mixture predictive over the bins,
+  Σ_c π_c Φ((e − G·m_c − b)/√(G²v_c + σ²)), with G = 1 or P_gain and
+  under/overflow bins.
+* F, Option G: Σ_c π_c Σ_k ω_k Φ((e − Cv·u′·√max(h_ck, 0) − b)/σ).
+* F, Option E: a Gaussian with mean g(m_c) + b and variance g′²v_c + σ².
 * `latent_mean` / `latent_var` are the mixture mean and variance of the
-  measured quantity, using GH for flow. There is no W²/12 term.
+  measured quantity under the chosen closure.
 
-**Controller (v1.1 §8, unchanged definition).**
-* E[c_D(h′ − h*)²] = c_D Σ π_c((m_c − h*)² + v_c).
+**Controller** (v1.1 §8; the definition is unchanged).
+* E[c_D(h′ − h*)²] = c_D Σ π_c [(m_c − h*)² + v_c].
 * P(h′ ∈ U) = Σ π_c [Φ((0.2 − m_c)/√v_c) + 1 − Φ((1.8 − m_c)/√v_c)].
-  For v_c = 0 this is an indicator of m_c.
-* v1.1 evaluated both on bin centres; v1.3 evaluates the same expectation
-  over the new representation.
+  When v_c = 0 this is an indicator of m_c.
 
-**Belief summary / digests.** `mean_h`, `sd_h` and `p_leak` are mixture
-moments. The digest is the SHA-256 of the (π, m, v) arrays.
+**Belief summary.** `mean_h`, `sd_h` and `p_leak` are mixture moments. The
+digest is the SHA-256 of the (π, m, v) arrays.
 
 ### 1.6 Unchanged, explicitly
 
-* World equations, action set and valve semantics.
-* Sensor models and fault fixtures C0–C5.
-* Channel, delay, dropout and redelivery semantics.
-* The §1 information boundary and AST import rule.
-* Terminal authority and the authority layer.
-* Logging policy and records (DecisionEvent, PredictionReceipt,
-  FeedbackRecord).
-* Inflow grid and AR(1) matrix; leak hazard, repair and inspection model.
+* Everything in §0.1–§0.3.
+* The sensor models and fault fixtures, the channel, the information
+  boundary and AST rule.
+* Terminal authority and the authority layer, the logging policy and all
+  records.
 * Nominal θ0 and the G2 update primitive.
-* Every gate's test and threshold, including **gate 18:**
-  cov90 ∈ [0.85, 0.95] and cov50 ∈ [0.40, 0.60].
+* Every gate's test and threshold. **Gate 18:** cov90 ∈ [0.85, 0.95] and
+  cov50 ∈ [0.40, 0.60].
 
-Only the construction of gate 13's fixtures depends on the representation.
-"h ∼ N(h0, 0.05²), q stationary, leak none" becomes π = q_stationary on
-ℓ = none, m = h0 and v = 0.05², the same distribution without a grid. The
-gate-13 test and threshold are unchanged.
+Gate 13's fixture beliefs become π = q_stationary on ℓ = none, m = h0 and
+v = 0.05². That is the same distribution as before; the test and threshold
+are unchanged.
 
-### 1.7 Documented simplifications (new in v1.3)
+### 1.7 Approximations introduced by v1.3 (listed so none is called exact)
 
-* **S-G1.** Within each (j, ℓ), the level belief is Gaussian. The collapse
-  keeps two moments and drops higher-order shape.
-* **S-G2.** Clipping is applied before σ_w is added (see 1.3a).
-* **S-G3.** √h expectations use 20-node Gauss–Hermite quadrature.
-* **Known residual discretization:** the 11-point inflow grid is retained
-  unchanged. This amendment replaces only the level representation.
+* **A1.** Within each (j, ℓ), the level belief is Gaussian.
+* **A2.** The inflow and leak collapses keep two moments per hypothesis.
+* **A3.** The √h closure: G quadrature, or E linearization with h_ε.
+* **A4.** For F only, the sequential update re-Gaussianizes each component
+  after a non-Gaussian update.
 
-## Amendment 2 — Seed roots (amends v1.2 Amendment 2)
+## Amendment 2 — Seed roots
 
 | Purpose | v1.1 | v1.2 | **v1.3** |
 |---|---|---|---|
@@ -198,38 +296,38 @@ gate-13 test and threshold are unchanged.
 | pilot (gate 17) | 20261006 | 2026100513000 (never used) | **2026100513000** (unchanged; never consumed) |
 | B1 | 20261007 | 2026100514000 (never used) | **2026100514000** (unchanged; never consumed) |
 
-* The v1.3 B0 offset range, …15000–…15999, is disjoint from every v1.1 and
-  v1.2 root and offset range, and from the pilot and B1 roots.
-* The gates assert this at import time.
-* Implementation-only tests use only the fixture RNG seed **130515**. This
-  is evaluator-side and is not a B0, pilot or B1 root.
+* The v1.3 B0 offset range is disjoint from every earlier root and offset
+  range, and from the pilot and B1 roots. The gates assert this at import.
+* Implementation-only tests use only the fixture RNG seed **130515**. It is
+  evaluator-side, and none of the B0, pilot or B1 roots.
 
 ## Amendment 3 — Implementation-only tests (before any validity gate)
 
 These live in `tests/test_lineage_b0_v13_impl.py`, with a receipt from
 `tools/run_lineage_b0_v13_impl.py`. They verify the implementation only and
-are **not used to tune anything**. If any test fails: stop and report.
+are **not used to tune anything**. Any failure means stop and report.
+Tolerances derive from floating-point accuracy or the frozen noise model.
+No tolerance comes from any B0 calibration quantity.
 
-Fixtures use the nominal constants at q = Q̄. Q̄ is exactly `QG[5]`, because
-`linspace(-3, 3, 11)[5] = 0`. The tests exercise a single component,
-except T4 and T7. Tolerances derive from floating-point accuracy or the
-frozen noise model, as follows.
+Q̄ is exactly `QG[5]`. Single-component tests pass q directly.
 
 | # | Test | Pass criterion | Tolerance derivation |
 |---|---|---|---|
-| T1 | **Zero-noise propagation = nominal transition.** σ_w = 0, v0 = 0. Compare against `World.step` with `noise=False` and q0 = Q̄ (world q stays at Q̄ exactly) for 200 steps. Fixtures: (u = 0.5, h0 = 1.0); (u = 0.25, h0 = 0.5), which rises into the H_max clip; (u = 0.75, h0 = 1.5), draining | \|m_n − h_n^world\| ≤ 1e-11 for all n | Per step: Σω = 1 ± 20ε, \|f\| ≤ 2, and ~10 rounded ops give ≤ ~1e-14. Over 200 steps ≤ ~2e-12. Tolerance ×5 |
-| T2 | **Process variance = analytic process noise (equilibrium).** u = 0.5, h* = 1, ℓ = none. a = 1 − (dt/A)·Cv·u/(2√h*) = 0.975, so v* = σ_w²/(1 − a²) = 8.1013e-5. (i) From v0 = 0, 200 steps against v_n^ref = σ_w²(1 − a^{2n})/(1 − a²). (ii) From v0 = v*, 200 steps against v* | \|v_n/v_n^ref − 1\| ≤ 1e-4 and \|m_n − 1\| ≤ 1e-4 m | Second-order terms of the exact moment map relative to the linear reference: curvature-induced mean shift ≈ (dt/A)c·v/(8(1 − a)) ≈ 2.0e-5 m, giving δv/v ≈ 2aδa/(1 − a²) ≈ 1.0e-5. Direct curvature term ≈ ½f″²v ≈ 6e-9 relative. Tolerance ≈ 10× / 5× those bounds |
-| T3 | **No artificial variance growth at zero noise.** σ_w = 0, Q = identity, λ = 0. (i) Full `predict` from point masses (v = 0) in all 33 components, 200 steps. (ii) Single component, v0 = 0.05², T1 fixtures | (i) max v_c ≤ 1e-26. (ii) v_{n+1} ≤ v_n for every n | (i) Node spread is 0; rounding of the mean leaves (≈ 4e-15)² ≈ 2e-29. (ii) f′(h) = 1 − c/(2√h) ∈ (0, 1) on the fixtures, so the exact map contracts. No tolerance is needed |
-| T4 | **Update normalization and validity.** 1000 random beliefs (fixture seed), random fresh subsets of {L1, L2, L3, F, P}, random u ∈ U_LEVELS. Values are drawn from the predictive distribution, plus extremes y ∈ {−100, 100} and F at u = 0 | \|Σπ − 1\| ≤ 1e-12. Every m and v finite, v ≥ 0. For level/pressure, v_post ≤ v_prior(1 + 1e-12). Total underflow leaves the belief unchanged and is logged | 33 terms, one division: ≤ ~1e-14. Kalman (1 − K) ∈ [0, 1] in exact arithmetic; 1e-12 covers rounding |
-| T5 | **Action sensitivity.** Gate-13 fixture beliefs (h0 ∈ {0.5, 1.0, 1.5}) | mean(open) − mean(close) equals −(dt/A)·Cv·0.5·Σπ_c E_GH[√h] within 1e-12 relative and is ≠ 0. Predicted L3 and F categoricals differ | Same arithmetic as T1, single step |
-| T6 | **Gauss–Hermite adequacy.** E[√h] and Var[√h] by n = 20 against n = 200, for m ∈ [0.3, 1.9] and sd ∈ [1e-4, 0.05] | \|Δ\| ≤ 1e-10 | The integrand is analytic on the support carrying weight > 1e-12. The n = 200 rule is the reference. 1e-10 is ≈ 5 orders below σ_w² |
-| T7 | **Collapse preserves moments.** Random two-component and 11-component mixtures | Mixture mean and variance equal before and after the collapse within 1e-12 relative | Exact identity; rounding only |
+| T1 | **Zero-noise propagation = nominal transition**, σ_w = 0, v0 = 0. (i) Against `World.step(noise=False)`, q_0 = Q̄, 200 steps: (u 0.5, h0 1.0); (u 0.25, h0 0.5), which rises into the H_max clip; (u 0.75, h0 1.5), draining. (ii) Against the §0.1 map with q = 0, u = 1, fast leak, h0 = 0.004 (the gate-1 underflow fixture), 5 steps | \|m_n − h_n\| ≤ 1e-11 | Per step: Σω = 1 ± 20ε, \|h\| ≤ 2, and ~10 rounded ops give ≤ ~1e-14. Over 200 steps ≤ ~2e-12. Tolerance ×5. (Option E: no quadrature, same bound) |
+| T2 | **Process variance = analytic process noise at equilibrium.** u = 0.5, h* = 1, ℓ = none. a = 1 − (dt/A)·Cv·u/(2√h*) = 0.975, so v* = σ_w²/(1 − a²) = 8.1013e-5. (i) From v0 = 0, 200 steps against v_n^ref = σ_w²(1 − a^{2n})/(1 − a²). (ii) From v0 = v*, 200 steps against v* | \|v_n/v_n^ref − 1\| ≤ 1e-4 and \|m_n − 1\| ≤ 1e-4 m | Option G keeps curvature, which shifts the mean by ≈ (dt/A)c·v/(8(1 − a)) ≈ 2.0e-5 m. That changes a by ≈ 2.5e-7, so δv/v ≈ 2aδa/(1 − a²) ≈ 1.0e-5. The direct curvature term is ≈ 6e-9 relative. Clipping is inactive: 1 m from the bounds is ≈ 110 sd. Tolerance ≈ 10× / 5× the bounds. (Option E matches the reference to rounding) |
+| T3 | **No artificial variance growth at zero noise.** σ_w = 0, Q = identity, λ = 0. (i) Full `predict` from point masses in all 33 components, 200 steps. (ii) Single component, v0 = 0.05², T1(i) fixtures | (i) max v_c ≤ 1e-26. (ii) v_{n+1} ≤ v_n for all n | (i) Zero node spread plus the stable collapse leaves rounding² ≈ 2e-29. (ii) f′(h) = 1 − c/(2√h) ∈ (0, 1) on the fixtures, so the exact map contracts |
+| T4 | **Update normalization and validity.** 1000 random beliefs (fixture seed), random fresh subsets of {L1, L2, L3, F, P}, random u ∈ U_LEVELS. Values are drawn from the predictive, plus extremes y ∈ {−100, 100} and F at u = 0 | \|Σπ − 1\| ≤ 1e-12. Every m and v finite, v ≥ 0. Level/P: v_post ≤ v_prior(1 + 1e-12). Total underflow leaves the belief unchanged and is logged | 33 terms, one division: ≤ ~1e-14. Kalman (1 − K) ∈ [0, 1] exactly; 1e-12 covers rounding |
+| T5 | **Action sensitivity.** Gate-13 fixture beliefs (h0 ∈ {0.5, 1.0, 1.5}) | mean(open) − mean(close) equals −(dt/A)·Cv·0.5·Σπ_c Ê[√h] within 1e-12 relative, where Ê is the chosen closure's expectation. It is ≠ 0. Predicted L3 and F categoricals differ | Single-step arithmetic, as in T1 |
+| T6 | **Closure adequacy** (Option G). E[√h] and Var[√h] by n = 20 against n = 200, for m ∈ [0.3, 1.9] and sd ∈ [1e-4, 0.05] | \|Δ\| ≤ 1e-10 | The integrand is analytic where weight > 1e-12. 1e-10 is ≈ 5 orders below σ_w². (Option E: replaced by checking that h_ε binds only for m < 0.01) |
+| T7 | **Collapse preserves moments.** Random 2- and 11-component mixtures | Mixture mean and variance unchanged within 1e-12 relative | An identity; rounding only |
+| T8 | **Censored-normal moments.** μ ∈ {−0.004, 0, 0.001, 1.0, 1.999, 2.0, 2.003}, s = σ_w. The implementation (frozen Φ) against a reference using `math.erf` | \|ΔE\| ≤ 1e-9 m, \|ΔV\| ≤ 1e-11 m². μ = 1.0 gives exactly (μ, s²) through the interior shortcut | Frozen Φ error ≤ 7.5e-8. In the near-bound fixtures \|bound − μ\| ≤ 0.004 m: E error ≲ 2·0.004·7.5e-8 ≈ 6e-10; M2 error ≲ (0.004)²·7.5e-8 + s·0.004·7.5e-8 ≈ 2e-12 |
 
 ## Amendment 4 — Procedure
 
-1. The user reviews this candidate and freezes it (any edits first).
-2. Implement and run T1–T7. If any test fails, stop and report.
-3. If all pass: commit the implementation **and** the T1–T7 receipt before
+1. The user reviews this candidate, resolves the open decisions, and freezes
+   it.
+2. Implement and run T1–T8. If any test fails, stop and report.
+3. If all pass: commit the implementation **and** the T1–T8 receipt before
    any validity gate runs.
 4. Run **all** validity gates (1–16, 18, 19) **once** on the v1.3 B0 root.
    Any failure means stop. No threshold is relaxed; this includes gate 5
@@ -238,18 +336,14 @@ frozen noise model, as follows.
 6. **Stop** after the B0 result. Do not freeze or implement B1.
 
 **Contingency.** If v1.3 fails a gate, nothing further is pre-authorized.
-The next step is the user's decision.
 
-## Open questions for review (to resolve before freeze)
+## Open decisions (resolve before freeze)
 
-* **Q1, clipping.** Recommended: clip the deterministic part at the GH
-  nodes (as written). This makes T1 match the world exactly, including the
-  overflow fixture. Alternative: ignore clipping entirely, a larger
-  deviation from §3 at the boundaries.
-* **Q2, node count.** n = 20 is proposed. T6 checks it against n = 200. It
-  is not tuned on any B0 outcome.
-* **Q3, flow update.** GH reweighting (as written) is proposed instead of
-  EKF linearization. It uses the same √h rule as prediction and has no
-  Jacobian approximation.
-* **Q4, step size.** Prediction stays per step (dt = 1), with no
-  substepping, to match the v1.1 Euler form exactly.
+* **D1, √h closure:** Option G (recommended) or Option E with
+  h_ε = 0.01 m.
+* **D2, P1–P7:** keep the v1.1 agent-side mismatches unchanged, as
+  proposed? P1 (q prior vs q_0 = Q̄) and P4 (repairs scheduled on false
+  alarms) are the two that could move gate 18 or the pilot. Fixing them
+  would be a change to the predictor's model, not its representation.
+* **D3, step size:** keep dt = 1 with no substepping, to match the §0.1
+  Euler form.
