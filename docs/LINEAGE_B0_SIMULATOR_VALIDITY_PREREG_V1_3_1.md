@@ -1,4 +1,4 @@
-# Lineage B0 — Preregistration v1.3.1: T6 amendment (CANDIDATE r3 — not frozen)
+# Lineage B0 — Preregistration v1.3.1: T6 amendment (CANDIDATE r4 — not frozen)
 
 Status: **candidate; pre-implementation amendment to v1.3.**
 * Applies to v1.3 (`docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md`),
@@ -11,7 +11,7 @@ Status: **candidate; pre-implementation amendment to v1.3.**
 * No v1.3 code exists, and T1–T8 have not been implemented or executed.
 * No quadrature or integration value was computed in preparing this
   amendment.
-* Candidates r1 (`dca71bc`) and r2 (`f393591`) are superseded by this r3.
+* Candidates r1 (`dca71bc`), r2 (`f393591`) and r3 (`4726ad8`) are superseded by this r4.
 
 ## Why T6 is superseded
 
@@ -109,7 +109,7 @@ The reference uses the exact φ and needs no Φ.
 
 So reference error cannot decide a borderline case.
 
-### Reference-engine sanity checks (R1–R4; must pass before the reference may judge GH20)
+### Reference-engine sanity checks (R1–R5; must pass before the reference may judge GH20)
 
 These check that the numpy-only reference engine is correct: the
 hard-coded QK15 constants, the bisection and the kink split.
@@ -130,6 +130,14 @@ hard-coded QK15 constants, the bisection and the kink split.
 | R2 | E[Z²] | 1 |
 | R3 | E[max(H, 0)] | m·Φ(m/σ) + σ·φ(m/σ) |
 | R4 | E[max(H, 0)²] | (m² + σ²)·Φ(m/σ) + m·σ·φ(m/σ) |
+| R5 | E[√max(H, 0)], H ~ N(0, σ²), **σ = 0.05 only** | √σ·Γ(3/4) / (2^{3/4}·√π), evaluated with `math.gamma`, `math.sqrt` and `math.pi` |
+
+R5 targets the predictor's actual singularity: √max(h, 0) has a kink and an
+infinite one-sided derivative at h = 0. With m = 0, the split falls exactly at
+z₀ = 0, so the engine must integrate the same √ endpoint singularity that
+T6 depends on. R5 uses the same engine target and pass tolerance as R1–R4;
+no new tolerance is chosen. Its fixture m = 0 is outside the T6 grid, which
+is intended, because R5 is an engine check only.
 
 R1 and R2 are integrated with the split point of each fixture's z₀, so the
 split path is exercised on smooth integrands too.
@@ -191,7 +199,7 @@ floating-point error:
 ### Pass
 
 All of the following hold:
-* R1–R4 pass on all four fixtures;
+* R1–R4 pass on all four fixtures, and R5 passes;
 * the reference meets τ_E / τ_V everywhere;
 * both criteria hold at every grid point (33 × 9 × 15 × 11 = 49,005,
   unfiltered). Any failure means stop and
