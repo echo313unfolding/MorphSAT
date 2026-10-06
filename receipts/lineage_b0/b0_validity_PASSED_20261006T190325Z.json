@@ -1,0 +1,361 @@
+{
+ "prereg": "docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3.md @ 701c4c2 + docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1_3_1.md @ ebdb0f1 (amend docs/LINEAGE_B0_SIMULATOR_VALIDITY_PREREG_V1.md @ 642d3fd)",
+ "seeds": {
+  "B0": 2026100515000,
+  "pilot": 2026100513000,
+  "B1": 2026100514000
+ },
+ "runtime": {
+  "python": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+  "numpy": "2.2.6",
+  "platform": "Windows-10-10.0.26200-SP0"
+ },
+ "config_sha256": "65db111e363e5cc287200a705849ebe25545041908c00b054074807ac103bfd0",
+ "source_sha256": {
+  "lineage_b\\__init__.py": "4923f0fa96883c262a520b6281491ccfa75dcdfa4edd55b1a8532a18378ca329",
+  "lineage_b\\agent\\__init__.py": "b222fd584762340b55a8324a8a307e256f9890714484f902122aa3ef9a15e2a9",
+  "lineage_b\\agent\\authority.py": "189be16c0af6f288de1185fe4c4c144296fe3067be48a1a96e02bec19bedd0d4",
+  "lineage_b\\agent\\core.py": "0586badbbf6f6ded73eaa1e625e032a28c03ed541f3a4c4525b4f3879dac11e8",
+  "lineage_b\\agent\\numerics.py": "d98839cd0b202bef7564695ad7f3cc86afd596a006d9caf0b38f2e13e3467e66",
+  "lineage_b\\agent\\predictor.py": "452b2e312f3a936e3ac755ea9aba290de7344593f70ea8e4671c246c6286b9f3",
+  "lineage_b\\agent\\sensor_model.py": "aa90f5831ab5812d1fd6d40187f77f7ff1eabbb8183a870a2fa5305a94a43f11",
+  "lineage_b\\channel.py": "19cd31c50e905c005c038aa9e6dfc7c6c3e3967e42916fb8cbb45be054bcea7e",
+  "lineage_b\\evaluate.py": "1b70a8cf952e0756e8be91a20c2422f0386150210a8ccd8a79c9c8f94b3ad5b7",
+  "lineage_b\\events.py": "abb11824213c745ea3907b31fe103cc7164208ac66e3e1091040e5c14f65515f",
+  "lineage_b\\gates.py": "5b766d423ead1664d142d3809c316cec2c11beb59ea9e4521a408ea900eeb328",
+  "lineage_b\\harness.py": "9663a96292306a1f5d73f058d54fbf41f9762f32d4eee4144bebc154a021c3e3",
+  "lineage_b\\logging_policy.py": "6e16a8f3b9d2c02d72173f9355aaa609853ab63831f3b2bd42403a622a0102ab",
+  "lineage_b\\obs.py": "ee84981f92b98ed9f57adfa512ec04ae1a632712a45227b4db5cc0c3e9b78bba",
+  "lineage_b\\params.py": "93f505de37812d0c787f7d20307b79c40fe186e382a45bad4e3d73b6633aea3c",
+  "lineage_b\\receipts.py": "40ed5fd1aaffb3740482990058bbf86b67d972f8fb6075beb988695115f7391c",
+  "lineage_b\\ref.py": "e1028217f109ad2dc74ebec6129320d47c237715fae903927497d7039cfd254e",
+  "lineage_b\\sensors.py": "f6507d9fc069d4343a095c391de8eec23e8ad6de113f68a75fda9cc1378397c6",
+  "lineage_b\\world.py": "7d2a1dcddf4570a2efa40c090471b552fb70c857eb85405fb0b692cfaf8d32e7"
+ },
+ "gates": {
+  "1": {
+   "pass": true,
+   "max_err": 2.220446049250313e-16,
+   "cases": [
+    {
+     "fixture": "closed_inflow",
+     "spill": 8.881784197001252e-16,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "drain",
+     "spill": 0.0,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "leak",
+     "spill": 0.0,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "overflow",
+     "spill": 0.2299999999999991,
+     "shortfall": 0.0
+    },
+    {
+     "fixture": "underflow",
+     "spill": 0.0,
+     "shortfall": 0.004221921916437787
+    }
+   ],
+   "seconds": 0.0
+  },
+  "2": {
+   "pass": true,
+   "runs": 18,
+   "seconds": 0.4
+  },
+  "2b": {
+   "pass": true,
+   "detail": {
+    "C0": {
+     "q_in_identical": true,
+     "sensor_errors_identical": true,
+     "channel_identical": true
+    },
+    "C5": {
+     "q_in_identical": true,
+     "sensor_errors_identical": true,
+     "channel_identical": true
+    }
+   },
+   "seconds": 0.0
+  },
+  "3": {
+   "pass": true,
+   "h_open": 0.5951710268760206,
+   "h_close": 1.4215569272528317,
+   "seconds": 0.0
+  },
+  "4": {
+   "pass": true,
+   "n": 22000,
+   "corr": 0.493262851649803,
+   "target": 0.5,
+   "se": 0.005056498968474316,
+   "c2_shift_exact": true,
+   "seconds": 0.7
+  },
+  "5": {
+   "pass": true,
+   "limit": 0.020225995873897264,
+   "corr": {
+    "L1-L3": 0.0028542467440296855,
+    "L1-F": 0.008512016502758266,
+    "L1-P": -0.001328004404109738,
+    "L2-L3": 0.0030219792994809536,
+    "L2-F": 0.006904808097471813,
+    "L2-P": -0.0048304512937336315,
+    "L3-F": -0.008224527133060329,
+    "L3-P": -0.00742552262898348,
+    "F-P": 0.0005410405062890479
+   },
+   "L4_copies_L1": true,
+   "seconds": 0.7
+  },
+  "6": {
+   "pass": true,
+   "statuses": [
+    "MISSING",
+    "PENDING",
+    "VALUE"
+   ],
+   "consistent": true,
+   "empty_stream_theta_versions": 1,
+   "empty_stream_paths": [
+    "terminal_abstain"
+   ],
+   "records": 966,
+   "feedback": 936,
+   "logged_skips": 30,
+   "seconds": 1.5
+  },
+  "7": {
+   "pass": true,
+   "import_violations": {},
+   "record_fields_ok": true,
+   "replay_identical": true,
+   "poison_identical": true,
+   "hidden_worlds_differ": true,
+   "seconds": 2.7
+  },
+  "8": {
+   "pass": true,
+   "rejections": [
+    true,
+    true,
+    true
+   ],
+   "chain_verifies": true,
+   "commit_before_transition": true,
+   "seconds": 0.9
+  },
+  "9": {
+   "pass": true,
+   "mutation_blocked": true,
+   "append_only": true,
+   "events": 200,
+   "seconds": 1.1
+  },
+  "10": {
+   "pass": true,
+   "classes": {
+    "open": {
+     "sum": 1.0,
+     "chi2": 5.728149999999996,
+     "p": 0.1256119480354777,
+     "recorded_ok": true
+    },
+    "hold": {
+     "sum": 1.0,
+     "chi2": 0.4049499999999929,
+     "p": 0.9392179348381492,
+     "recorded_ok": true
+    },
+    "close": {
+     "sum": 1.0,
+     "chi2": 2.381462499999995,
+     "p": 0.4970947346897936,
+     "recorded_ok": true
+    },
+    "inspect": {
+     "sum": 1.0,
+     "chi2": 0.3228625000000046,
+     "p": 0.955672777147093,
+     "recorded_ok": true
+    }
+   },
+   "non_randomized_ok": true,
+   "seconds": 1.2
+  },
+  "11": {
+   "pass": true,
+   "past_identical": true,
+   "future_differs": true,
+   "monitor_identical_under_random_theta": true,
+   "paths_exercised": [
+    "arbitration",
+    "interlock",
+    "terminal_abstain"
+   ],
+   "monitor_theta_blind_ast": true,
+   "seconds": 4.5
+  },
+  "12": {
+   "pass": true,
+   "file_unchanged_vs_eb3f6d3": true,
+   "events_consistent": true,
+   "proposal_ignored_on_terminal": true,
+   "forced_arbitration_raises": true,
+   "adapter_calls": 3,
+   "seconds": 1.0
+  },
+  "13": {
+   "pass": true,
+   "kl_nats": {
+    "h=0.5|L3": 0.232614702110523,
+    "h=0.5|F": 485.0027076624061,
+    "h=1.0|L3": 0.4601228710071157,
+    "h=1.0|F": 689.1656784287234,
+    "h=1.5|L3": 0.6871208737572309,
+    "h=1.5|F": 689.2099687086165
+   },
+   "seconds": 0.0
+  },
+  "14": {
+   "pass": true,
+   "redeliveries": 29,
+   "logged": 29,
+   "feedback_unique": true,
+   "seconds": 0.9
+  },
+  "15": {
+   "pass": true,
+   "conditions": {
+    "C1": true,
+    "C2": true,
+    "C3": true,
+    "C4": true,
+    "C5": true
+   },
+   "C5_mean_delay": 2.0077399380804954,
+   "C5_drop": {
+    "L1": 0.10459770114942529,
+    "L2": 0.10459770114942529,
+    "P": 0.3002298850574713
+   },
+   "seconds": 0.3
+  },
+  "16": {
+   "pass": true,
+   "metrics": {
+    "J": 141.125,
+    "unsafe_steps": 1.0,
+    "unsafe_transitions": 1.0,
+    "unsafe_transition_rate": 0.25,
+    "false_safe": 1.0,
+    "false_safe_rate": 0.25,
+    "inspect_rate": 0.25,
+    "steps": 4
+   },
+   "expected_J": 141.125,
+   "seconds": 0.0
+  },
+  "18": {
+   "pass": true,
+   "sensors": {
+    "L1": {
+     "n": 3980,
+     "cov90": 0.9309045226130653,
+     "cov50": 0.5482412060301508,
+     "mean_pit": 0.5009522851360335
+    },
+    "L2": {
+     "n": 3980,
+     "cov90": 0.9306532663316583,
+     "cov50": 0.5477386934673367,
+     "mean_pit": 0.5069401246778872
+    },
+    "L3": {
+     "n": 3980,
+     "cov90": 0.9314070351758794,
+     "cov50": 0.5489949748743719,
+     "mean_pit": 0.5057948626662606
+    },
+    "F": {
+     "n": 3980,
+     "cov90": 0.9246231155778895,
+     "cov50": 0.5341708542713568,
+     "mean_pit": 0.5069442845179651
+    },
+    "P": {
+     "n": 3980,
+     "cov90": 0.9188442211055277,
+     "cov50": 0.5298994974874371,
+     "mean_pit": 0.5001447994987429
+    }
+   },
+   "deployments": 20,
+   "seconds": 18.9
+  },
+  "19": {
+   "pass": true,
+   "records": 1144,
+   "agent_cannot_write": true,
+   "seconds": 1.1
+  },
+  "17": {
+   "pass": true,
+   "per_condition": {
+    "C0": {
+     "mean_J_G0": 44.38211799157894,
+     "var_J_G0": 416.82945986992036,
+     "mean_J_REF_S": 47.83237457606041,
+     "gap": -3.4502565844814725
+    },
+    "C1": {
+     "mean_J_G0": 68.03839643755978,
+     "var_J_G0": 1418.792477538685,
+     "mean_J_REF_S": 45.83419417329031,
+     "gap": 22.204202264269476
+    },
+    "C2": {
+     "mean_J_G0": 72.51117155820451,
+     "var_J_G0": 1178.8269825510956,
+     "mean_J_REF_S": 49.79830970125274,
+     "gap": 22.71286185695177
+    },
+    "C3": {
+     "mean_J_G0": 86.57928229216226,
+     "var_J_G0": 755.3095948795248,
+     "mean_J_REF_S": 44.67668055012136,
+     "gap": 41.9026017420409
+    },
+    "C4": {
+     "mean_J_G0": 50.238705562655156,
+     "var_J_G0": 202.527655853548,
+     "mean_J_REF_S": 48.360298945365095,
+     "gap": 1.8784066172900609
+    },
+    "C5": {
+     "mean_J_G0": 48.66085157355152,
+     "var_J_G0": 515.3212092189415,
+     "mean_J_REF_S": 50.511302152437025,
+     "gap": -1.850450578885507
+    }
+   },
+   "pooled_gap_G0_minus_REF_S": 17.369524380333342,
+   "N_required": 1659,
+   "N_frozen_for_B1": 200,
+   "N_max": 200,
+   "pilot_deployments": 20,
+   "note": "sizes N only; no G1/G2/G3/G2-S code exists or ran"
+  }
+ },
+ "status": "PASSED"
+}
