@@ -110,6 +110,7 @@ def criteria(table, idx, sv_ok: bool) -> dict:
 
 
 def outcome_mapping(o) -> str:
+    """Precedence frozen in prereg v1.5.1 §9."""
     if not o["P0"]["pass"]:
         return "Uninformative; report and stop (P0 failed)"
     if not o["F1"]["pass"]:
@@ -117,15 +118,15 @@ def outcome_mapping(o) -> str:
             return ("The preregistered pilot-derived minimum effect of 1.737 J was not supported "
                     "(G2 vs same-time consensus, in this simulator)")
         return "Inconclusive: the data neither show nor exclude an effect of Δ*"
-    if not o["F3"]["valid"]:
-        return "No ceiling claim; F1/F2 reported with the sham invalid"
     if not (o["F4"]["pass"] and o["F5"]["pass"] and o["F6"]["pass"]):
         return "No positive claim; improvement with safety or condition-level harm"
+    if not o["F3"]["valid"]:
+        return "No ceiling claim; F1/F2 reported with the sham invalid"
     if o["F2"]["pass"] and not o["F3"]["pass"]:
         return "Observation-based learning helped; action-conditioned grounding not isolated"
     if o["F2"]["pass"] and o["F3"]["pass"]:
         return "Claim at the §0 ceiling"
-    return "F1 holds but F2 fails: no ceiling claim (report)"
+    return "No ceiling claim; F1 holds but F2 fails (report)"
 
 
 # ---------------------------------------------------------------- blinded sizing (§7a)

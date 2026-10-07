@@ -18,7 +18,8 @@ from lineage_b import params as P  # noqa: E402
 from lineage_b.agent import predictor as pr  # noqa: E402
 from lineage_b.agent.arms import (DependencyModel, consensus_reference, level_equivalent,  # noqa: E402
                                   to_sensor_units)
-from lineage_b.b1_protocol import LockstepBarrier, derangement, refz_action, sham_validity_counts  # noqa: E402
+from lineage_b.b1_protocol import (LockstepBarrier, max_mismatch_sham, max_mismatches, refz_action,  # noqa: E402
+                                   sham_validity_counts)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -42,15 +43,35 @@ def test_seed_roots_and_tokens():
         b1_seeds.bootstrap_rng("confirmatory", "wrong")
 
 
-def test_derangement_properties():
-    defer = [((0, t), a) for t, a in enumerate(["hold", "open", "close", "inspect", "hold", "hold"])]
-    sham = derangement("X:0", defer)
-    sv = sham_validity_counts(defer, sham)
-    assert sv["sv1_marginals_equal"] and set(sham) == {k for k, _ in defer}
-    # a cyclic shift in hash order moves every position
-    order = sorted(defer, key=lambda it: __import__("hashlib").sha256(f"X:0|{it[0][1]}".encode()).hexdigest())
-    for k, (key, _a) in enumerate(order):
-        assert sham[key] == order[(k + 1) % len(order)][1]
+def _defer_from_counts(counts):
+    acts = [a for a, n in zip(P.ACTIONS, counts) for _ in range(n)]
+    order = np.random.default_rng(sum(c * 7 ** i for i, c in enumerate(counts))).permutation(len(acts))
+    return [((k // 200, k % 200), acts[o]) for k, o in enumerate(order)]
+
+
+def test_sham_exhaustive_counts_and_maximum_mismatch():
+    import itertools
+    checked = 0
+    for counts in itertools.product(range(6), repeat=4):
+        n = sum(counts)
+        if n < 2:
+            continue
+        defer = _defer_from_counts(counts)
+        sham = max_mismatch_sham("X:C2:0", defer)
+        sv = sham_validity_counts(defer, sham)
+        assert sv["sv1_marginals_equal"] and set(sham) == {k for k, _ in defer}
+        assert sv["n_differ"] == max_mismatches(defer) == min(n, 2 * (n - max(counts)))
+        assert sham == max_mismatch_sham("X:C2:0", defer)            # deterministic
+        checked += 1
+    assert checked == 6 ** 4 - 5
+
+
+def test_sham_sv3_feasibility_boundary():
+    # p_max <= 0.60 is exactly the condition under which >= 80% mismatch is attainable
+    for counts, ok in (((6, 4, 0, 0), True), ((7, 3, 0, 0), False), ((3, 3, 2, 2), True)):
+        defer = _defer_from_counts(counts)
+        sv = sham_validity_counts(defer, max_mismatch_sham("X:C0:1", defer))
+        assert (sv["n_differ"] / sv["n"] >= 0.80) == ok
 
 
 def test_lockstep_barrier_requires_all_arms():
@@ -146,3 +167,125 @@ def test_arms_module_never_touches_authority_or_world():
     tree = ast.parse((ROOT / "lineage_b" / "agent" / "arms.py").read_text())
     mods = {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)}
     assert not any(m and ("world" in m or "sensors" in m or "authority" in m or "harness" in m) for m in mods)
+
+
+# ---------------------------------------------------------------- v1.5.1 §2 order invariance
+from lineage_b.agent.arms import B1Agent  # noqa: E402
+from lineage_b.agent.sensor_model import SensorModel  # noqa: E402
+from lineage_b.obs import Record  # noqa: E402
+from lineage_b.params import DECLARED_UPSTREAM as DU  # noqa: E402
+from lineage_b.receipts import ReceiptStore  # noqa: E402
+
+
+def _batch(t):
+    vals = {"L1": 1.02, "L2": 0.99, "L3": 1.05, "F": 0.051, "P": 9.70}
+    out = [Record(s, 2 * t, t, t, v + 0.003 * t, DU[s]) for s, v in vals.items()]
+    out.append(Record("L4", t, t, t, vals["L1"] + 0.003 * t, DU["L4"]))
+    if t >= 2:
+        out.append(Record("L3", 2 * t + 1, t - 2, t, 1.07, DU["L3"]))     # late record, same sensor in batch
+    return out
+
+
+def _run(updater, model, permute):
+    ag = B1Agent(model, updater, arm="X")
+    ag.begin_episode(0, 0, ReceiptStore())
+    for t in range(6):
+        b = _batch(t)
+        if permute and t == 5:
+            b = list(reversed(b))
+        ag.observe(t, b)
+        ag.commit_prediction(t, "hold")
+    return ag
+
+
+@pytest.mark.parametrize("updater,factory", [("consensus", SensorModel), ("receipt", SensorModel),
+                                             ("receipt", DependencyModel)])
+def test_batch_permutation_invariance(updater, factory):
+    a, b = _run(updater, factory(), False), _run(updater, factory(), True)
+    assert a.model.theta_hash() == b.model.theta_hash()
+    if updater == "consensus":
+        assert a.g1_refs == b.g1_refs and any(r is not None for _, r in a.g1_refs)
+
+
+def test_g1_reference_uses_pre_batch_snapshot():
+    ag = _run("consensus", SensorModel(), False)
+    before = {s: tuple(ag.model.params(s, 0)) for s in ("L1", "L2", "L3", "F", "P", "L4")}
+    n0 = len(ag.g1_refs)
+    ag.observe(6, _batch(6))
+    snap_refs = ag.g1_refs[n0:]
+    # recompute every reference of that batch from the pre-batch parameters
+    from lineage_b.agent.arms import consensus_reference
+    seen = {**{r.key: r for r in ag.records.values()}}
+    for key, ref in snap_refs:
+        rec = seen[key]
+        others = {x.sensor_id: x.value for x in seen.values() if x.measured_at == rec.measured_at
+                  and x.sensor_id not in ("INSPECT", rec.sensor_id)}
+        assert ref == consensus_reference(rec.sensor_id, others, lambda s: before[s], ag.u_hist[rec.measured_at])
+
+
+# ---------------------------------------------------------------- v1.5.1 §9 precedence
+def _o(p0=True, f1=True, f2=True, f3=True, f3v=True, f4=True, f5=True, f6=True, below=False):
+    return {"P0": {"pass": p0}, "F1": {"pass": f1, "ci_upper_below_delta_star": below},
+            "F2": {"pass": f2}, "F3": {"pass": f3 if f3v else None, "valid": f3v},
+            "F4": {"pass": f4}, "F5": {"pass": f5}, "F6": {"pass": f6}}
+
+
+def test_outcome_mapping_precedence():
+    m = S.outcome_mapping
+    assert m(_o(p0=False, f4=False)).startswith("Uninformative")
+    assert m(_o(f1=False, below=True, f4=False)).startswith("The preregistered")
+    assert m(_o(f1=False, below=False)).startswith("Inconclusive")
+    assert m(_o(f3v=False, f4=False)).startswith("No positive claim")          # harm before sham-invalid
+    assert m(_o(f3=False, f6=False)).startswith("No positive claim")           # harm before F3-not-isolated
+    assert m(_o(f3v=False)).startswith("No ceiling claim; F1/F2 reported")
+    assert m(_o(f3=False)).startswith("Observation-based")
+    assert m(_o()).startswith("Claim at")
+    assert m(_o(f2=False)).startswith("No ceiling claim; F1 holds but F2 fails")
+
+
+# ---------------------------------------------------------------- v1.5.1 §7, §8 run control
+from lineage_b import b1_runctl as rc  # noqa: E402
+
+_FROZEN_OK = '''"""doc"""\nN = 812\nCONFIRMATORY_SEED_LIST_SHA256 = "abc"\nSIZING_RECEIPT = "receipts/x.json"\n'''
+
+
+def test_post_sizing_freeze_verifier():
+    files = {"lineage_b/a.py": "1", rc.FROZEN_FILE: "old"}
+    ok = rc.verify_post_sizing_freeze(files, {**files, rc.FROZEN_FILE: "new"}, _FROZEN_OK, 812, "abc", "receipts/x.json")
+    assert ok["pass"]
+    bad = rc.verify_post_sizing_freeze(files, {**files, "lineage_b/a.py": "2"}, _FROZEN_OK, 812, "abc", "receipts/x.json")
+    assert not bad["pass"]
+    assert not rc.verify_post_sizing_freeze(files, files, _FROZEN_OK, 813, "abc", "receipts/x.json")["pass"]
+    assert not rc.verify_post_sizing_freeze(files, files, _FROZEN_OK + "X = 1\n", 812, "abc", "receipts/x.json")["pass"]
+    assert not rc.verify_post_sizing_freeze(files, {**files, "lineage_b/new.py": "3"}, _FROZEN_OK, 812, "abc",
+                                            "receipts/x.json")["pass"]
+
+
+def test_one_shot_guard(tmp_path, monkeypatch):
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    rc.require_one_shot("b1_sizing")                          # nothing yet
+    (tmp_path / "b1_sizing_STARTED_20261007T000000Z.json").write_text("{}")
+    with pytest.raises(SystemExit):
+        rc.require_one_shot("b1_sizing")
+
+
+def test_protected_files_cover_runners_and_authority():
+    names = {str(p.relative_to(rc.ROOT)) for p in rc.protected_files()}
+    assert {"lineage_b/b1_frozen.py", "lineage_b/agent/predictor.py", "morphsat/terminal_authority.py",
+            "tools/run_lineage_b1_sizing.py", "tools/run_lineage_b1_confirmatory.py"} <= names
+
+
+# ---------------------------------------------------------------- v1.5.1 §5 provenance
+def test_behavior_records_keep_proposal_and_logged_action_apart():
+    from types import SimpleNamespace
+    from lineage_b.b1_events import BEHAVIOR_ARM, RecordingPolicy, behavior_records
+    pol = RecordingPolicy(np.random.default_rng(0))
+    evs = []
+    for t in range(200):
+        act, p, rnd = pol.choose("hold", True)
+        evs.append(SimpleNamespace(episode=0, t=t, authority_path="arbitration", final_action=act,
+                                   canonical_hash=f"{t:064x}"))
+    recs = behavior_records("X:C0:0", evs, pol.calls)
+    assert all(r.behavior_arm == BEHAVIOR_ARM and r.controller_proposal == "hold" for r in recs)
+    assert any(r.logged_action != r.controller_proposal for r in recs)
+    assert all(r.logged_action == e.final_action for r, e in zip(recs, evs))

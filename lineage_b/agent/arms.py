@@ -212,6 +212,8 @@ class B1Agent(Agent):
         super().begin_episode(episode, g0, store, u0)
         self.u_hist = {0: u0}
         self._batch: Dict[tuple, Record] = {}
+        self._snap: Dict[str, tuple] = {}
+        self.g1_refs: List[tuple] = []
         self.pending_group: Dict[int, Dict[str, float]] = {}
         self.pending_ref_var: Dict[int, float] = {}
 
@@ -219,11 +221,17 @@ class B1Agent(Agent):
         if isinstance(self.model, DependencyModel):
             for r in delivered:
                 self.model.note_relay(r.sensor_id, r.declared_upstream)
-        # same-time consensus sees the whole delivered batch, independent of
-        # within-batch processing order
-        self._batch = {r.key: r for r in delivered}
-        infos = super().observe(t, delivered)
-        self._batch = {}
+        # v1.5.1 §2: canonical processing order (measured_at, sensor_id, seq) for
+        # every learning arm (two EWMA updates of one sensor do not commute);
+        # G1 sees the whole delivered batch and reads (b, sigma) from a
+        # pre-batch snapshot, so references do not depend on batch order.
+        batch = sorted(delivered, key=lambda r: (r.measured_at, r.sensor_id, r.seq))
+        self._batch = {r.key: r for r in batch}
+        if self.b1_updater == "consensus":
+            ids = self.sensors_seen | set(BASE) | {r.sensor_id for r in batch if r.sensor_id != "INSPECT"}
+            self._snap = {s: tuple(self.model.params(s, self.g0 + t)) for s in sorted(ids)}
+        infos = super().observe(t, batch)
+        self._batch, self._snap = {}, {}
         if isinstance(self.model, DependencyModel) and self.b1_updater == "receipt":
             self._flush_groups(t)
         self.theta_trace.append((self.episode, t, self.model.theta_hash()))
@@ -255,8 +263,8 @@ class B1Agent(Agent):
                       if x.measured_at == r.measured_at and x.sensor_id != "INSPECT"
                       and x.sensor_id != r.sensor_id}
             u = self.u_hist.get(r.measured_at)
-            ref = None if u is None else consensus_reference(
-                r.sensor_id, others, lambda s: self.model.params(s, self.g0 + r.measured_at), u)
+            ref = None if u is None else consensus_reference(r.sensor_id, others, lambda s: self._snap[s], u)
+            self.g1_refs.append((r.key, ref))
             if ref is None:
                 self.log.append({"skip": "no_consensus_reference", "key": r.key})
                 return False

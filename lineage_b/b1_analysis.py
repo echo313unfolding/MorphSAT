@@ -77,7 +77,6 @@ def diagnostics(records, table, idx) -> dict:
                 skips.setdefault(a, {}).setdefault(k, 0)
                 skips[a][k] += v
     d["missing_pending_skips"] = skips
-    d["time_to_detection"] = "not computed: the prereg names it but defines no detection rule (see notes)"
     return d
 
 

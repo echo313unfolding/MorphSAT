@@ -8,8 +8,10 @@ Learning phase (common log), in two passes over one deterministic world:
           and commits its prediction receipt for t+1 BEFORE the shared
           transition (a lockstep barrier enforces it). Pass 2 must reproduce
           pass 1's trajectory and stream exactly (asserted).
-  Two passes are needed only because G2-S's frozen derangement assigns each
-  DEFER step the logged action of another step, possibly a later one.
+  Two passes are needed only because G2-S's sham (prereg v1.5.1 §1) assigns
+  each DEFER step the logged action of another step, possibly a later one.
+  The stochastic behavior log is generated once; pass 2 is a deterministic
+  replay of it, not a second stochastic sample.
 
 Evaluation phase: each arm's learned model is frozen (deep copy, no updater)
 and controls its own world from the same episode seeds (common random
@@ -38,7 +40,7 @@ from lineage_b.channel import Channel
 from lineage_b.evaluate import episode_metrics, unsafe
 from lineage_b.events import AppendOnlyStore, ControlDecisionEvent
 from lineage_b.harness import feedback_record, run_episode
-from lineage_b.logging_policy import LoggingPolicy
+from lineage_b.b1_events import BEHAVIOR_ARM, RecordingPolicy, behavior_records
 from lineage_b.receipts import ReceiptStore
 from lineage_b.ref import RefSensorModel
 from lineage_b.sensors import measure
@@ -96,17 +98,33 @@ class LockstepBarrier:
         return self._clock
 
 
-# ---------------------------------------------------------------- derangement (G2-S)
-def derangement(dep_id: str, defer: List[Tuple[Tuple[int, int], str]]) -> Dict[Tuple[int, int], str]:
-    """B1 §3: order DEFER steps by sha256(deployment|t) (t = deployment-global
-    step episode*EP_LEN + t); the step at rank k gets the logged action at
-    rank k+1, cyclically."""
-    def rank(item):
-        (ep, t), _a = item
+# ---------------------------------------------------------------- sham (G2-S, v1.5.1 §1)
+def max_mismatch_sham(dep_id: str, defer: List[Tuple[Tuple[int, int], str]]) -> Dict[Tuple[int, int], str]:
+    """v1.5.1 §1: deterministic maximum-mismatch multiset permutation over the
+    learning-phase DEFER steps. Groups in ACTIONS order; within a group,
+    positions ordered by sha256(deployment|g), g = episode*EP_LEN + t; labels
+    rotated left by the largest count. Preserves exact counts and attains
+    min(n, 2(n - n_max)) mismatches."""
+    n = len(defer)
+    if n <= 1:
+        return {}
+    def h(key):
+        ep, t = key
         return hashlib.sha256(f"{dep_id}|{ep * P.EP_LEN + t}".encode()).hexdigest()
-    ordered = sorted(defer, key=rank)
-    n = len(ordered)
-    return {ordered[k][0]: ordered[(k + 1) % n][1] for k in range(n)} if n > 1 else {}
+    positions, labels = [], []
+    for a in P.ACTIONS:
+        grp = sorted((k for k, x in defer if x == a), key=h)
+        positions += grp
+        labels += [a] * len(grp)
+    m = max(labels.count(a) for a in P.ACTIONS)
+    rotated = labels[m:] + labels[:m]
+    return dict(zip(positions, rotated))
+
+
+def max_mismatches(defer) -> int:
+    n = len(defer)
+    n_max = max((sum(1 for _, a in defer if a == x) for x in P.ACTIONS), default=0)
+    return min(n, 2 * (n - n_max)) if n > 1 else 0
 
 
 def sham_validity_counts(defer, sham) -> dict:
@@ -194,20 +212,21 @@ def _fresh_flags(delivered, t):
 def pass1(dep_id, condition, eps, mu_rng):
     """The shared log: G0 controller (theta0) + mu drive the world (E_L episodes)."""
     faults = FaultState(condition)
-    g0_agent = Agent(SensorModel(), arm="G0")
-    mu = LoggingPolicy(mu_rng)
+    g0_agent = Agent(SensorModel(), arm=BEHAVIOR_ARM)
+    mu = RecordingPolicy(mu_rng)
     st, ev, fb = ReceiptStore(), AppendOnlyStore(), AppendOnlyStore()
     log = {"dep_id": dep_id, "condition": condition, "episodes": []}
     for ep in range(P.E_L):
         traj, stream = run_episode(streams=make_streams(eps[ep]), faults=faults, episode=ep,
                                    g0=ep * P.EP_LEN, agent=g0_agent, store=st, events=ev, feedback=fb,
-                                   deployment=dep_id, mu=mu, arm="LOG")
+                                   deployment=dep_id, mu=mu, arm=BEHAVIOR_ARM)
         log["episodes"].append({"traj": traj, "stream": stream})
     log["events"] = {(e.episode, e.t): e for e in ev.items()}
+    log["behavior"] = behavior_records(dep_id, ev.items(), mu.calls)
     log["stuck_value"] = faults.stuck_value
     log["defer"] = [((ep, s["t"]), s["action"]) for ep, e in enumerate(log["episodes"])
                     for s in e["traj"] if s["path"] == "arbitration"]
-    log["sham"] = derangement(dep_id, log["defer"])
+    log["sham"] = max_mismatch_sham(dep_id, log["defer"])
     return log
 
 
@@ -282,6 +301,7 @@ def sham_validity(log, learner_store: ReceiptStore) -> dict:
     SV4 uses the sensors gate 13 tested (L3, F), on DEFER steps whose sham
     action differs from the logged action."""
     c = sham_validity_counts(log["defer"], log["sham"])
+    c["max_possible_differ"] = max_mismatches(log["defer"])
     kls = []
     for (ep, t), a in log["defer"]:
         if log["sham"].get((ep, t), a) == a:
@@ -431,26 +451,41 @@ def ope_data(log, learners, arms_models: Dict[str, object], condition):
     return out
 
 
-# ---------------------------------------------------------------- one deployment
-def run_deployment(dep_id, condition, eps, mu_rng, arms=ALL_ARMS, ope=False, keep_trajs=False):
-    """Full §1 protocol for one deployment. Returns per-arm records (no contrast)."""
+# ---------------------------------------------------------------- stages (v1.5.1 §6)
+def stage_a(dep_id, condition, eps, mu_rng, arms, ope: bool = False):
+    """Learning/logging only: no evaluation, no control outcome. Returns the
+    learned models, SV inputs and provenance digests (and, with ope=True, the
+    log needed for OPE)."""
     learners = {a: make_learner(a) for a in arms if a in LEARNERS}
     log = learning_phase(dep_id, condition, eps, mu_rng, learners, ope=ope)
-    rec = {"deployment": dep_id, "condition": condition, "arms": {}, "theta": {},
-           "theta_trace_end_of_episode": {}}
+    out = {"deployment": dep_id, "condition": condition, "stuck_value": log["stuck_value"],
+           "models": {a: ag.model for a, ag in learners.items()},
+           "theta_hash": {a: ag.model.theta_hash() for a, ag in learners.items()},
+           "theta": {a: theta_view(ag.model) for a, ag in learners.items()},
+           "theta_trace_end_of_episode": {a: [h for (ep, t, h) in ag.theta_trace if t == P.EP_LEN - 1]
+                                          for a, ag in learners.items()},
+           "learning_skips": {a: len(ag.log) for a, ag in learners.items()},
+           "behavior_digest": hashlib.sha256("".join(b.canonical_hash for b in log["behavior"]).encode()).hexdigest()}
     if "G2-S" in learners:
-        rec["sham_validity"] = sham_validity(log, log["stores"]["G2-S"])
-    for a, ag in learners.items():
-        rec["theta"][a] = theta_view(ag.model)
-        rec["theta_trace_end_of_episode"][a] = [h for (ep, t, h) in ag.theta_trace if t == P.EP_LEN - 1]
-        rec.setdefault("learning_skips", {})[a] = len(ag.log)
+        out["sham_validity"] = sham_validity(log, log["stores"]["G2-S"])
+    return out, (log if ope else None)
+
+
+def stage_b(a_out, eps, arms, ope_log=None, keep_trajs=False):
+    """Frozen-theta evaluation (only after pooled SV has been decided)."""
+    rec = {"deployment": a_out["deployment"], "condition": a_out["condition"], "arms": {},
+           "theta": a_out["theta"], "theta_trace_end_of_episode": a_out["theta_trace_end_of_episode"],
+           "learning_skips": a_out["learning_skips"]}
+    if "sham_validity" in a_out:
+        rec["sham_validity"] = a_out["sham_validity"]
+    models = a_out["models"]
     for a in arms:
-        r = evaluate_arm(a, dep_id, condition, eps, log["stuck_value"],
-                         model=learners[a].model if a in learners else None)
+        r = evaluate_arm(a, a_out["deployment"], a_out["condition"], eps, a_out["stuck_value"],
+                         model=models.get(a))
         if not keep_trajs:
             r.pop("trajs", None)
         rec["arms"][a] = r
-    if ope:
-        models = {a: (learners[a].model if a in learners else None) for a in arms if a != "REF-Z"}
-        rec["ope"] = ope_data(log, learners, models, condition)
+    if ope_log is not None:
+        rec["ope"] = ope_data(ope_log, None, {a: models.get(a) for a in arms if a != "REF-Z"},
+                              a_out["condition"])
     return rec

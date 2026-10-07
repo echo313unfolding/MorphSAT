@@ -1,5 +1,24 @@
 # Lineage B1 — Implementation Notes (§15 step b)
 
+> **Superseded where they differ by the binding pre-execution amendment v1.5.1
+> (`docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md`, `f4f5990`).** The
+> implementation-level choices below are now fixed by that amendment.
+> Corrections made in the corrective commit after `2206373`:
+> * the sham construction is now the maximum-mismatch permutation;
+> * G1 uses a pre-batch θ snapshot, and all learning arms use a canonical
+>   batch order;
+> * learning-phase provenance (`G0-logging` behavior events and
+>   BehaviorDecisionRecord);
+> * stage A/B sham barrier;
+> * one-shot STARTED receipts;
+> * post-sizing code freeze;
+> * outcome-mapping precedence;
+> * the time-to-detection diagnostic is removed.
+>
+> The "Foreseeable risk" section is resolved by amendment §1: SV3 stays at
+> 0.80, and failure is now only possible when the action marginal makes 80%
+> unattainable.
+
 Prereg: B1 v1.5, sizing-design frozen at `2473c2a`. This commit implements
 B1. **Nothing has been executed on the validation, sizing or confirmatory
 roots.** No §7b validation, no sizing, no N, no confirmatory freeze.
