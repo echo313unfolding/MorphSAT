@@ -81,6 +81,7 @@ def preflight():
 def main(workers: int, outdir: Path):
     if rc.ROOT.resolve() in outdir.resolve().parents or outdir.resolve() == rc.ROOT.resolve():
         raise SystemExit("refusing to run: --outdir must be outside the repository")
+    rc.require_empty_outdir(outdir)                                          # v1.5.2 §3
     fp, freeze, v0, sizing_sha = preflight()
     base = {"refs": rc.PREREG_REFS, "root": ROOTS["confirmatory"], "N": FZ.N,
             "seed_list_sha256": FZ.CONFIRMATORY_SEED_LIST_SHA256, "sizing_receipt": FZ.SIZING_RECEIPT,
@@ -94,11 +95,18 @@ def main(workers: int, outdir: Path):
             for k, (cond, dep, sv) in enumerate(pool.imap_unordered(_stage_a, tasks), 1):
                 svs.append({"sham_validity": sv})
                 print(f"stage A {k}/{len(tasks)}", flush=True)
+        load = lambda f: pickle.loads(f.read_bytes())
+        chk_a = rc.verify_record_set(outdir, ("A",), CONDITIONS, FZ.N, load)
+        if not chk_a["pass"]:
+            raise RuntimeError(f"stage-A record set invalid: {chk_a['problems']}")
         sv = sham_validity_aggregate(svs)
         rc.write_receipt("b1_confirmatory_STAGE_A", {**base, "status": "STAGE A complete", "sham_validity": sv})
         with Pool(workers) as pool:
             for k, _ in enumerate(pool.imap_unordered(_stage_b, tasks), 1):
                 print(f"stage B {k}/{len(tasks)}", flush=True)
+        chk_b = rc.verify_record_set(outdir, ("A", "B"), CONDITIONS, FZ.N, load)
+        if not chk_b["pass"]:
+            raise RuntimeError(f"stage-B record set invalid: {chk_b['problems']}")
         records = [pickle.loads(p.read_bytes()) for p in sorted(outdir.glob("B_*.pkl"))]
         table = build_table(records)
         n_by = {c: len(table[c]["G0"]["J"]) for c in CONDITIONS}

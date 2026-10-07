@@ -286,7 +286,9 @@ def pass2(log, eps, learners: Dict[str, B1Agent], ope: bool = False, world_eps=N
             if poison:
                 world.z = Z(h=math.nan, q_in=math.nan, u=world.z.u, leak=world.z.leak,
                             repair_at=None, t=world.z.t, g=world.z.g)
-    return {"stores": stores, "feedback": fbs, "snapshots": snapshots, "executed": executed}
+    final_flushes = {a: learners[a].finalize_learning() for a in order}     # v1.5.2 §2
+    return {"stores": stores, "feedback": fbs, "snapshots": snapshots, "executed": executed,
+            "final_flushes": final_flushes}
 
 
 def learning_phase(dep_id, condition, eps, mu_rng, learners: Dict[str, B1Agent], ope: bool = False):
@@ -458,6 +460,8 @@ def stage_a(dep_id, condition, eps, mu_rng, arms, ope: bool = False):
     log needed for OPE)."""
     learners = {a: make_learner(a) for a in arms if a in LEARNERS}
     log = learning_phase(dep_id, condition, eps, mu_rng, learners, ope=ope)
+    if any(getattr(ag, "pending_group", {}) for ag in learners.values()):
+        raise RuntimeError("pending G3 group state survived the end of learning")    # v1.5.2 §2
     out = {"deployment": dep_id, "condition": condition, "stuck_value": log["stuck_value"],
            "models": {a: ag.model for a, ag in learners.items()},
            "theta_hash": {a: ag.model.theta_hash() for a, ag in learners.items()},
@@ -465,6 +469,7 @@ def stage_a(dep_id, condition, eps, mu_rng, arms, ope: bool = False):
            "theta_trace_end_of_episode": {a: [h for (ep, t, h) in ag.theta_trace if t == P.EP_LEN - 1]
                                           for a, ag in learners.items()},
            "learning_skips": {a: len(ag.log) for a, ag in learners.items()},
+           "final_flushes": log["final_flushes"],
            "behavior_digest": hashlib.sha256("".join(b.canonical_hash for b in log["behavior"]).encode()).hexdigest()}
     if "G2-S" in learners:
         out["sham_validity"] = sham_validity(log, log["stores"]["G2-S"])

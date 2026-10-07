@@ -14,7 +14,7 @@ from lineage_b.b1_validation import CHECKS  # noqa: E402
 
 if __name__ == "__main__":
     rc.require_clean_tree()
-    out = {"prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md @ 2473c2a (§7b)",
+    out = {"prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md @ 2473c2a (§7b)", "refs": rc.PREREG_REFS,
            "root": ROOTS["validation"], "source": rc.source_fingerprint(), "checks": {}}
     status = "PASSED"
     for name, fn in CHECKS:

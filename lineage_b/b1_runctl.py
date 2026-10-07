@@ -14,8 +14,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RECEIPTS = ROOT / "receipts" / "lineage_b1"
 PREREG_REFS = {"sizing_design_freeze": "2473c2a", "pre_execution_amendment_v1_5_1": "f4f5990",
+               "pre_validation_amendment_v1_5_2": "1e8bd91",
                "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
-               "amendment": "docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md"}
+               "amendments": ["docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
+                              "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md"]}
 FROZEN_FILE = "lineage_b/b1_frozen.py"
 FROZEN_FIELDS = ("N", "CONFIRMATORY_SEED_LIST_SHA256", "SIZING_RECEIPT")
 
@@ -113,3 +115,33 @@ def verify_post_sizing_freeze(sizing_files: dict, current_files: dict, frozen_te
     except ValueError as e:
         problems.append({"b1_frozen": str(e)})
     return {"pass": not problems, "problems": problems}
+
+
+def require_empty_outdir(outdir: Path):
+    """v1.5.2 §3: the record directory must not exist or be completely empty."""
+    if outdir.exists() and (not outdir.is_dir() or any(outdir.iterdir())):
+        raise SystemExit(f"refusing to run: --outdir {outdir} exists and is not empty")
+
+
+def verify_record_set(outdir: Path, prefixes, conditions, n: int, load) -> dict:
+    """v1.5.2 §3: exactly the expected <prefix>_<cond>_<dep:05d>.pkl files, no
+    extras, embedded (condition, deployment) matching each file name."""
+    expected = {f"{p}_{c}_{d:05d}.pkl" for p in prefixes for c in conditions for d in range(n)}
+    present = {f.name for f in outdir.iterdir()}
+    problems = []
+    if present - expected:
+        problems.append({"unexpected": sorted(present - expected)[:20]})
+    if expected - present:
+        problems.append({"missing": sorted(expected - present)[:20]})
+    seen = set()
+    for name in sorted(present & expected):
+        p, c, d = name[:-4].split("_")
+        rec = load(outdir / name)
+        dep = rec["deployment"].rsplit(":", 2)
+        logical = (p, rec["condition"], int(dep[2]))
+        if rec["condition"] != c or dep[1] != c or int(dep[2]) != int(d):
+            problems.append({"mismatch": name})
+        if logical in seen:
+            problems.append({"duplicate": logical})
+        seen.add(logical)
+    return {"pass": not problems, "problems": problems, "files": len(present)}

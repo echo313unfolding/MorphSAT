@@ -23,6 +23,7 @@ from lineage_b import b1_seeds, params as P
 from lineage_b.agent import predictor as pr
 from lineage_b.agent.arms import B1Agent, DependencyModel
 from lineage_b.agent.authority import resolve
+from lineage_b.b1_events import verify_provenance
 from lineage_b.b1_protocol import LEARNERS, make_learner, pass1, pass2
 from lineage_b.events import AppendOnlyStore
 from lineage_b.gates import ALLOWED, _imports, _synthetic_stream
@@ -221,7 +222,7 @@ def g12(token) -> dict:
     d = subprocess.run(["git", "diff", "--stat", AUTHORITY_REF, "--", "morphsat/terminal_authority.py"],
                        cwd=ROOT, capture_output=True, text=True)
     unchanged = d.returncode == 0 and not d.stdout.strip()
-    res = {}
+    res, provenance = {}, {}
     for cond in ("C3", "C5"):
         log, learners, out, eps = _learn(token, cond)
         logged = [s["action"] for e in log["episodes"] for s in e["traj"]]
@@ -237,8 +238,11 @@ def g12(token) -> dict:
             # decision path: every final action from resolve_terminal_authority
             e1 = _eval_replay(a, learners[a].model, cond, eps, None, None)
             ev_ok = _events_consistent(a, learners[a].model, cond, eps, _synthetic_stream(e1["stream"]))
+            prov = verify_provenance(log["behavior"], log["events"], out["feedback"][a].items(), st.payload)
             entry = {"executed_equals_log": exec_ok, "receipt_action_is_logged_action": rec_ok,
-                     "events_consistent": ev_ok}
+                     "events_consistent": ev_ok, "behavior_provenance": prov["pass"],
+                     "no_pending_group_after_learning": not getattr(learners[a], "pending_group", {})}
+            provenance[f"{cond}|{a}"] = {k: prov[k] for k in ("n_problems", "problems", "steps", "feedback_checked")}
             if a == "G2-S":
                 entry["sham_actions_differ_somewhere"] = sham_steps > 0
             res[f"{cond}|{a}"] = entry
@@ -260,7 +264,7 @@ def g12(token) -> dict:
     return {"pass": ok, "terminal_authority_unchanged_vs_eb3f6d3": unchanged,
             "arms_module_has_no_authority_path": arms_no_authority,
             "proposal_ignored_on_terminal": ignored, "forced_arbitration_raises": forced_raises,
-            "per_arm": res}
+            "per_arm": res, "provenance": provenance}
 
 
 def _events_consistent(arm, model, cond, eps, replay):

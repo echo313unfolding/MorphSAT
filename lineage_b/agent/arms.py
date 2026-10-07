@@ -203,7 +203,25 @@ class B1Agent(Agent):
             raise RuntimeError("sham schedule only for G2-S")
         self.sham = dict(schedule)
 
+    def finalize_learning(self) -> int:
+        """v1.5.2 §2: one end-of-learning boundary flush before theta is frozen.
+        G3 closes every remaining (group, step) slot with the frozen group rule;
+        other arms are unchanged. A second call is rejected."""
+        if getattr(self, "_finalized", False):
+            raise RuntimeError("learning already finalized")
+        n = 0
+        for m in sorted(getattr(self, "pending_group", {})):
+            self.model.update_group(self.pending_group[m], self.pending_ref_var[m])
+            self.log.append({"group_update": m, "members": sorted(self.pending_group[m]),
+                             "at": "end_of_learning"})
+            n += 1
+        self.pending_group, self.pending_ref_var = {}, {}
+        self._finalized = True
+        return n
+
     def begin_episode(self, episode, g0, store, u0=0.5):
+        if getattr(self, "_finalized", False):
+            raise RuntimeError("learning finalized; no further learning episodes")
         # G3: slots still open at the previous episode's end close now, before
         # any decision of the new episode (future-only influence preserved)
         for m in sorted(getattr(self, "pending_group", {})):

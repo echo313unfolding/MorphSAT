@@ -277,15 +277,152 @@ def test_protected_files_cover_runners_and_authority():
 
 # ---------------------------------------------------------------- v1.5.1 §5 provenance
 def test_behavior_records_keep_proposal_and_logged_action_apart():
-    from types import SimpleNamespace
-    from lineage_b.b1_events import BEHAVIOR_ARM, RecordingPolicy, behavior_records
-    pol = RecordingPolicy(np.random.default_rng(0))
-    evs = []
-    for t in range(200):
-        act, p, rnd = pol.choose("hold", True)
-        evs.append(SimpleNamespace(episode=0, t=t, authority_path="arbitration", final_action=act,
-                                   canonical_hash=f"{t:064x}"))
-    recs = behavior_records("X:C0:0", evs, pol.calls)
+    from lineage_b.b1_events import BEHAVIOR_ARM, behavior_records
+    evs, calls = _behavior_log(n=200, interlock_at=())
+    recs = behavior_records("X:C0:0", evs, calls)
     assert all(r.behavior_arm == BEHAVIOR_ARM and r.controller_proposal == "hold" for r in recs)
     assert any(r.logged_action != r.controller_proposal for r in recs)
     assert all(r.logged_action == e.final_action for r, e in zip(recs, evs))
+
+
+# ---------------------------------------------------------------- v1.5.2 §1 provenance
+from types import SimpleNamespace  # noqa: E402
+
+from lineage_b.b1_events import (BEHAVIOR_ARM, ProvenanceError, RecordingPolicy,  # noqa: E402
+                                 behavior_records, verify_provenance)
+from lineage_b.events import ControlDecisionEvent  # noqa: E402
+
+
+def _behavior_log(n=60, interlock_at=(7, 8)):
+    pol = RecordingPolicy(np.random.default_rng(5))
+    evs = []
+    for k in range(n):
+        ep, t = divmod(k, 20)
+        if k in interlock_at:
+            act, p, rnd = pol.choose("hold", False)
+            evs.append(ControlDecisionEvent("X", ep, t, BEHAVIOR_ARM, {}, "COMMIT", "open", True, "interlock",
+                                            {}, None, "open", "none", "th", "rh", p, rnd, "v"))
+        else:
+            act, p, rnd = pol.choose("hold", True)
+            evs.append(ControlDecisionEvent("X", ep, t, BEHAVIOR_ARM, {}, "DEFER", None, False, "arbitration",
+                                            {}, act, act, "arbitration", "th", "rh", p, rnd, "v"))
+    return evs, pol.calls
+
+
+def test_behavior_records_accept_wellformed():
+    evs, calls = _behavior_log()
+    recs = behavior_records("X", evs, calls)
+    assert len(recs) == len(evs)
+    assert any(r.logged_action != r.controller_proposal for r in recs)
+
+
+@pytest.mark.parametrize("mutate", ["arm", "order", "propensity", "randomized", "final", "nonarb_rnd", "count"])
+def test_behavior_records_reject_malformed(mutate):
+    import dataclasses
+    evs, calls = _behavior_log()
+    calls = list(calls)
+    k = 10
+    if mutate == "arm":
+        evs[k] = dataclasses.replace(evs[k], arm="G2")
+    elif mutate == "order":
+        evs[k], evs[k + 1] = evs[k + 1], evs[k]
+        calls[k], calls[k + 1] = calls[k + 1], calls[k]
+    elif mutate == "propensity":
+        evs[k] = dataclasses.replace(evs[k], propensity=0.5)
+    elif mutate == "randomized":
+        evs[k] = dataclasses.replace(evs[k], randomized=not evs[k].randomized)
+    elif mutate == "final":
+        other = "close" if evs[k].final_action != "close" else "open"
+        evs[k] = dataclasses.replace(evs[k], final_action=other)
+    elif mutate == "nonarb_rnd":
+        calls[7] = (calls[7][0], calls[7][1], 0.8, True)
+    elif mutate == "count":
+        calls = calls[:-1]
+    with pytest.raises(ProvenanceError):
+        behavior_records("X", evs, calls)
+
+
+def test_verify_provenance_links_and_detects_breaks():
+    import dataclasses
+    evs, calls = _behavior_log()
+    recs = behavior_records("X", evs, calls)
+    by_key = {(e.episode, e.t): e for e in evs}
+    payloads = {(ep, t + 1): {"decision_key": [ep, t]} for (ep, t) in by_key}
+    fb = [SimpleNamespace(receipt_key=(ep, t + 1), decision_ref=e.canonical_hash, sensor_id="L1", seq=t)
+          for (ep, t), e in by_key.items()]
+    assert verify_provenance(recs, by_key, fb, payloads.__getitem__)["pass"]
+    bad_fb = fb[:5] + [SimpleNamespace(**{**vars(fb[5]), "decision_ref": "0" * 64})] + fb[6:]
+    assert not verify_provenance(recs, by_key, bad_fb, payloads.__getitem__)["pass"]
+    bad_recs = recs[:3] + [dataclasses.replace(recs[3], propensity=0.123)] + recs[4:]
+    assert not verify_provenance(bad_recs, by_key, fb, payloads.__getitem__)["pass"]
+    foreign = dict(by_key)
+    k0 = next(iter(foreign))
+    foreign[k0] = dataclasses.replace(foreign[k0], arm="G1")
+    assert not verify_provenance(recs, foreign, fb, payloads.__getitem__)["pass"]
+
+
+# ---------------------------------------------------------------- v1.5.2 §2 final G3 flush
+def _g3_with_open_slot():
+    ag = B1Agent(DependencyModel(), "receipt", arm="G3")
+    ag.begin_episode(0, 0, ReceiptStore())
+    for t in range(4):
+        b = [r for r in _batch(t) if not (t == 3 and r.sensor_id == "L2")]     # L2 absent at the last step
+        ag.observe(t, b)
+        ag.commit_prediction(t, "hold")
+    ag.observe(4, [r for r in _batch(4) if r.sensor_id == "L1" and r.measured_at == 4])   # L1 at 4, slot open
+    return ag
+
+
+def test_g3_final_flush_closes_open_slot_once():
+    ag = _g3_with_open_slot()
+    assert ag.pending_group
+    before = ag.model.theta_hash()
+    n = ag.finalize_learning()
+    assert n >= 1 and not ag.pending_group and ag.model.theta_hash() != before
+    assert any(e.get("at") == "end_of_learning" for e in ag.log)
+    after = ag.model.theta_hash()
+    with pytest.raises(RuntimeError):
+        ag.finalize_learning()
+    with pytest.raises(RuntimeError):
+        ag.begin_episode(1, 200, ReceiptStore())
+    assert ag.model.theta_hash() == after
+
+
+@pytest.mark.parametrize("updater", ["consensus", "receipt", "sham"])
+def test_finalize_is_noop_for_g1_g2_g2s(updater):
+    ag = _run(updater if updater != "sham" else "receipt", SensorModel(), False) if updater != "sham" else None
+    if ag is None:
+        ag = B1Agent(SensorModel(), "sham", arm="G2-S")
+        ag.begin_episode(0, 0, ReceiptStore())
+        for t in range(4):
+            ag.observe(t, _batch(t))
+            ag.commit_prediction(t, "hold")
+    h = ag.model.theta_hash()
+    assert ag.finalize_learning() == 0 and ag.model.theta_hash() == h
+
+
+# ---------------------------------------------------------------- v1.5.2 §3 record directory
+import pickle  # noqa: E402
+
+
+def test_require_empty_outdir(tmp_path):
+    rc.require_empty_outdir(tmp_path / "new")
+    rc.require_empty_outdir(tmp_path)
+    (tmp_path / "x.txt").write_text("stale")
+    with pytest.raises(SystemExit):
+        rc.require_empty_outdir(tmp_path)
+
+
+def test_verify_record_set(tmp_path):
+    load = lambda f: pickle.loads(f.read_bytes())
+    conds = ("C0", "C1")
+    for c in conds:
+        for d in range(2):
+            (tmp_path / f"A_{c}_{d:05d}.pkl").write_bytes(pickle.dumps({"condition": c, "deployment": f"confirmatory:{c}:{d}"}))
+    assert rc.verify_record_set(tmp_path, ("A",), conds, 2, load)["pass"]
+    (tmp_path / "B_C0_00000.pkl").write_bytes(pickle.dumps({"condition": "C0", "deployment": "confirmatory:C0:0"}))
+    assert not rc.verify_record_set(tmp_path, ("A",), conds, 2, load)["pass"]             # unexpected extra
+    assert not rc.verify_record_set(tmp_path, ("A", "B"), conds, 2, load)["pass"]         # missing B files
+    (tmp_path / "B_C0_00000.pkl").unlink()
+    (tmp_path / "A_C1_00001.pkl").write_bytes(pickle.dumps({"condition": "C0", "deployment": "confirmatory:C0:1"}))
+    assert not rc.verify_record_set(tmp_path, ("A",), conds, 2, load)["pass"]             # embedded mismatch
