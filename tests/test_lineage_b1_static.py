@@ -339,6 +339,60 @@ def test_v15_sizing_receipts_byte_identical():
         "b084de4ab6a6bc4414e0dad29e2984212dabee1cda323cdea219309f7a7b7ba7"
 
 
+# ---------------------------------------------------------------- v1.6.2 root provenance hardening
+def test_one_shot_fails_closed_on_missing_root(tmp_path, monkeypatch):
+    """Valid JSON with no root field -> fail closed."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"status": "STARTED"}))
+    with pytest.raises(SystemExit, match="missing/invalid root"):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
+def test_one_shot_fails_closed_on_null_root(tmp_path, monkeypatch):
+    """root: null -> fail closed."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": None, "status": "STARTED"}))
+    with pytest.raises(SystemExit, match="missing/invalid root"):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
+def test_one_shot_fails_closed_on_string_root(tmp_path, monkeypatch):
+    """root as string -> fail closed (wrong type)."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": "2026100519000", "status": "STARTED"}))
+    with pytest.raises(SystemExit, match="missing/invalid root"):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
+def test_one_shot_fails_closed_on_boolean_root(tmp_path, monkeypatch):
+    """root: true -> fail closed (bool is not int for this check)."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": True, "status": "STARTED"}))
+    with pytest.raises(SystemExit, match="missing/invalid root"):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
+def test_one_shot_accepts_valid_historical_root(tmp_path, monkeypatch):
+    """Integer historical root 2026100516000 accepted and ignored for current root."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STOPPED_20261009T181653Z.json").write_text(
+        json.dumps({"root": 2026100516000, "status": "STOPPED"}))
+    rc.require_one_shot("b1_sizing", 2026100519000)  # does not block
+
+
+def test_one_shot_blocks_on_current_root_integer(tmp_path, monkeypatch):
+    """Integer current root 2026100519000 blocks as one-shot consumed."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": 2026100519000, "status": "STARTED"}))
+    with pytest.raises(SystemExit):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
 def test_protected_files_cover_runners_and_authority():
     names = {str(p.relative_to(rc.ROOT)) for p in rc.protected_files()}
     assert {"lineage_b/b1_frozen.py", "lineage_b/agent/predictor.py", "morphsat/terminal_authority.py",

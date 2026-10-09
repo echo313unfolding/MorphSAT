@@ -18,12 +18,14 @@ PREREG_REFS = {"sizing_design_freeze": "2473c2a", "pre_execution_amendment_v1_5_
                "validation_failure_amendment_v1_5_3": "39313b6",
                "exploration_policy_amendment_v1_6": "58653eb",
                "run_control_amendment_v1_6_1": "4ca95b6",
+               "run_control_hardening_v1_6_2": "b06cb48",
                "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
                "amendments": ["docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_6_AMENDMENT.md",
-                              "docs/LINEAGE_B1_PREREG_V1_6_1_AMENDMENT.md"]}
+                              "docs/LINEAGE_B1_PREREG_V1_6_1_AMENDMENT.md",
+                              "docs/LINEAGE_B1_PREREG_V1_6_2_AMENDMENT.md"]}
 FROZEN_FILE = "lineage_b/b1_frozen.py"
 FROZEN_FIELDS = ("N", "CONFIRMATORY_SEED_LIST_SHA256", "SIZING_RECEIPT")
 
@@ -76,9 +78,10 @@ def existing_receipts(prefix: str):
 
 
 def require_one_shot(prefix: str, root: int):
-    """v1.6.1: one-shot identity is (receipt family, seed root). Historical
+    """v1.6.1/v1.6.2: one-shot identity is (receipt family, seed root). Historical
     receipts from a permanently disjoint root remain visible evidence but do
-    not consume a newly preregistered root. Fail closed on unreadable receipts."""
+    not consume a newly preregistered root. Fail closed on unreadable receipts
+    or missing/invalid root provenance (v1.6.2)."""
     found = []
     for p in existing_receipts(prefix):
         try:
@@ -87,7 +90,13 @@ def require_one_shot(prefix: str, root: int):
             raise SystemExit(
                 f"refusing to run: cannot verify historical {prefix} receipt {p.name}: {e}"
             )
-        if payload.get("root") == root:
+        receipt_root = payload.get("root")
+        if type(receipt_root) is not int:
+            raise SystemExit(
+                f"refusing to run: historical {prefix} receipt {p.name} "
+                f"has missing/invalid root provenance"
+            )
+        if receipt_root == root:
             found.append(p)
     if found:
         raise SystemExit(f"refusing to run: {prefix} receipt(s) already exist "
