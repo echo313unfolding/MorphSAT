@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """B1 §7b pre-sizing implementation validation on the dedicated root
-2026100517000 (prereg v1.5 @ 2473c2a). V0 + adapted gates 7, 11, 12 for
-G1/G2/G3/G2-S. Stops at the first failure and writes a receipt either way.
-Never touches the sizing or confirmatory roots."""
+2026100518000 (prereg v1.6 @ 58653eb; was 2026100517000 in v1.5.x). V0 +
+adapted gates 7, 11, 12 for G1/G2/G3/G2-S. Stops at the first failure and
+writes a receipt either way. Never touches the sizing or confirmatory roots."""
 import sys
 import time
 from pathlib import Path

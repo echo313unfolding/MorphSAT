@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""B1 §7a one-shot blinded sizing on root 2026100516000 (prereg v1.5 @ 2473c2a,
-amended pre-execution by v1.5.1 @ f4f5990).
+"""B1 §7a one-shot blinded sizing on root 2026100519000 (prereg v1.6 @ 58653eb,
+run-control v1.6.1).
 
-Order (v1.5.1 §6, §7):
-  0. refuse if any b1_sizing_* receipt exists, or if no PASSED §7b validation
-     receipt matches this exact source fingerprint;
+Order (v1.5.1 §6, §7; v1.6.1 root-scoped one-shot):
+  0. refuse if any b1_sizing_* receipt exists for the current root, or if no
+     PASSED §7b validation receipt matches this exact source fingerprint;
   1. chi-square constant-integrity check; V0 static re-assertion;
   2. write b1_sizing_STARTED (refs, per-file protected-source hashes, root, n_s);
   3. STAGE A — learning/logging only for C0–C5 x n_s (arms G0, G1, G2, G2-S,
@@ -60,7 +60,7 @@ def _validation_passed(fp) -> bool:
 
 def main(workers: int):
     rc.require_clean_tree()
-    rc.require_one_shot("b1_sizing")
+    rc.require_one_shot("b1_sizing", ROOTS["sizing"])
     fp = rc.source_fingerprint()
     if not _validation_passed(fp):
         raise SystemExit("refusing to run: no PASSED §7b validation receipt for this source fingerprint")

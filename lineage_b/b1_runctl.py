@@ -17,11 +17,13 @@ PREREG_REFS = {"sizing_design_freeze": "2473c2a", "pre_execution_amendment_v1_5_
                "pre_validation_amendment_v1_5_2": "1e8bd91",
                "validation_failure_amendment_v1_5_3": "39313b6",
                "exploration_policy_amendment_v1_6": "58653eb",
+               "run_control_amendment_v1_6_1": "4ca95b6",
                "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
                "amendments": ["docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md",
-                              "docs/LINEAGE_B1_PREREG_V1_6_AMENDMENT.md"]}
+                              "docs/LINEAGE_B1_PREREG_V1_6_AMENDMENT.md",
+                              "docs/LINEAGE_B1_PREREG_V1_6_1_AMENDMENT.md"]}
 FROZEN_FILE = "lineage_b/b1_frozen.py"
 FROZEN_FIELDS = ("N", "CONFIRMATORY_SEED_LIST_SHA256", "SIZING_RECEIPT")
 
@@ -73,11 +75,23 @@ def existing_receipts(prefix: str):
     return sorted(RECEIPTS.glob(f"{prefix}_*.json")) if RECEIPTS.exists() else []
 
 
-def require_one_shot(prefix: str):
-    """v1.5.1 §7: any existing receipt of this family blocks a fresh invocation."""
-    found = existing_receipts(prefix)
+def require_one_shot(prefix: str, root: int):
+    """v1.6.1: one-shot identity is (receipt family, seed root). Historical
+    receipts from a permanently disjoint root remain visible evidence but do
+    not consume a newly preregistered root. Fail closed on unreadable receipts."""
+    found = []
+    for p in existing_receipts(prefix):
+        try:
+            payload = json.loads(p.read_text())
+        except Exception as e:
+            raise SystemExit(
+                f"refusing to run: cannot verify historical {prefix} receipt {p.name}: {e}"
+            )
+        if payload.get("root") == root:
+            found.append(p)
     if found:
-        raise SystemExit(f"refusing to run: {prefix} receipt(s) already exist (one-shot): "
+        raise SystemExit(f"refusing to run: {prefix} receipt(s) already exist "
+                         f"for root {root} (one-shot): "
                          + ", ".join(p.name for p in found))
 
 

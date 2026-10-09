@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""B1 confirmatory run on root 2026100514000 (prereg v1.5 @ 2473c2a; amended
-pre-execution by v1.5.1 @ f4f5990).
+"""B1 confirmatory run on root 2026100514000 (prereg v1.6 @ 58653eb;
+run-control v1.6.1).
 
 Order (v1.5.1 §6–§8):
   0. refuse if any b1_confirmatory_* receipt exists; the confirmatory freeze
@@ -61,7 +61,7 @@ def preflight():
     if FZ.N is None or FZ.CONFIRMATORY_SEED_LIST_SHA256 is None or FZ.SIZING_RECEIPT is None:
         raise SystemExit("refusing to run: confirmatory freeze not performed (lineage_b/b1_frozen.py)")
     rc.require_clean_tree()
-    rc.require_one_shot("b1_confirmatory")
+    rc.require_one_shot("b1_confirmatory", ROOTS["confirmatory"])
     sizing_path = rc.ROOT / FZ.SIZING_RECEIPT
     sizing = json.loads(sizing_path.read_text())
     if not sizing.get("status", "").startswith("N determined"):

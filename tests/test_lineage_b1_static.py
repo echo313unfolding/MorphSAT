@@ -4,6 +4,7 @@ Pure-function checks on hand-made inputs only. World-level checks of the B1
 arms are the §7b validation run (tools/run_lineage_b1_validation.py)."""
 
 import ast
+import json
 import math
 import sys
 from pathlib import Path
@@ -261,12 +262,81 @@ def test_post_sizing_freeze_verifier():
                                             "receipts/x.json")["pass"]
 
 
-def test_one_shot_guard(tmp_path, monkeypatch):
+def test_one_shot_guard_root_scoped(tmp_path, monkeypatch):
+    """v1.6.1: one-shot identity is (prefix, root), not prefix alone."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
-    rc.require_one_shot("b1_sizing")                          # nothing yet
-    (tmp_path / "b1_sizing_STARTED_20261007T000000Z.json").write_text("{}")
+    current_root = 2026100519000
+    old_root = 2026100516000
+    # empty dir: passes
+    rc.require_one_shot("b1_sizing", current_root)
+    # historical receipt from a different root: passes (does not consume current root)
+    (tmp_path / "b1_sizing_STARTED_20261009T163712Z.json").write_text(
+        json.dumps({"root": old_root, "status": "STARTED"}))
+    (tmp_path / "b1_sizing_STOPPED_20261009T181653Z.json").write_text(
+        json.dumps({"root": old_root, "status": "STOPPED"}))
+    rc.require_one_shot("b1_sizing", current_root)            # old root does NOT block
+    # receipt on current root: blocks
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": current_root, "status": "STARTED"}))
     with pytest.raises(SystemExit):
-        rc.require_one_shot("b1_sizing")
+        rc.require_one_shot("b1_sizing", current_root)
+
+
+@pytest.mark.parametrize("suffix", ["STARTED", "STOPPED", "CRASHED", "COMPLETED"])
+def test_one_shot_blocks_any_status_on_current_root(tmp_path, monkeypatch, suffix):
+    """Any receipt status on the current root blocks."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    root = 2026100519000
+    (tmp_path / f"b1_sizing_{suffix}_20261010T000000Z.json").write_text(
+        json.dumps({"root": root, "status": suffix}))
+    with pytest.raises(SystemExit):
+        rc.require_one_shot("b1_sizing", root)
+
+
+def test_one_shot_fails_closed_on_malformed_receipt(tmp_path, monkeypatch):
+    """Unreadable/malformed receipt causes fail-closed SystemExit."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text("NOT VALID JSON {{{")
+    with pytest.raises(SystemExit, match="cannot verify"):
+        rc.require_one_shot("b1_sizing", 2026100519000)
+
+
+def test_one_shot_preserves_other_root_receipts(tmp_path, monkeypatch):
+    """Receipt with same prefix but different root remains preserved and ignored."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    other_root = 2026100516000
+    current_root = 2026100519000
+    receipt_path = tmp_path / "b1_sizing_COMPLETED_20261009T200000Z.json"
+    content = json.dumps({"root": other_root, "status": "COMPLETED"})
+    receipt_path.write_text(content)
+    rc.require_one_shot("b1_sizing", current_root)            # does not block
+    assert receipt_path.read_text() == content                 # file unchanged
+
+
+def test_confirmatory_one_shot_scoped_to_its_root(tmp_path, monkeypatch):
+    """Confirmatory one-shot is scoped to root 2026100514000."""
+    monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
+    confirm_root = 2026100514000
+    # receipt from sizing root does not block confirmatory
+    (tmp_path / "b1_confirmatory_STARTED_20261010T000000Z.json").write_text(
+        json.dumps({"root": 9999999}))
+    rc.require_one_shot("b1_confirmatory", confirm_root)
+    # receipt on confirmatory root blocks
+    (tmp_path / "b1_confirmatory_STARTED_20261010T010000Z.json").write_text(
+        json.dumps({"root": confirm_root}))
+    with pytest.raises(SystemExit):
+        rc.require_one_shot("b1_confirmatory", confirm_root)
+
+
+def test_v15_sizing_receipts_byte_identical():
+    """Existing v1.5.x sizing receipts remain byte-identical."""
+    import hashlib
+    started = rc.ROOT / "receipts" / "lineage_b1" / "b1_sizing_STARTED_20261009T163712Z.json"
+    stopped = rc.ROOT / "receipts" / "lineage_b1" / "b1_sizing_STOPPED_20261009T181653Z.json"
+    assert hashlib.sha256(started.read_bytes()).hexdigest() == \
+        "8a9f209cc6d41aa8f10eca3032e4cb6424ba8c8646d5440b1a6a22a7badbff5b"
+    assert hashlib.sha256(stopped.read_bytes()).hexdigest() == \
+        "b084de4ab6a6bc4414e0dad29e2984212dabee1cda323cdea219309f7a7b7ba7"
 
 
 def test_protected_files_cover_runners_and_authority():
