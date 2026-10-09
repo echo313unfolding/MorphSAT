@@ -35,7 +35,7 @@ def test_no_chi_square_engine():
 
 
 def test_seed_roots_and_tokens():
-    assert b1_seeds.ROOTS == {"validation": 2026100517000, "sizing": 2026100516000,
+    assert b1_seeds.ROOTS == {"validation": 2026100518000, "sizing": 2026100519000,
                               "confirmatory": 2026100514000}
     with pytest.raises(b1_seeds.SeedFamilyError):
         b1_seeds.deployment_seeds("sizing", "wrong", "C0", 0)
@@ -557,3 +557,113 @@ def test_fresh_seedsequence_resets_children():
     assert fresh.entropy == ss.entropy
     assert fresh.spawn_key == ss.spawn_key
     assert fresh.pool_size == ss.pool_size
+
+
+# ---------------------------------------------------------------- v1.6 exploration policy
+from lineage_b.b1_protocol import B1_LOGGING_EPSILON  # noqa: E402
+from lineage_b.logging_policy import LoggingPolicy  # noqa: E402
+
+
+def test_b1_logging_epsilon_proposal_probability():
+    """At B1_LOGGING_EPSILON=0.5, proposal retention probability is exactly 0.5."""
+    rng = np.random.default_rng(42)
+    pol = LoggingPolicy(rng, epsilon=B1_LOGGING_EPSILON)
+    props = pol.propensities("open")
+    assert abs(props["open"] - 0.5) < 1e-15
+    assert abs(props["hold"] - 1 / 6) < 1e-15
+    assert abs(props["close"] - 1 / 6) < 1e-15
+    assert abs(props["inspect"] - 1 / 6) < 1e-15
+
+
+def test_b1_logging_epsilon_alternatives_each_one_sixth():
+    """Each non-proposal action has probability exactly 1/6."""
+    rng = np.random.default_rng(7)
+    pol = LoggingPolicy(rng, epsilon=B1_LOGGING_EPSILON)
+    for proposal in P.ACTIONS:
+        props = pol.propensities(proposal)
+        for a in P.ACTIONS:
+            if a == proposal:
+                assert abs(props[a] - 0.5) < 1e-15
+            else:
+                assert abs(props[a] - B1_LOGGING_EPSILON / 3) < 1e-15
+
+
+def test_b1_logging_propensities_sum_to_one():
+    """Propensities sum to 1 for every possible proposal."""
+    rng = np.random.default_rng(0)
+    pol = LoggingPolicy(rng, epsilon=B1_LOGGING_EPSILON)
+    for proposal in P.ACTIONS:
+        props = pol.propensities(proposal)
+        assert abs(sum(props.values()) - 1.0) < 1e-14
+
+
+def test_b1_provenance_accepts_v16_epsilon():
+    """behavior_records with epsilon=0.5 accepts well-formed v1.6 records."""
+    from lineage_b.b1_events import BEHAVIOR_ARM, behavior_records
+    pol = RecordingPolicy(np.random.default_rng(5), epsilon=B1_LOGGING_EPSILON)
+    evs = []
+    for k in range(40):
+        ep, t = divmod(k, 20)
+        act, p, rnd = pol.choose("hold", True)
+        evs.append(ControlDecisionEvent("X", ep, t, BEHAVIOR_ARM, {}, "DEFER", None, False, "arbitration",
+                                        {}, act, act, "arbitration", "th", "rh", p, rnd, "v"))
+    recs = behavior_records("X", evs, pol.calls, epsilon=B1_LOGGING_EPSILON)
+    assert len(recs) == 40
+    assert any(r.logged_action != r.controller_proposal for r in recs)
+
+
+def test_b1_provenance_rejects_old_epsilon_at_v16():
+    """behavior_records at epsilon=0.5 rejects records made with epsilon=0.2."""
+    from lineage_b.b1_events import BEHAVIOR_ARM, ProvenanceError, behavior_records
+    pol = RecordingPolicy(np.random.default_rng(5), epsilon=0.2)
+    evs = []
+    for k in range(20):
+        ep, t = k, 0
+        act, p, rnd = pol.choose("hold", True)
+        evs.append(ControlDecisionEvent("X", ep, t, BEHAVIOR_ARM, {}, "DEFER", None, False, "arbitration",
+                                        {}, act, act, "arbitration", "th", "rh", p, rnd, "v"))
+    # verify it works at old epsilon
+    behavior_records("X", evs, pol.calls, epsilon=0.2)
+    # but fails at B1 epsilon=0.5 (propensities don't match)
+    with pytest.raises(ProvenanceError):
+        behavior_records("X", evs, pol.calls, epsilon=B1_LOGGING_EPSILON)
+
+
+def test_b0_logging_policy_default_unchanged():
+    """B0 LoggingPolicy default epsilon remains 0.2."""
+    rng = np.random.default_rng(0)
+    pol = LoggingPolicy(rng)
+    assert pol.eps == P.EPSILON == 0.2
+    props = pol.propensities("open")
+    assert abs(props["open"] - 0.8) < 1e-15
+
+
+def test_sv3_feasibility_at_b1_epsilon():
+    """At B1_LOGGING_EPSILON=0.5, even worst-case q_max=1 gives p_max=0.5 < 0.60."""
+    eps = B1_LOGGING_EPSILON
+    # P_logged(a) = eps/3 + q_a*(1 - 4*eps/3)
+    q_max = 1.0
+    p_max = eps / 3 + q_max * (1 - 4 * eps / 3)
+    assert p_max <= 0.60
+    assert abs(p_max - 0.5) < 1e-15
+    # max_mismatch_fraction = min(1, 2*(1 - p_max))
+    mismatch = min(1, 2 * (1 - p_max))
+    assert mismatch >= 0.80
+    assert abs(mismatch - 1.0) < 1e-15
+
+
+def test_sv3_infeasibility_at_old_epsilon():
+    """At epsilon=0.2, worst-case q_max=1 gives p_max=0.8 > 0.60 (SV3 impossible)."""
+    eps = 0.2
+    q_max = 1.0
+    p_max = eps / 3 + q_max * (1 - 4 * eps / 3)
+    assert p_max > 0.60
+    assert abs(p_max - 0.8) < 1e-14
+    mismatch = min(1, 2 * (1 - p_max))
+    assert mismatch < 0.80
+
+
+def test_retired_roots_in_earlier_set():
+    """Consumed v1.5.x roots are in the _EARLIER disjointness set."""
+    assert 2026100516000 in b1_seeds._EARLIER
+    assert 2026100517000 in b1_seeds._EARLIER

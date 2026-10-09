@@ -24,7 +24,7 @@ from lineage_b.agent import predictor as pr
 from lineage_b.agent.arms import B1Agent, DependencyModel
 from lineage_b.agent.authority import resolve
 from lineage_b.b1_events import verify_provenance
-from lineage_b.b1_protocol import LEARNERS, make_learner, pass1, pass2
+from lineage_b.b1_protocol import B1_LOGGING_EPSILON, LEARNERS, make_learner, pass1, pass2
 from lineage_b.events import AppendOnlyStore
 from lineage_b.gates import ALLOWED, _imports, _synthetic_stream
 from lineage_b.harness import run_episode
@@ -239,7 +239,8 @@ def g12(token) -> dict:
             # decision path: every final action from resolve_terminal_authority
             e1 = _eval_replay(a, learners[a].model, cond, eps, None, None)
             ev_ok = _events_consistent(a, learners[a].model, cond, eps, _synthetic_stream(e1["stream"]))
-            prov = verify_provenance(log["behavior"], log["events"], out["feedback"][a].items(), st.payload)
+            prov = verify_provenance(log["behavior"], log["events"], out["feedback"][a].items(), st.payload,
+                                        epsilon=B1_LOGGING_EPSILON)
             entry = {"executed_equals_log": exec_ok, "receipt_action_is_logged_action": rec_ok,
                      "events_consistent": ev_ok, "behavior_provenance": prov["pass"],
                      "no_pending_group_after_learning": not getattr(learners[a], "pending_group", {})}

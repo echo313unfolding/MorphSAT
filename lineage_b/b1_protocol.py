@@ -47,6 +47,7 @@ from lineage_b.sensors import measure
 from lineage_b.b1_seeds import b1_make_streams
 from lineage_b.world import FaultState, World, Z
 
+B1_LOGGING_EPSILON = 0.5    # v1.6: B1-specific exploration rate (B0 params.EPSILON=0.2 untouched)
 LEARNERS = ("G1", "G2", "G3", "G2-S")
 ALL_ARMS = ("G0", "G1", "G2", "G3", "G2-S", "REF-S", "REF-Z")
 SIZING_ARMS = ("G0", "G1", "G2", "G2-S", "REF-S")
@@ -214,7 +215,7 @@ def pass1(dep_id, condition, eps, mu_rng):
     """The shared log: G0 controller (theta0) + mu drive the world (E_L episodes)."""
     faults = FaultState(condition)
     g0_agent = Agent(SensorModel(), arm=BEHAVIOR_ARM)
-    mu = RecordingPolicy(mu_rng)
+    mu = RecordingPolicy(mu_rng, epsilon=B1_LOGGING_EPSILON)
     st, ev, fb = ReceiptStore(), AppendOnlyStore(), AppendOnlyStore()
     log = {"dep_id": dep_id, "condition": condition, "episodes": []}
     for ep in range(P.E_L):
@@ -223,7 +224,7 @@ def pass1(dep_id, condition, eps, mu_rng):
                                    deployment=dep_id, mu=mu, arm=BEHAVIOR_ARM)
         log["episodes"].append({"traj": traj, "stream": stream})
     log["events"] = {(e.episode, e.t): e for e in ev.items()}
-    log["behavior"] = behavior_records(dep_id, ev.items(), mu.calls)
+    log["behavior"] = behavior_records(dep_id, ev.items(), mu.calls, epsilon=B1_LOGGING_EPSILON)
     log["stuck_value"] = faults.stuck_value
     log["defer"] = [((ep, s["t"]), s["action"]) for ep, e in enumerate(log["episodes"])
                     for s in e["traj"] if s["path"] == "arbitration"]

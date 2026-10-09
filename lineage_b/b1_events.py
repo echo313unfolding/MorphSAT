@@ -40,8 +40,8 @@ class RecordingPolicy(LoggingPolicy):
     """The frozen logging policy, unchanged in behaviour; it additionally records
     (controller proposal, chosen action, propensity, randomized) per call."""
 
-    def __init__(self, rng):
-        super().__init__(rng)
+    def __init__(self, rng, epsilon: float = EPSILON):
+        super().__init__(rng, epsilon=epsilon)
         self.calls: List[tuple] = []
 
     def choose(self, proposal: str, randomizable: bool):
@@ -85,7 +85,7 @@ def behavior_records(dep_id: str, events, calls, epsilon: float = EPSILON) -> Li
     return out
 
 
-def verify_provenance(behavior, events_by_key, feedback_items, payload_of) -> dict:
+def verify_provenance(behavior, events_by_key, feedback_items, payload_of, epsilon: float = EPSILON) -> dict:
     """v1.5.2 §1 independent check: events <-> BehaviorDecisionRecords <->
     learner FeedbackRecord.decision_ref."""
     problems = []
@@ -116,7 +116,7 @@ def verify_provenance(behavior, events_by_key, feedback_items, payload_of) -> di
             if b.logged_action != e.final_action:
                 problems.append(("logged_vs_final", k))
             away = b.controller_proposal != b.logged_action
-            if away != (abs(b.propensity - EPSILON / (len(ACTIONS) - 1)) < 1e-12):
+            if away != (abs(b.propensity - epsilon / (len(ACTIONS) - 1)) < 1e-12):
                 problems.append(("proposal_vs_logged", k))
         elif b.randomized or b.propensity != 1.0:
             problems.append(("nonarbitration_randomized", k))
