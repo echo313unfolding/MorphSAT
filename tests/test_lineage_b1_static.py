@@ -426,3 +426,134 @@ def test_verify_record_set(tmp_path):
     (tmp_path / "B_C0_00000.pkl").unlink()
     (tmp_path / "A_C1_00001.pkl").write_bytes(pickle.dumps({"condition": "C0", "deployment": "confirmatory:C0:1"}))
     assert not rc.verify_record_set(tmp_path, ("A",), conds, 2, load)["pass"]             # embedded mismatch
+
+
+# ---------------------------------------------------------------- v1.5.3 seed immutability (B. tests)
+from lineage_b.b1_seeds import b1_make_streams, fresh_seedsequence  # noqa: E402
+from lineage_b.world import STREAMS  # noqa: E402
+
+
+def _arbitrary_episode_seed(entropy=99999, spawn_idx=0):
+    """An arbitrary, non-reserved SeedSequence for testing."""
+    root = np.random.SeedSequence(entropy=entropy, spawn_key=(0, 0))
+    world_ss, _ = root.spawn(2)
+    return world_ss.spawn(10)[spawn_idx]
+
+
+def test_b1_make_streams_identical_on_same_spec():
+    """Two calls to b1_make_streams on the same episode seed produce
+    byte/value-identical streams."""
+    ss = _arbitrary_episode_seed()
+    s1 = b1_make_streams(ss)
+    s2 = b1_make_streams(ss)
+    assert set(s1) == set(s2) == set(STREAMS)
+    for name in STREAMS:
+        v1 = s1[name].random(100)
+        v2 = s2[name].random(100)
+        assert np.array_equal(v1, v2), f"stream {name!r} differs"
+
+
+def test_b1_make_streams_does_not_mutate_seed():
+    """Calling b1_make_streams does not change the original SeedSequence's
+    n_children_spawned."""
+    ss = _arbitrary_episode_seed()
+    before = ss.n_children_spawned
+    b1_make_streams(ss)
+    assert ss.n_children_spawned == before
+    b1_make_streams(ss)
+    assert ss.n_children_spawned == before
+
+
+def test_distinct_episode_seeds_produce_distinct_streams():
+    """Distinct episode seed specifications remain distinct."""
+    ss_a = _arbitrary_episode_seed(entropy=99999, spawn_idx=0)
+    ss_b = _arbitrary_episode_seed(entropy=99999, spawn_idx=1)
+    s_a = b1_make_streams(ss_a)
+    s_b = b1_make_streams(ss_b)
+    assert not np.array_equal(s_a["process"].random(100), s_b["process"].random(100))
+
+
+def test_pass1_pass2_materialization_identical():
+    """Simulating the pass-1 then pass-2 pattern: both must get identical
+    streams from the same episode seed spec."""
+    ss = _arbitrary_episode_seed()
+    # "pass 1" usage
+    streams_pass1 = b1_make_streams(ss)
+    vals_pass1 = {name: streams_pass1[name].random(50) for name in STREAMS}
+    # "pass 2" usage on same spec
+    streams_pass2 = b1_make_streams(ss)
+    vals_pass2 = {name: streams_pass2[name].random(50) for name in STREAMS}
+    for name in STREAMS:
+        assert np.array_equal(vals_pass1[name], vals_pass2[name]), f"pass2 diverges on {name!r}"
+
+
+def test_two_eval_arms_get_identical_streams():
+    """Two evaluation arms materializing the same evaluation episode seed
+    receive identical exogenous streams, independent of execution order."""
+    ss = _arbitrary_episode_seed(spawn_idx=7)
+    # arm A goes first, then arm B
+    streams_a = b1_make_streams(ss)
+    vals_a = {name: streams_a[name].random(50) for name in STREAMS}
+    streams_b = b1_make_streams(ss)
+    vals_b = {name: streams_b[name].random(50) for name in STREAMS}
+    for name in STREAMS:
+        assert np.array_equal(vals_a[name], vals_b[name])
+    # reverse order: B first, then A
+    streams_b2 = b1_make_streams(ss)
+    vals_b2 = {name: streams_b2[name].random(50) for name in STREAMS}
+    streams_a2 = b1_make_streams(ss)
+    vals_a2 = {name: streams_a2[name].random(50) for name in STREAMS}
+    for name in STREAMS:
+        assert np.array_equal(vals_a[name], vals_a2[name])
+        assert np.array_equal(vals_b[name], vals_b2[name])
+
+
+def test_validation_replay_identical():
+    """Validation replay materialization is identical for the same seed spec,
+    even after multiple prior materializations."""
+    ss = _arbitrary_episode_seed(spawn_idx=5)
+    # simulate prior uses (pass1, pass2, G0 eval, G1 eval...)
+    for _ in range(5):
+        b1_make_streams(ss)
+    replay = b1_make_streams(ss)
+    reference = b1_make_streams(_arbitrary_episode_seed(spawn_idx=5))
+    for name in STREAMS:
+        assert np.array_equal(replay[name].random(50), reference[name].random(50))
+
+
+def test_no_direct_make_streams_in_b1_code():
+    """Mechanical source check: no B1 file imports or calls make_streams
+    directly (outside b1_seeds.py where the helper wraps it)."""
+    import re
+    b1_files = sorted((ROOT / "lineage_b").glob("b1_*.py"))
+    b1_files += [ROOT / "lineage_b" / "agent" / "arms.py"]
+    b1_files += sorted((ROOT / "tools").glob("run_lineage_b1_*.py"))
+    violations = []
+    for f in b1_files:
+        if f.name == "b1_seeds.py":
+            continue
+        src = f.read_text()
+        # check for raw make_streams import (not b1_make_streams)
+        if re.search(r'\bimport\b.*\bmake_streams\b', src) and 'b1_make_streams' not in src.split('import')[0]:
+            # ensure any make_streams import is actually b1_make_streams
+            for line in src.splitlines():
+                if 'make_streams' in line and 'b1_make_streams' not in line and 'import' in line:
+                    violations.append((f.name, line.strip()))
+        # check for raw make_streams() call (not b1_make_streams)
+        for match in re.finditer(r'(?<!\w)make_streams\s*\(', src):
+            ctx = src[max(0, match.start() - 3):match.start()]
+            if not ctx.endswith('b1_'):
+                violations.append((f.name, src[match.start():match.start() + 40]))
+    assert not violations, f"direct make_streams usage in B1 code: {violations}"
+
+
+def test_fresh_seedsequence_resets_children():
+    """fresh_seedsequence intentionally resets n_children_spawned."""
+    ss = _arbitrary_episode_seed()
+    ss.spawn(5)  # advance state
+    assert ss.n_children_spawned == 5
+    fresh = fresh_seedsequence(ss)
+    assert fresh.n_children_spawned == 0
+    assert fresh.entropy == ss.entropy
+    assert fresh.spawn_key == ss.spawn_key
+    assert fresh.pool_size == ss.pool_size

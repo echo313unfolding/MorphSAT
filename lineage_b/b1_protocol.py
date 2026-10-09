@@ -44,7 +44,8 @@ from lineage_b.b1_events import BEHAVIOR_ARM, RecordingPolicy, behavior_records
 from lineage_b.receipts import ReceiptStore
 from lineage_b.ref import RefSensorModel
 from lineage_b.sensors import measure
-from lineage_b.world import FaultState, World, Z, make_streams
+from lineage_b.b1_seeds import b1_make_streams
+from lineage_b.world import FaultState, World, Z
 
 LEARNERS = ("G1", "G2", "G3", "G2-S")
 ALL_ARMS = ("G0", "G1", "G2", "G3", "G2-S", "REF-S", "REF-Z")
@@ -217,7 +218,7 @@ def pass1(dep_id, condition, eps, mu_rng):
     st, ev, fb = ReceiptStore(), AppendOnlyStore(), AppendOnlyStore()
     log = {"dep_id": dep_id, "condition": condition, "episodes": []}
     for ep in range(P.E_L):
-        traj, stream = run_episode(streams=make_streams(eps[ep]), faults=faults, episode=ep,
+        traj, stream = run_episode(streams=b1_make_streams(eps[ep]), faults=faults, episode=ep,
                                    g0=ep * P.EP_LEN, agent=g0_agent, store=st, events=ev, feedback=fb,
                                    deployment=dep_id, mu=mu, arm=BEHAVIOR_ARM)
         log["episodes"].append({"traj": traj, "stream": stream})
@@ -247,7 +248,7 @@ def pass2(log, eps, learners: Dict[str, B1Agent], ope: bool = False, world_eps=N
     faults2 = FaultState(condition, log["stuck_value"])
     snapshots = {}
     for ep in range(P.E_L):
-        streams = make_streams((world_eps or eps)[ep])
+        streams = b1_make_streams((world_eps or eps)[ep])
         barrier = LockstepBarrier(order)
         world = World(streams, faults2, ep, ep * P.EP_LEN, barrier)
         ch = Channel(streams, condition)
@@ -365,7 +366,7 @@ def evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
     trajs = []
     if arm == "REF-Z":
         for ep in range(P.E_L, P.E_L + P.E_E):
-            trajs.append(run_refz_episode(make_streams(eps[ep]), faults, ep, ep * P.EP_LEN, st, ev, dep_id))
+            trajs.append(run_refz_episode(b1_make_streams(eps[ep]), faults, ep, ep * P.EP_LEN, st, ev, dep_id))
         return {"control": _control_rows(trajs), "trajs": trajs}
     if arm == "G0":
         agent = Agent(SensorModel(), arm="G0")
@@ -375,7 +376,7 @@ def evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
         agent = B1Agent(copy.deepcopy(model), None, arm=arm)
     theta0 = agent.model.theta_hash()
     for ep in range(P.E_L, P.E_L + P.E_E):
-        tr, _ = run_episode(streams=make_streams(eps[ep]), faults=faults, episode=ep, g0=ep * P.EP_LEN,
+        tr, _ = run_episode(streams=b1_make_streams(eps[ep]), faults=faults, episode=ep, g0=ep * P.EP_LEN,
                             agent=agent, store=st, events=ev, feedback=fb, deployment=dep_id, arm=arm)
         trajs.append(tr)
     if agent.model.theta_hash() != theta0:

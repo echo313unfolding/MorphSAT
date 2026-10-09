@@ -15,9 +15,11 @@ ROOT = Path(__file__).resolve().parent.parent
 RECEIPTS = ROOT / "receipts" / "lineage_b1"
 PREREG_REFS = {"sizing_design_freeze": "2473c2a", "pre_execution_amendment_v1_5_1": "f4f5990",
                "pre_validation_amendment_v1_5_2": "1e8bd91",
+               "validation_failure_amendment_v1_5_3": "39313b6",
                "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
                "amendments": ["docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
-                              "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md"]}
+                              "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
+                              "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md"]}
 FROZEN_FILE = "lineage_b/b1_frozen.py"
 FROZEN_FIELDS = ("N", "CONFIRMATORY_SEED_LIST_SHA256", "SIZING_RECEIPT")
 

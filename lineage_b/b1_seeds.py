@@ -18,7 +18,7 @@ from typing import List, Tuple
 import numpy as np
 
 from lineage_b.params import E_E, E_L
-from lineage_b.world import CONDITIONS
+from lineage_b.world import CONDITIONS, make_streams
 
 ROOTS = {"validation": 2026100517000, "sizing": 2026100516000, "confirmatory": 2026100514000}
 TOKENS = {"validation": "B1-VALIDATION-7b", "sizing": "B1-SIZING-7a-ONE-SHOT",
@@ -54,6 +54,18 @@ def bootstrap_rng(purpose: str, token: str) -> np.random.Generator:
     """The frozen bootstrap seed: a dedicated spawn of the family's root."""
     _check(purpose, token)
     return np.random.default_rng(np.random.SeedSequence(entropy=ROOTS[purpose], spawn_key=BOOTSTRAP_SPAWN_KEY))
+
+
+def fresh_seedsequence(ss: np.random.SeedSequence) -> np.random.SeedSequence:
+    """Reconstruct a SeedSequence from its specification, deliberately resetting
+    n_children_spawned to zero (v1.5.3 rule: episode seeds are immutable specs)."""
+    return np.random.SeedSequence(entropy=ss.entropy, spawn_key=ss.spawn_key, pool_size=ss.pool_size)
+
+
+def b1_make_streams(ss: np.random.SeedSequence):
+    """Centralized B1 world/stream materialization.  Every B1 call site that
+    needs streams from an episode seed MUST go through this helper (v1.5.3)."""
+    return make_streams(fresh_seedsequence(ss))
 
 
 def seed_list(purpose: str, n: int, conditions=CONDITIONS) -> List[Tuple[str, int, int, Tuple[int, int]]]:

@@ -29,7 +29,8 @@ from lineage_b.events import AppendOnlyStore
 from lineage_b.gates import ALLOWED, _imports, _synthetic_stream
 from lineage_b.harness import run_episode
 from lineage_b.receipts import ReceiptStore
-from lineage_b.world import FaultState, make_streams
+from lineage_b.b1_seeds import b1_make_streams
+from lineage_b.world import FaultState
 
 ROOT = Path(__file__).resolve().parent.parent
 PREDICTOR_REF = "94f4f11"
@@ -136,7 +137,7 @@ def g7(token) -> dict:
 def _eval_replay(arm, model, cond, eps, replay, poison):
     st, ev = ReceiptStore(), AppendOnlyStore()
     ag = B1Agent(copy.deepcopy(model), None, arm=arm)
-    tr, stream = run_episode(streams=make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
+    tr, stream = run_episode(streams=b1_make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
                              g0=P.E_L * P.EP_LEN, agent=ag, store=st, events=ev, feedback=AppendOnlyStore(),
                              deployment=f"val:{cond}", arm=arm, replay=replay, poison=bool(poison))
     return {"digest": (ev.digest(), st.hash_of((P.E_L, P.EP_LEN)), ag.model.theta_hash()),
@@ -203,7 +204,7 @@ def g11(token) -> dict:
 
 def _eval_events(arm, model, cond, eps, replay):
     st, ev = ReceiptStore(), AppendOnlyStore()
-    run_episode(streams=make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
+    run_episode(streams=b1_make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
                 g0=P.E_L * P.EP_LEN, agent=B1Agent(copy.deepcopy(model), None, arm=arm), store=st, events=ev,
                 feedback=AppendOnlyStore(), deployment=f"val:{cond}", arm=arm, replay=replay)
     return [e.canonical_hash for e in ev.items()]
@@ -211,7 +212,7 @@ def _eval_events(arm, model, cond, eps, replay):
 
 def _mon(arm, model, cond, eps, replay):
     st, ev = ReceiptStore(), AppendOnlyStore()
-    run_episode(streams=make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
+    run_episode(streams=b1_make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
                 g0=P.E_L * P.EP_LEN, agent=B1Agent(model, None, arm=arm), store=st, events=ev,
                 feedback=AppendOnlyStore(), deployment=f"val:{cond}", arm=arm, replay=replay)
     return [(e.monitor_action, e.monitor_direction, e.authority_path) for e in ev.items()]
@@ -269,7 +270,7 @@ def g12(token) -> dict:
 
 def _events_consistent(arm, model, cond, eps, replay):
     st, ev = ReceiptStore(), AppendOnlyStore()
-    run_episode(streams=make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
+    run_episode(streams=b1_make_streams(eps[P.E_L]), faults=FaultState(cond, None), episode=P.E_L,
                 g0=P.E_L * P.EP_LEN, agent=B1Agent(copy.deepcopy(model), None, arm=arm), store=st, events=ev,
                 feedback=AppendOnlyStore(), deployment=f"val:{cond}", arm=arm, replay=replay)
     ok, paths = True, set()
