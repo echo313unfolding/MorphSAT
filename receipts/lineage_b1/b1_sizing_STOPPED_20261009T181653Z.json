@@ -1,0 +1,65 @@
+{
+ "refs": {
+  "sizing_design_freeze": "2473c2a",
+  "pre_execution_amendment_v1_5_1": "f4f5990",
+  "pre_validation_amendment_v1_5_2": "1e8bd91",
+  "validation_failure_amendment_v1_5_3": "39313b6",
+  "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
+  "amendments": [
+   "docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md"
+  ]
+ },
+ "root": 2026100516000,
+ "n_s": 50,
+ "source": {
+  "head": "13c347253f8bc531e4fb208eb8235b18e6fef12a",
+  "files": {
+   "lineage_b/__init__.py": "4923f0fa96883c262a520b6281491ccfa75dcdfa4edd55b1a8532a18378ca329",
+   "lineage_b/agent/__init__.py": "b222fd584762340b55a8324a8a307e256f9890714484f902122aa3ef9a15e2a9",
+   "lineage_b/agent/arms.py": "a12ce4d129e20c5dc4acfbacd995a696ee12b12be030dd31e6d5c2c4c5db1310",
+   "lineage_b/agent/authority.py": "189be16c0af6f288de1185fe4c4c144296fe3067be48a1a96e02bec19bedd0d4",
+   "lineage_b/agent/core.py": "0586badbbf6f6ded73eaa1e625e032a28c03ed541f3a4c4525b4f3879dac11e8",
+   "lineage_b/agent/numerics.py": "d98839cd0b202bef7564695ad7f3cc86afd596a006d9caf0b38f2e13e3467e66",
+   "lineage_b/agent/predictor.py": "452b2e312f3a936e3ac755ea9aba290de7344593f70ea8e4671c246c6286b9f3",
+   "lineage_b/agent/sensor_model.py": "aa90f5831ab5812d1fd6d40187f77f7ff1eabbb8183a870a2fa5305a94a43f11",
+   "lineage_b/b1_analysis.py": "9bb1d6eeca2d6176e7c869137f875b97df17ebf75e2154430020e33546b5214b",
+   "lineage_b/b1_events.py": "2ccad00b1d6aebe2e0746023ab0e3a4b5b164f5faa183a271d315cbdcbcb7ae4",
+   "lineage_b/b1_frozen.py": "6a10fd36e318c9b881fb290da51d18ffeaabce6360f4a82703a5f61ee8e12940",
+   "lineage_b/b1_protocol.py": "8b0b1be56f66739ee7752fc13aef689e84c86f4df56b12a716a8a4522b24779e",
+   "lineage_b/b1_runctl.py": "195cb1d3677680d9e9ea3de43ad6d1ec7e540da09460613eebacea95426ea84f",
+   "lineage_b/b1_seeds.py": "854997a82ffd8bb795984a865de1a4c9a8854e4ffd67c6f09bda561f942a9bd6",
+   "lineage_b/b1_stats.py": "48aa3797abf0668853f3a3f777629c2947e34b70937e1ec7b947b55a3947c04b",
+   "lineage_b/b1_validation.py": "d3b0c7d2819a0be96374a09404695c8f4f2504604d952069927e2f1ad993c0c5",
+   "lineage_b/channel.py": "19cd31c50e905c005c038aa9e6dfc7c6c3e3967e42916fb8cbb45be054bcea7e",
+   "lineage_b/evaluate.py": "1b70a8cf952e0756e8be91a20c2422f0386150210a8ccd8a79c9c8f94b3ad5b7",
+   "lineage_b/events.py": "abb11824213c745ea3907b31fe103cc7164208ac66e3e1091040e5c14f65515f",
+   "lineage_b/gates.py": "5b766d423ead1664d142d3809c316cec2c11beb59ea9e4521a408ea900eeb328",
+   "lineage_b/harness.py": "9663a96292306a1f5d73f058d54fbf41f9762f32d4eee4144bebc154a021c3e3",
+   "lineage_b/logging_policy.py": "6e16a8f3b9d2c02d72173f9355aaa609853ab63831f3b2bd42403a622a0102ab",
+   "lineage_b/obs.py": "ee84981f92b98ed9f57adfa512ec04ae1a632712a45227b4db5cc0c3e9b78bba",
+   "lineage_b/params.py": "93f505de37812d0c787f7d20307b79c40fe186e382a45bad4e3d73b6633aea3c",
+   "lineage_b/receipts.py": "40ed5fd1aaffb3740482990058bbf86b67d972f8fb6075beb988695115f7391c",
+   "lineage_b/ref.py": "e1028217f109ad2dc74ebec6129320d47c237715fae903927497d7039cfd254e",
+   "lineage_b/sensors.py": "f6507d9fc069d4343a095c391de8eec23e8ad6de113f68a75fda9cc1378397c6",
+   "lineage_b/world.py": "7d2a1dcddf4570a2efa40c090471b552fb70c857eb85405fb0b692cfaf8d32e7",
+   "tools/run_lineage_b1_confirmatory.py": "a289877815a93cc8e15a358dcb91d19e0cceda6e7e6709b25f708ceca6634258",
+   "tools/run_lineage_b1_sizing.py": "e65775824a5f38d89b77515ad61d07e239648e7165964fab8a2e5bf55ed788bd",
+   "tools/run_lineage_b1_validation.py": "7a5ce598fed1fe6f278ab9455caf84ba6dd7b84baebdf072510af1f3d19b4a79",
+   "morphsat/terminal_authority.py": "559bb2c5e60854dfb5d0e5f35237d38cfcdc8a88e30486e9599cf63126105d86"
+  },
+  "combined": "2d251b698c4bc96f7e629aa861f282e477d747d25032efc435df09a71deccfda"
+ },
+ "status": "STOPPED: sham-design failure (SV1\u2013SV4); no evaluation outcome generated; sizing set not reused",
+ "sham_validity": {
+  "SV1_all_deployments": true,
+  "SV2_all_deployments": true,
+  "SV3_fraction_differ": 0.5830833033297329,
+  "SV4_mean_kl_nats": 0.725421724362712,
+  "SV3_min_deployment_fraction": 0.436,
+  "SV3": false,
+  "SV4": true,
+  "pass": false
+ }
+}
