@@ -885,36 +885,53 @@ def test_no_scientific_constants_changed():
 
 
 # ---------------------------------------------------------------- v1.6.3 gate12b fail-closed
-from lineage_b.b1_validation import g12b  # noqa: E402
+from lineage_b import b1_validation as val  # noqa: E402
+
+
+def _fake_learn(token, condition):
+    """Seed-free fake _learn for gate12b testing."""
+    assert condition == "C3"
+    learners = {a: SimpleNamespace(model=object()) for a in val.LEARNERS}
+    log = {"stuck_value": None}
+    eps = object()
+    return log, learners, {}, eps
 
 
 def test_gate12b_passes_with_receipts_verify_true(monkeypatch):
-    """gate12b passes when all arms complete with receipts_verify=True."""
-    from lineage_b import b1_validation as val
-    from lineage_b.b1_protocol import SIZING_ARMS
+    """Real g12b passes when all arms complete with receipts_verify=True."""
+    called = []
 
-    def mock_g12b(token):
-        res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
-        ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
-        return {"pass": ok, "per_arm": res}
+    def fake_evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
+        called.append(arm)
+        return {"receipts_verify": True}
 
-    result = mock_g12b("fake")
-    assert result["pass"]
+    monkeypatch.setattr(val, "_learn", _fake_learn)
+    monkeypatch.setattr(val, "evaluate_arm", fake_evaluate_arm)
+    result = val.g12b("fake-token")
+    assert result["pass"] is True
+    assert all(v["receipts_verify"] is True for v in result["per_arm"].values())
+    assert set(called) == set(val.SIZING_ARMS)
 
 
 def test_gate12b_fails_with_receipts_verify_false(monkeypatch):
-    """gate12b fails when any arm has receipts_verify=False."""
-    from lineage_b.b1_protocol import SIZING_ARMS
-    res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
-    res["G0"] = {"completed": True, "receipts_verify": False}
-    ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
-    assert not ok
+    """Real g12b fails when one arm has receipts_verify=False."""
+    def fake_evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
+        return {"receipts_verify": False} if arm == "G0" else {"receipts_verify": True}
+
+    monkeypatch.setattr(val, "_learn", _fake_learn)
+    monkeypatch.setattr(val, "evaluate_arm", fake_evaluate_arm)
+    result = val.g12b("fake-token")
+    assert result["pass"] is False
+    assert result["per_arm"]["G0"]["receipts_verify"] is False
 
 
 def test_gate12b_fails_closed_on_missing_receipts_verify(monkeypatch):
-    """gate12b fails closed when receipts_verify is absent (None)."""
-    from lineage_b.b1_protocol import SIZING_ARMS
-    res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
-    res["G1"] = {"completed": True, "receipts_verify": None}
-    ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
-    assert not ok
+    """Real g12b fails closed when receipts_verify is absent."""
+    def fake_evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
+        return {} if arm == "G1" else {"receipts_verify": True}
+
+    monkeypatch.setattr(val, "_learn", _fake_learn)
+    monkeypatch.setattr(val, "evaluate_arm", fake_evaluate_arm)
+    result = val.g12b("fake-token")
+    assert result["pass"] is False
+    assert result["per_arm"]["G1"]["receipts_verify"] is None
