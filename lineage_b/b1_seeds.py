@@ -4,8 +4,8 @@ Three permanently disjoint roots. Spawn keys are (condition index,
 deployment). A family can only be opened with its purpose token, which only
 the corresponding runner passes:
 
-* validation    2026100518000  -> tools/run_lineage_b1_validation.py  (v1.6; was 2026100517000)
-* sizing        2026100519000  -> tools/run_lineage_b1_sizing.py     (v1.6; was 2026100516000)
+* validation    2026100520000  -> tools/run_lineage_b1_validation.py  (v1.6.3; was 2026100518000)
+* sizing        2026100521000  -> tools/run_lineage_b1_sizing.py     (v1.6.3; was 2026100519000)
 * confirmatory  2026100514000  -> tools/run_lineage_b1_confirmatory.py
 """
 
@@ -20,14 +20,15 @@ import numpy as np
 from lineage_b.params import E_E, E_L
 from lineage_b.world import CONDITIONS, make_streams
 
-ROOTS = {"validation": 2026100518000, "sizing": 2026100519000, "confirmatory": 2026100514000}
+ROOTS = {"validation": 2026100520000, "sizing": 2026100521000, "confirmatory": 2026100514000}
 TOKENS = {"validation": "B1-VALIDATION-7b", "sizing": "B1-SIZING-7a-ONE-SHOT",
           "confirmatory": "B1-CONFIRMATORY-15h"}
 # Earlier roots (B0 v1.1/v1.2/v1.3 gates, pilot) that must stay disjoint.
 _EARLIER = ({20261005, 20261006, 20261007, 20261008}
             | {2026100512000 + k for k in range(1000)}
             | {2026100515000 + k for k in range(1000)} | {2026100513000}
-            | {2026100516000, 2026100517000})   # retired v1.5.x roots
+            | {2026100516000, 2026100517000}    # retired v1.5.x roots
+            | {2026100518000, 2026100519000})   # retired v1.6 roots (validation + sizing crash)
 assert len(set(ROOTS.values())) == 3 and not set(ROOTS.values()) & _EARLIER
 
 BOOTSTRAP_SPAWN_KEY = (len(CONDITIONS), 0)       # outside every (condition, deployment) key

@@ -48,21 +48,31 @@ from lineage_b.b1_seeds import b1_make_streams
 from lineage_b.world import FaultState, World, Z
 
 B1_LOGGING_EPSILON = 0.5    # v1.6: B1-specific exploration rate (B0 params.EPSILON=0.2 untouched)
+B1_SCHEMA = ("L1", "L2", "L3", "F", "P", "L4")   # v1.6.3: complete B1-visible independent-sensor schema
 LEARNERS = ("G1", "G2", "G3", "G2-S")
 ALL_ARMS = ("G0", "G1", "G2", "G3", "G2-S", "REF-S", "REF-Z")
 SIZING_ARMS = ("G0", "G1", "G2", "G2-S", "REF-S")
 DEP_GROUP = {"L1": "ADC_A", "L2": "ADC_A", "L3": "L3", "P": "P", "F": "F", "L4": "alias_L4"}
 
 
+def b1_sensor_model() -> SensorModel:
+    """v1.6.3: construct a SensorModel with the complete B1-visible schema
+    materialized before theta identity is ever frozen or receipted."""
+    m = SensorModel()
+    for s in B1_SCHEMA:
+        m.params(s, 0)
+    return m
+
+
 def make_learner(arm: str) -> B1Agent:
     if arm == "G1":
-        return B1Agent(SensorModel(), "consensus", arm="G1")
+        return B1Agent(b1_sensor_model(), "consensus", arm="G1")
     if arm == "G2":
-        return B1Agent(SensorModel(), "receipt", arm="G2")
+        return B1Agent(b1_sensor_model(), "receipt", arm="G2")
     if arm == "G3":
         return B1Agent(DependencyModel(), "receipt", arm="G3")
     if arm == "G2-S":
-        return B1Agent(SensorModel(), "sham", arm="G2-S")
+        return B1Agent(b1_sensor_model(), "sham", arm="G2-S")
     raise ValueError(arm)
 
 
@@ -214,7 +224,7 @@ def _fresh_flags(delivered, t):
 def pass1(dep_id, condition, eps, mu_rng):
     """The shared log: G0 controller (theta0) + mu drive the world (E_L episodes)."""
     faults = FaultState(condition)
-    g0_agent = Agent(SensorModel(), arm=BEHAVIOR_ARM)
+    g0_agent = Agent(b1_sensor_model(), arm=BEHAVIOR_ARM)
     mu = RecordingPolicy(mu_rng, epsilon=B1_LOGGING_EPSILON)
     st, ev, fb = ReceiptStore(), AppendOnlyStore(), AppendOnlyStore()
     log = {"dep_id": dep_id, "condition": condition, "episodes": []}
@@ -370,7 +380,7 @@ def evaluate_arm(arm, dep_id, condition, eps, stuck_value, model=None):
             trajs.append(run_refz_episode(b1_make_streams(eps[ep]), faults, ep, ep * P.EP_LEN, st, ev, dep_id))
         return {"control": _control_rows(trajs), "trajs": trajs}
     if arm == "G0":
-        agent = Agent(SensorModel(), arm="G0")
+        agent = Agent(b1_sensor_model(), arm="G0")
     elif arm == "REF-S":
         agent = Agent(RefSensorModel(condition), arm="REF-S")
     else:
@@ -425,7 +435,7 @@ def ope_data(log, learners, arms_models: Dict[str, object], condition):
            "r": np.array(rew), "pi": {}, "r_pi": {}}
     for arm, model in arms_models.items():
         if arm == "G0":
-            agent = Agent(SensorModel(), arm="G0")
+            agent = Agent(b1_sensor_model(), arm="G0")
         elif arm == "REF-S":
             agent = Agent(RefSensorModel(condition), arm="REF-S")
         else:

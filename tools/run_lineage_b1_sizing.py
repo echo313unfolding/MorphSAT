@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""B1 §7a one-shot blinded sizing on root 2026100519000 (prereg v1.6 @ 58653eb,
-run-control v1.6.1).
+"""B1 §7a one-shot blinded sizing on root 2026100521000 (prereg v1.6.3 @ c4280f0).
 
 Order (v1.5.1 §6, §7; v1.6.1 root-scoped one-shot):
   0. refuse if any b1_sizing_* receipt exists for the current root, or if no

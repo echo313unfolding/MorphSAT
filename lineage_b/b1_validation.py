@@ -24,7 +24,8 @@ from lineage_b.agent import predictor as pr
 from lineage_b.agent.arms import B1Agent, DependencyModel
 from lineage_b.agent.authority import resolve
 from lineage_b.b1_events import verify_provenance
-from lineage_b.b1_protocol import B1_LOGGING_EPSILON, LEARNERS, make_learner, pass1, pass2
+from lineage_b.b1_protocol import (B1_LOGGING_EPSILON, LEARNERS, SIZING_ARMS, b1_sensor_model,
+                                   evaluate_arm, make_learner, pass1, pass2)
 from lineage_b.events import AppendOnlyStore
 from lineage_b.gates import ALLOWED, _imports, _synthetic_stream
 from lineage_b.harness import run_episode
@@ -286,5 +287,19 @@ def _events_consistent(arm, model, cond, eps, replay):
     return ok and {"interlock", "terminal_abstain", "arbitration"} <= paths
 
 
+# ---------------------------------------------------------------- gate 12b (v1.6.3)
+def g12b(token) -> dict:
+    """v1.6.3: frozen-theta invariant for all SIZING_ARMS on C3 through the
+    actual evaluate_arm path. Directly covers the lazy-L4 gap that validation
+    gates 7/11/12 missed (they only test LEARNERS, not fresh G0)."""
+    log, learners, out, eps = _learn(token, "C3")
+    models = {a: ag.model for a, ag in learners.items()}
+    res = {}
+    for a in SIZING_ARMS:
+        r = evaluate_arm(a, "val:C3:0", "C3", eps, log["stuck_value"], model=models.get(a))
+        res[a] = {"completed": True, "receipts_verify": r.get("receipts_verify", True)}
+    return {"pass": all(v["completed"] for v in res.values()), "per_arm": res}
+
+
 CHECKS = (("V0-static", lambda tok: v0_static()), ("V0-runtime", v0_runtime),
-          ("gate7", g7), ("gate11", g11), ("gate12", g12))
+          ("gate7", g7), ("gate11", g11), ("gate12", g12), ("gate12b", g12b))

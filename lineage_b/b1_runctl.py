@@ -19,13 +19,15 @@ PREREG_REFS = {"sizing_design_freeze": "2473c2a", "pre_execution_amendment_v1_5_
                "exploration_policy_amendment_v1_6": "58653eb",
                "run_control_amendment_v1_6_1": "4ca95b6",
                "run_control_hardening_v1_6_2": "b06cb48",
+               "corrective_amendment_v1_6_3": "c4280f0",
                "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
                "amendments": ["docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_6_AMENDMENT.md",
                               "docs/LINEAGE_B1_PREREG_V1_6_1_AMENDMENT.md",
-                              "docs/LINEAGE_B1_PREREG_V1_6_2_AMENDMENT.md"]}
+                              "docs/LINEAGE_B1_PREREG_V1_6_2_AMENDMENT.md",
+                              "docs/LINEAGE_B1_PREREG_V1_6_3_AMENDMENT.md"]}
 FROZEN_FILE = "lineage_b/b1_frozen.py"
 FROZEN_FIELDS = ("N", "CONFIRMATORY_SEED_LIST_SHA256", "SIZING_RECEIPT")
 

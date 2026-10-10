@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""B1 confirmatory run on root 2026100514000 (prereg v1.6 @ 58653eb;
-run-control v1.6.1).
+"""B1 confirmatory run on root 2026100514000 (prereg v1.6.3 @ c4280f0).
 
 Order (v1.5.1 §6–§8):
   0. refuse if any b1_confirmatory_* receipt exists; the confirmatory freeze

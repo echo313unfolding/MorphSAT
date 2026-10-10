@@ -36,7 +36,7 @@ def test_no_chi_square_engine():
 
 
 def test_seed_roots_and_tokens():
-    assert b1_seeds.ROOTS == {"validation": 2026100518000, "sizing": 2026100519000,
+    assert b1_seeds.ROOTS == {"validation": 2026100520000, "sizing": 2026100521000,
                               "confirmatory": 2026100514000}
     with pytest.raises(b1_seeds.SeedFamilyError):
         b1_seeds.deployment_seeds("sizing", "wrong", "C0", 0)
@@ -265,7 +265,7 @@ def test_post_sizing_freeze_verifier():
 def test_one_shot_guard_root_scoped(tmp_path, monkeypatch):
     """v1.6.1: one-shot identity is (prefix, root), not prefix alone."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
-    current_root = 2026100519000
+    current_root = 2026100521000
     old_root = 2026100516000
     # empty dir: passes
     rc.require_one_shot("b1_sizing", current_root)
@@ -286,7 +286,7 @@ def test_one_shot_guard_root_scoped(tmp_path, monkeypatch):
 def test_one_shot_blocks_any_status_on_current_root(tmp_path, monkeypatch, suffix):
     """Any receipt status on the current root blocks."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
-    root = 2026100519000
+    root = 2026100521000
     (tmp_path / f"b1_sizing_{suffix}_20261010T000000Z.json").write_text(
         json.dumps({"root": root, "status": suffix}))
     with pytest.raises(SystemExit):
@@ -298,14 +298,14 @@ def test_one_shot_fails_closed_on_malformed_receipt(tmp_path, monkeypatch):
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text("NOT VALID JSON {{{")
     with pytest.raises(SystemExit, match="cannot verify"):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_one_shot_preserves_other_root_receipts(tmp_path, monkeypatch):
     """Receipt with same prefix but different root remains preserved and ignored."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
     other_root = 2026100516000
-    current_root = 2026100519000
+    current_root = 2026100521000
     receipt_path = tmp_path / "b1_sizing_COMPLETED_20261009T200000Z.json"
     content = json.dumps({"root": other_root, "status": "COMPLETED"})
     receipt_path.write_text(content)
@@ -346,7 +346,7 @@ def test_one_shot_fails_closed_on_missing_root(tmp_path, monkeypatch):
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
         json.dumps({"status": "STARTED"}))
     with pytest.raises(SystemExit, match="missing/invalid root"):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_one_shot_fails_closed_on_null_root(tmp_path, monkeypatch):
@@ -355,16 +355,16 @@ def test_one_shot_fails_closed_on_null_root(tmp_path, monkeypatch):
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
         json.dumps({"root": None, "status": "STARTED"}))
     with pytest.raises(SystemExit, match="missing/invalid root"):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_one_shot_fails_closed_on_string_root(tmp_path, monkeypatch):
     """root as string -> fail closed (wrong type)."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
-        json.dumps({"root": "2026100519000", "status": "STARTED"}))
+        json.dumps({"root": "2026100521000", "status": "STARTED"}))
     with pytest.raises(SystemExit, match="missing/invalid root"):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_one_shot_fails_closed_on_boolean_root(tmp_path, monkeypatch):
@@ -373,7 +373,7 @@ def test_one_shot_fails_closed_on_boolean_root(tmp_path, monkeypatch):
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
         json.dumps({"root": True, "status": "STARTED"}))
     with pytest.raises(SystemExit, match="missing/invalid root"):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_one_shot_accepts_valid_historical_root(tmp_path, monkeypatch):
@@ -381,16 +381,16 @@ def test_one_shot_accepts_valid_historical_root(tmp_path, monkeypatch):
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
     (tmp_path / "b1_sizing_STOPPED_20261009T181653Z.json").write_text(
         json.dumps({"root": 2026100516000, "status": "STOPPED"}))
-    rc.require_one_shot("b1_sizing", 2026100519000)  # does not block
+    rc.require_one_shot("b1_sizing", 2026100521000)  # does not block
 
 
 def test_one_shot_blocks_on_current_root_integer(tmp_path, monkeypatch):
-    """Integer current root 2026100519000 blocks as one-shot consumed."""
+    """Integer current root 2026100521000 blocks as one-shot consumed."""
     monkeypatch.setattr(rc, "RECEIPTS", tmp_path)
     (tmp_path / "b1_sizing_STARTED_20261010T000000Z.json").write_text(
-        json.dumps({"root": 2026100519000, "status": "STARTED"}))
+        json.dumps({"root": 2026100521000, "status": "STARTED"}))
     with pytest.raises(SystemExit):
-        rc.require_one_shot("b1_sizing", 2026100519000)
+        rc.require_one_shot("b1_sizing", 2026100521000)
 
 
 def test_protected_files_cover_runners_and_authority():
@@ -788,6 +788,97 @@ def test_sv3_infeasibility_at_old_epsilon():
 
 
 def test_retired_roots_in_earlier_set():
-    """Consumed v1.5.x roots are in the _EARLIER disjointness set."""
+    """Consumed v1.5.x and v1.6 roots are in the _EARLIER disjointness set."""
     assert 2026100516000 in b1_seeds._EARLIER
     assert 2026100517000 in b1_seeds._EARLIER
+    assert 2026100518000 in b1_seeds._EARLIER
+    assert 2026100519000 in b1_seeds._EARLIER
+
+
+# ---------------------------------------------------------------- v1.6.3 corrective (lazy L4)
+from lineage_b.b1_protocol import B1_SCHEMA, b1_sensor_model  # noqa: E402
+
+
+def test_b1_sensor_model_includes_l4():
+    """b1_sensor_model() includes L4 immediately after construction."""
+    m = b1_sensor_model()
+    assert "L4" in m.sigma and "L4" in m.b and "L4" in m.v
+
+
+def test_b1_sensor_model_l4_stable_theta():
+    """First params('L4') call after b1_sensor_model() does not change theta hash."""
+    m = b1_sensor_model()
+    h0 = m.theta_hash()
+    m.params("L4", 0)
+    assert m.theta_hash() == h0
+
+
+def test_b0_sensor_model_unchanged():
+    """B0 SensorModel() source code remains byte-identical."""
+    import hashlib
+    path = ROOT / "lineage_b" / "agent" / "sensor_model.py"
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == \
+        "aa90f5831ab5812d1fd6d40187f77f7ff1eabbb8183a870a2fa5305a94a43f11"
+
+
+def test_b0_sensor_model_default_no_l4():
+    """B0 SensorModel() default construction still has only L1/L2/L3/F/P."""
+    m = SensorModel()
+    assert sorted(m.sigma) == ["F", "L1", "L2", "L3", "P"]
+
+
+def test_b1_pass1_uses_b1_sensor_model():
+    """pass1 constructs G0 behavior agent via b1_sensor_model (has L4)."""
+    import inspect
+    from lineage_b.b1_protocol import pass1
+    src = inspect.getsource(pass1)
+    assert "b1_sensor_model()" in src
+    assert "SensorModel()" not in src
+
+
+def test_b1_make_learner_uses_b1_sensor_model():
+    """make_learner for G1/G2/G2-S constructs via b1_sensor_model."""
+    import inspect
+    from lineage_b.b1_protocol import make_learner
+    src = inspect.getsource(make_learner)
+    assert "b1_sensor_model()" in src
+    assert "SensorModel()" not in src
+
+
+def test_b1_evaluate_arm_g0_uses_b1_sensor_model():
+    """evaluate_arm constructs fresh G0 via b1_sensor_model."""
+    import inspect
+    from lineage_b.b1_protocol import evaluate_arm
+    src = inspect.getsource(evaluate_arm)
+    assert "b1_sensor_model()" in src
+    assert "SensorModel()" not in src
+
+
+def test_c3_l4_cannot_mutate_frozen_g0_theta():
+    """C3 L4 exposure cannot structurally mutate frozen G0 theta
+    when constructed via b1_sensor_model."""
+    m = b1_sensor_model()
+    h0 = m.theta_hash()
+    # Simulate what happens when C3 delivers L4: params is called
+    for s in B1_SCHEMA:
+        m.params(s, 100)
+    assert m.theta_hash() == h0
+
+
+def test_failure_receipts_byte_identical():
+    """Existing v1.6 sizing crash receipts remain byte-identical."""
+    import hashlib
+    started = rc.ROOT / "receipts" / "lineage_b1" / "b1_sizing_STARTED_20261009T214321Z.json"
+    crashed = rc.ROOT / "receipts" / "lineage_b1" / "b1_sizing_CRASHED_20261010T003748Z.json"
+    assert hashlib.sha256(started.read_bytes()).hexdigest() == \
+        "899e7a497adce102f9ad02e68d4489a7f683e5d3374a8475b66592ba5b1f3655"
+    assert hashlib.sha256(crashed.read_bytes()).hexdigest() == \
+        "84a760d39afa720a7de9e2c8bffed38414859fee9edc65e7d854be443d7d8518"
+
+
+def test_no_scientific_constants_changed():
+    """No scientific constants or thresholds changed by v1.6.3."""
+    assert B1_LOGGING_EPSILON == 0.5
+    assert P.EPSILON == 0.2
+    assert S.DELTA_STAR == 1.737
+    assert abs(S.DELTA_NULL - 0.8876) < 1e-12
