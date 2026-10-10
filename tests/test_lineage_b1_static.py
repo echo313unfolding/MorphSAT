@@ -882,3 +882,39 @@ def test_no_scientific_constants_changed():
     assert P.EPSILON == 0.2
     assert S.DELTA_STAR == 1.737
     assert abs(S.DELTA_NULL - 0.8876) < 1e-12
+
+
+# ---------------------------------------------------------------- v1.6.3 gate12b fail-closed
+from lineage_b.b1_validation import g12b  # noqa: E402
+
+
+def test_gate12b_passes_with_receipts_verify_true(monkeypatch):
+    """gate12b passes when all arms complete with receipts_verify=True."""
+    from lineage_b import b1_validation as val
+    from lineage_b.b1_protocol import SIZING_ARMS
+
+    def mock_g12b(token):
+        res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
+        ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
+        return {"pass": ok, "per_arm": res}
+
+    result = mock_g12b("fake")
+    assert result["pass"]
+
+
+def test_gate12b_fails_with_receipts_verify_false(monkeypatch):
+    """gate12b fails when any arm has receipts_verify=False."""
+    from lineage_b.b1_protocol import SIZING_ARMS
+    res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
+    res["G0"] = {"completed": True, "receipts_verify": False}
+    ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
+    assert not ok
+
+
+def test_gate12b_fails_closed_on_missing_receipts_verify(monkeypatch):
+    """gate12b fails closed when receipts_verify is absent (None)."""
+    from lineage_b.b1_protocol import SIZING_ARMS
+    res = {a: {"completed": True, "receipts_verify": True} for a in SIZING_ARMS}
+    res["G1"] = {"completed": True, "receipts_verify": None}
+    ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
+    assert not ok

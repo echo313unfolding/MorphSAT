@@ -1,11 +1,12 @@
 """B1 §7b pre-sizing implementation validation (prereg v1.5 @ 2473c2a).
 EVALUATOR side. Implementation-validity checks only: V0 plus B0 gates 7, 11
-and 12 adapted to each new arm (G1, G2, G3, G2-S). Every comparison here is
-of hashes or structure; no cost, safety or prediction metric is computed and
-no arm is compared with another.
+and 12 adapted to each new arm (G1, G2, G3, G2-S), plus gate 12b (v1.6.3)
+for frozen-theta sizing-path coverage. Every comparison here is of hashes or
+structure; no cost, safety or prediction metric is computed and no arm is
+compared with another.
 
-Seeds come only from the validation family (root 2026100517000), opened with
-its runner token.
+Seeds come only from the validation family (root 2026100520000, v1.6.3;
+was 2026100518000 in v1.6), opened with its runner token.
 """
 
 from __future__ import annotations
@@ -297,8 +298,10 @@ def g12b(token) -> dict:
     res = {}
     for a in SIZING_ARMS:
         r = evaluate_arm(a, "val:C3:0", "C3", eps, log["stuck_value"], model=models.get(a))
-        res[a] = {"completed": True, "receipts_verify": r.get("receipts_verify", True)}
-    return {"pass": all(v["completed"] for v in res.values()), "per_arm": res}
+        rv = r.get("receipts_verify")
+        res[a] = {"completed": True, "receipts_verify": rv}
+    ok = all(v["completed"] and v["receipts_verify"] is True for v in res.values())
+    return {"pass": ok, "per_arm": res}
 
 
 CHECKS = (("V0-static", lambda tok: v0_static()), ("V0-runtime", v0_runtime),
