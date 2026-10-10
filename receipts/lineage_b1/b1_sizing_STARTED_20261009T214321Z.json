@@ -1,0 +1,74 @@
+{
+ "refs": {
+  "sizing_design_freeze": "2473c2a",
+  "pre_execution_amendment_v1_5_1": "f4f5990",
+  "pre_validation_amendment_v1_5_2": "1e8bd91",
+  "validation_failure_amendment_v1_5_3": "39313b6",
+  "exploration_policy_amendment_v1_6": "58653eb",
+  "run_control_amendment_v1_6_1": "4ca95b6",
+  "run_control_hardening_v1_6_2": "b06cb48",
+  "prereg": "docs/LINEAGE_B1_GROUNDED_FEEDBACK_PREREG_V1.md",
+  "amendments": [
+   "docs/LINEAGE_B1_PREREG_V1_5_1_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_5_2_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_5_3_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_6_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_6_1_AMENDMENT.md",
+   "docs/LINEAGE_B1_PREREG_V1_6_2_AMENDMENT.md"
+  ]
+ },
+ "root": 2026100519000,
+ "n_s": 50,
+ "source": {
+  "head": "5eb7afe39678a0ba7b183f5bc5cba0294d1883a8",
+  "files": {
+   "lineage_b/__init__.py": "4923f0fa96883c262a520b6281491ccfa75dcdfa4edd55b1a8532a18378ca329",
+   "lineage_b/agent/__init__.py": "b222fd584762340b55a8324a8a307e256f9890714484f902122aa3ef9a15e2a9",
+   "lineage_b/agent/arms.py": "a12ce4d129e20c5dc4acfbacd995a696ee12b12be030dd31e6d5c2c4c5db1310",
+   "lineage_b/agent/authority.py": "189be16c0af6f288de1185fe4c4c144296fe3067be48a1a96e02bec19bedd0d4",
+   "lineage_b/agent/core.py": "0586badbbf6f6ded73eaa1e625e032a28c03ed541f3a4c4525b4f3879dac11e8",
+   "lineage_b/agent/numerics.py": "d98839cd0b202bef7564695ad7f3cc86afd596a006d9caf0b38f2e13e3467e66",
+   "lineage_b/agent/predictor.py": "452b2e312f3a936e3ac755ea9aba290de7344593f70ea8e4671c246c6286b9f3",
+   "lineage_b/agent/sensor_model.py": "aa90f5831ab5812d1fd6d40187f77f7ff1eabbb8183a870a2fa5305a94a43f11",
+   "lineage_b/b1_analysis.py": "9bb1d6eeca2d6176e7c869137f875b97df17ebf75e2154430020e33546b5214b",
+   "lineage_b/b1_events.py": "01d2ed000347f000d0ab1f2cbaefbb90d629770a221b0bc2ff93f8565fcb0daf",
+   "lineage_b/b1_frozen.py": "6a10fd36e318c9b881fb290da51d18ffeaabce6360f4a82703a5f61ee8e12940",
+   "lineage_b/b1_protocol.py": "c0a09d794702d208b29ecf1fa9f2bc03b8dbc17ca926173787ce56c1c024bc9b",
+   "lineage_b/b1_runctl.py": "66fd8795b57cf54ab5c0f78ca472bbff0542cbb64e48c50a86e93d1a21902d2e",
+   "lineage_b/b1_seeds.py": "7428374c3bece5288066ffc45a5a1e9469794b099b9bdba9c3ea27f958b66b8a",
+   "lineage_b/b1_stats.py": "48aa3797abf0668853f3a3f777629c2947e34b70937e1ec7b947b55a3947c04b",
+   "lineage_b/b1_validation.py": "f769ee5e80042ce268323e3d859a672f865179978351c0a3425a258ffa1e4cac",
+   "lineage_b/channel.py": "19cd31c50e905c005c038aa9e6dfc7c6c3e3967e42916fb8cbb45be054bcea7e",
+   "lineage_b/evaluate.py": "1b70a8cf952e0756e8be91a20c2422f0386150210a8ccd8a79c9c8f94b3ad5b7",
+   "lineage_b/events.py": "abb11824213c745ea3907b31fe103cc7164208ac66e3e1091040e5c14f65515f",
+   "lineage_b/gates.py": "5b766d423ead1664d142d3809c316cec2c11beb59ea9e4521a408ea900eeb328",
+   "lineage_b/harness.py": "9663a96292306a1f5d73f058d54fbf41f9762f32d4eee4144bebc154a021c3e3",
+   "lineage_b/logging_policy.py": "6e16a8f3b9d2c02d72173f9355aaa609853ab63831f3b2bd42403a622a0102ab",
+   "lineage_b/obs.py": "ee84981f92b98ed9f57adfa512ec04ae1a632712a45227b4db5cc0c3e9b78bba",
+   "lineage_b/params.py": "93f505de37812d0c787f7d20307b79c40fe186e382a45bad4e3d73b6633aea3c",
+   "lineage_b/receipts.py": "40ed5fd1aaffb3740482990058bbf86b67d972f8fb6075beb988695115f7391c",
+   "lineage_b/ref.py": "e1028217f109ad2dc74ebec6129320d47c237715fae903927497d7039cfd254e",
+   "lineage_b/sensors.py": "f6507d9fc069d4343a095c391de8eec23e8ad6de113f68a75fda9cc1378397c6",
+   "lineage_b/world.py": "7d2a1dcddf4570a2efa40c090471b552fb70c857eb85405fb0b692cfaf8d32e7",
+   "tools/run_lineage_b1_confirmatory.py": "754701576d148b6c30d410bb3b1707e36d71763f555595e2d83cd1db80decd0d",
+   "tools/run_lineage_b1_sizing.py": "97a8ce6d5d769575a3a21d3feec757cc816a4e1492323580820de71ca04df345",
+   "tools/run_lineage_b1_validation.py": "ca3bc18282e84eaaa70450fb3c7cefce7ef3f1d818179ae08a567cb2c9e4959b",
+   "morphsat/terminal_authority.py": "559bb2c5e60854dfb5d0e5f35237d38cfcdc8a88e30486e9599cf63126105d86"
+  },
+  "combined": "5d5a7796fec322e4868667e790fa91c3758d92fc59bfa91249a4165ea64a6ff0"
+ },
+ "status": "STARTED",
+ "chi2_constant_integrity": {
+  "pass": true,
+  "literals": true,
+  "table_rounding": true,
+  "multipliers": true
+ },
+ "V0_static": {
+  "pass": true,
+  "predictor_sha256": "452b2e312f3a936e3ac755ea9aba290de7344593f70ea8e4671c246c6286b9f3",
+  "ref_sha256": "452b2e312f3a936e3ac755ea9aba290de7344593f70ea8e4671c246c6286b9f3",
+  "ref": "94f4f11",
+  "foreign_predictive_defs": []
+ }
+}
