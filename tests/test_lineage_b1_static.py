@@ -159,9 +159,13 @@ def test_blinded_sizing_emits_no_means():
     assert all(q["z"] == 1.96 for q in out["quantities"].values())
 
 
-def test_frozen_placeholders_unset():
+def test_confirmatory_freeze_values():
     from lineage_b import b1_frozen
-    assert b1_frozen.N is None and b1_frozen.CONFIRMATORY_SEED_LIST_SHA256 is None
+    assert b1_frozen.N == 2350
+    assert b1_frozen.CONFIRMATORY_SEED_LIST_SHA256 == \
+        "7ecf2d9ce5f66121ea9d91d3a138cb96c3738d018ef513a38ab6835727050d67"
+    assert b1_frozen.SIZING_RECEIPT == \
+        "receipts/lineage_b1/b1_sizing_COMPLETED_20261011T020204Z.json"
 
 
 def test_arms_module_never_touches_authority_or_world():
