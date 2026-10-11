@@ -340,3 +340,216 @@ This document does NOT:
 - authorize physical hardware experiments.
 
 It preserves architectural reasoning only.
+
+## 15. Architectural refinement — learned world model and immutable evidence substrate (2026-10-11)
+
+**DESIGN DIRECTION / RESEARCH MEMORY — NOT A PREREGISTRATION, NOT AN
+EXPERIMENTAL AMENDMENT, NOT BINDING ON B1.**
+
+### 15.1 Core refinement
+
+The architecture now distinguishes three objects that must not be conflated:
+
+$$\boxed{\text{Evidence is not the reasoning state.}}$$
+
+$$\boxed{\text{The learned world model is the fast reasoning/predictive state.}}$$
+
+$$\boxed{\text{Immutable evidence is the substrate that trains, audits, and falsifies the learned model.}}$$
+
+Revised flow:
+
+```text
+                         immutable evidence
+                        /                  \
+                       /                    \
+              causal evidence graph       replay/training data
+              audit / falsification              │
+                                                 ▼
+                                          learned world model
+                                                 │
+                                          compact predictive state
+                                                 │
+                                           causal motifs
+                                                 │
+                                           reasoning model
+```
+
+The learned world model may be lossy, revisable, compressed, and wrong.
+
+The evidence substrate may not be retroactively rewritten by the learned model.
+
+### 15.2 Two-speed online architecture
+
+Do not put the full evidence graph in the normal reasoning path.
+
+Routine path:
+
+```text
+current state
+→ learned world model
+→ predicted consequences
+→ reasoning/proposal
+→ cheap authority gate
+→ execution
+→ append witness/outcome evidence
+```
+
+Escalated path (triggered only when needed):
+
+```text
+uncertainty
+or model disagreement
+or high risk
+or invariant anomaly
+        ↓
+deeper evidence retrieval
+        ↓
+audit / falsification / revised proposal
+```
+
+Candidate conceptual escalation predicate:
+
+$$Q_t = [\text{uncertainty} > \tau_u] \lor [\text{model disagreement} > \tau_d] \lor [\text{risk} > \tau_r] \lor [\text{invariant anomaly}]$$
+
+This is architectural guidance only. No thresholds are frozen here.
+
+Durable operational rule:
+
+**Evidence writes are routine; evidence reads are exceptional.**
+
+### 15.3 Adjacent-work lessons
+
+World-model reinforcement learning supports borrowing the following mechanisms:
+
+- action-conditioned prediction as learning signal;
+- learned latent/predictive state as compact decision substrate;
+- replay of stored experience for training (not raw-trajectory reasoning);
+- imagined rollouts for planning where justified;
+- selective experience retention over naïve accumulation.
+
+These works do not prove MorphSAT's architecture.
+
+Their relevance is that successful systems generally compress historical
+experience into a learned predictive state rather than making the policy
+repeatedly consume raw trajectories.
+
+MorphSAT's prospective distinction is the parallel immutable evidentiary path
+that the learned model cannot overwrite.
+
+The useful comparison with DreamerV3 specifically is not "forgets vs.
+remembers" — DreamerV3 trains from replayed experience. It is whether a
+parallel immutable evidence path exists that the learned model cannot
+overwrite. In DreamerV3, the replay buffer is mutable infrastructure. In
+MorphSAT, the evidence graph is not.
+
+Memory research provides empirical support for the immutable/mutable
+separation as a performance principle, not only an integrity principle: naïve
+memory accumulation can degrade agent performance through error propagation and
+misaligned replay, while selective retention improves it.
+
+### 15.4 B1 inferential boundary
+
+B1 tests whether consequence-conditioned learning adds information beyond
+same-time observational consistency under the frozen B1 design.
+
+If B1 fails, do NOT infer that authority, sham controls, frozen theta, or
+other controls suppressed the effect.
+
+A negative B1 result must be interpreted only through the preregistered outcome
+mapping (F1–F6, P0, safety noninferiority). To claim that the controls cost
+performance would require a separate experiment that explicitly varies those
+controls.
+
+### 15.5 Research sequence
+
+Refined sequence:
+
+```text
+B1
+→ B2 / replication or structural extension
+→ model-class transfer
+→ performance lineage
+→ causal-memory / motif compression
+```
+
+Do not jump directly from a positive B1 result to replacing the learner.
+
+The model-class transfer question is:
+
+> Does the action-conditioned causal-learning advantage survive a change in
+> representation/model class?
+
+Candidate future comparison (not authorized or preregistered here):
+
+```text
+same environment
+same action log
+same authority
+same outcome receipts
+
+G2-tabular
+vs
+G2-neural world model
+vs
+G2-LLM/RWML-style predictor
+```
+
+If the advantage is representation-invariant, that is substantially stronger
+than "our particular SensorModel happened to work."
+
+### 15.6 Borrow versus research
+
+**Borrow / adapt from established work:**
+
+- action-conditioned prediction;
+- learned latent/world models;
+- replay;
+- selective retention;
+- planning/imagined rollouts where justified.
+
+**Research (no existing system demonstrates the complete combination):**
+
+- immutable evidence graph parallel to the learned model;
+- authority/witness/evidence separation;
+- model-independent cross-model causal-memory transfer;
+- reversible motif compression tied to evidence;
+- evidence escalation policy;
+- whether evidentiary backing improves or harms reasoning efficiency;
+- representation invariance of the causal-learning advantage.
+
+### 15.7 Compatibility with §13 motif direction
+
+The motif pathway from §13:
+
+```text
+raw receipts
+→ causal graph
+→ recurrent causal motifs
+→ canonical motif identity
+→ compressed symbol
+→ reversible expansion to evidence
+```
+
+remains the evidentiary/compression pathway.
+
+Motifs are no longer assumed to be the sole predictive memory.
+
+A learned world model is the candidate fast predictive state. Motifs provide
+interpretable and potentially transferable causal abstractions tied back to
+evidence. The two serve different roles: the world model optimizes prediction
+speed; motifs preserve interpretability and evidence linkage.
+
+### 15.8 Scope of this update
+
+This update does NOT:
+
+- alter B1;
+- alter B1 roots;
+- alter frozen thresholds;
+- authorize confirmatory execution;
+- preregister model-class transfer;
+- freeze an evidence-escalation policy;
+- authorize C0 work;
+- modify any executable source.
+
+It refines architectural reasoning only.
